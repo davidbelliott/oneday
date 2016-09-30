@@ -6,8 +6,8 @@
 #include "World.h"
 #include "common.h"
 
-Action::Action(Word word_in)
-: word(word_in)
+Action::Action(Word name_in)
+: name(name_in)
 {
 }
 
@@ -52,7 +52,7 @@ void ActionGo::act(World* w, Terminal* t, Object* o)
 	}
 	else if(!prepositions.empty())
 	{
-		std::string modifier_name = prepositions[0].get_name();
+		std::string modifier_name = prepositions[0].word;
 		Room* room = (Room*)w->get_direct_child(w->cur_room);
 
 		int direction = -1;
@@ -85,7 +85,7 @@ void ActionGo::act(World* w, Terminal* t, Object* o)
 		}
 		else
 		{
-			t->disp("You can't go through the " + o->get_name() + ", baka.");
+			t->disp("You can't go through the " + o->name.word + ", baka.");
 		}
 	}
 }
@@ -113,14 +113,14 @@ void ActionTake::act(World* w, Terminal* t, Object* o)
 {
 	if (o && (o->properties & Object::TAKEABLE))
 	{
-		t->disp("You take the " + o->get_name() + ".");
+		t->disp("You take the " + o->name.word + ".");
 		w->inventory.push_back(o);
 		if (o->parent)
 			o->parent->remove_child(o);
 	}
 	else if (o)
 	{
-		t->disp("You can't take the " + o->get_name() + ", baka gaijin!");
+		t->disp("You can't take the " + o->name.word + ", baka gaijin!");
 	}
 	else
 	{
@@ -132,14 +132,14 @@ void ActionWear::act(World* w, Terminal* t, Object* o)
 {
 	if (o && (o->properties & Object::WEARABLE))
 	{
-		t->disp("You put on the " + o->get_name() + ".");
+		t->disp("You put on the " + o->name.word + ".");
 		w->clothing = o;
 		if (o->parent)
 			o->parent->remove_child(o);
 	}
 	else if (o)
 	{
-		t->disp("You can't wear a " + o->get_name() + ".");
+		t->disp("You can't wear a " + o->name.word + ".");
 	}
 	else
 	{
@@ -152,16 +152,16 @@ void ActionHit::act(World* w, Terminal* t, Object* o)
 	if (o && (o->properties & Object::HITTABLE))
 	{
 		if (o->flipped)
-			t->disp("The " + o->get_name() + " has already been hit.");
+			t->disp("The " + o->name.word + " has already been hit.");
 		else
 		{
-			t->disp("You hit the " + o->get_name() + ".");
+			t->disp("You hit the " + o->name.word + ".");
 			o->flipped = true;
 		}
 	}
 	else if (o)
 	{
-		t->disp("You can't hit the " + o->get_name());
+		t->disp("You can't hit the " + o->name.word);
 	}
 	else
 	{
@@ -175,18 +175,18 @@ void ActionOpenContainer::act(World* w, Terminal* t, Object* o)
 	{
 		if (!o->open)
 		{
-			t->disp("You open the " + o->get_name() + ".");
+			t->disp("You open the " + o->name.word + ".");
 			o->open = true;
 			o->describe(t, true, false);
 		}
 		else
 		{
-			t->disp("The " + o->get_name() + " is already open.");
+			t->disp("The " + o->name.word + " is already open.");
 		}
 	}
 	else if(o)
 	{
-		t->disp("You can't open a " + o->get_name() + "!");
+		t->disp("You can't open a " + o->name.word + "!");
 	}
 	else
 	{

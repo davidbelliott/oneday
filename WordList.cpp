@@ -46,8 +46,8 @@ int WordList::add_word(Word word)
 {
 	word.id = N_WORDS;
 	word.parent_list = this;
-	words_by_name[word.get_name()] = word;
-	std::vector<std::string> aliases = word.get_aliases();
+	words_by_name[word.word] = word;
+	std::vector<std::string> aliases = word.aliases;
 	for (auto it = aliases.begin(); it != aliases.end(); ++it)
 	{
 		words_by_name[*it] = word;

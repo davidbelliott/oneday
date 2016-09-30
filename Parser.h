@@ -15,7 +15,7 @@ public:
 	Parser();
 	virtual ~Parser();
 
-    std::string extract_word(std::string::iterator& iter)
+    std::vector<std::string> tokenize(std::string input, char delim = ' ');
 	Action* parse(std::string statement, World* w, Terminal* t);
 };
 

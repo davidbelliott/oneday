@@ -18,7 +18,7 @@ Engine::~Engine()
 void Engine::run()
 {
 	Action* action;
-	world->set_current_room(world->get_current_room()->get_name(), terminal);
+	world->set_current_room(world->get_current_room()->name.word, terminal);
 	while (world->active)
 	{
 		action = parser->parse(terminal->get_input(), world, terminal);

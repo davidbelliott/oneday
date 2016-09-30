@@ -1,13 +1,15 @@
 #pragma once
-#include "TextReferencable.h"
 #include <string>
+#include <vector>
 class WordList;
-class Word : public TextReferencable
+class Word
 {
 private:
 
 public:
 
+    std::string word;
+    std::vector<std::string> aliases;
 
 	enum PartOfSpeech
 	{
@@ -18,7 +20,7 @@ public:
 		UNRECOGNIZED
 	};
 
-	Word(std::string name_in, std::vector<std::string> aliases_in, PartOfSpeech part_of_speech_in);
+	Word(std::string word_in, std::vector<std::string> aliases_in, PartOfSpeech part_of_speech_in);
 	Word();
 	virtual ~Word();
 

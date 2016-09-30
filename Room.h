@@ -11,4 +11,6 @@ public:
 	Room();
 	virtual ~Room();
 	std::string directions[DIRECTIONS_MAX];
+
+    virtual void describe(Terminal* t, bool deep, bool describe_this);
 };

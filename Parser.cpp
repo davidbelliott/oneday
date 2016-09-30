@@ -6,7 +6,7 @@
 
 #include <vector>
 
-std::vector<std::string> tokenize(std::string input, char delim = ' ')
+std::vector<std::string> Parser::tokenize(std::string input, char delim)
 {
 	std::vector<std::string> tokens;
 	std::string cur_str = "";
@@ -38,11 +38,6 @@ Parser::~Parser()
 {
 }
 
-std::string Parser::extract_word(std::string::iterator& iter)
-{
-
-}
-
 Action* Parser::parse(std::string statement, World* w, Terminal* t)
 {
 	Action* action = NULL;
@@ -71,10 +66,10 @@ Action* Parser::parse(std::string statement, World* w, Terminal* t)
 		}
 		else if (!found_object && found_action)
 		{
-			if (object = room->get_indirect_child(tokens[i].get_name(), true))
+			if (object = room->get_indirect_child(tokens[i].word, true))
 			{
-				action->add_object(object);
 				found_object = true;
+				action->add_object(object);
 			}
 		}
 	}

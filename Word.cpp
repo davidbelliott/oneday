@@ -1,7 +1,7 @@
 #include "Word.h"
 
-Word::Word(std::string name_in, std::vector<std::string> aliases_in, PartOfSpeech part_of_speech_in)
-: TextReferencable(name_in, aliases_in), part_of_speech(part_of_speech_in), id(-1), parent_list(NULL)
+Word::Word(std::string word_in, std::vector<std::string> aliases_in, PartOfSpeech part_of_speech_in)
+: word(word_in), aliases(aliases_in), part_of_speech(part_of_speech_in), id(-1), parent_list(NULL)
 {
 }
 

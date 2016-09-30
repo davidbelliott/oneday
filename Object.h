@@ -4,8 +4,7 @@ class Action;
 class World;
 class Terminal;
 class Object;
-
-#include "TextReferencable.h"
+#include "Word.h"
 #include <functional>
 #include <vector>
 #include <string>
@@ -14,12 +13,12 @@ class Object;
 typedef std::function<void(World*, Terminal*)> run_func;
 typedef std::function<bool(World*, Terminal*, Action*, Object*)> ActionFunc;
 
-class Object : public TextReferencable
+class Object
 {
 public:
 	Object* parent;
 	std::vector<Object*> children;
-	std::map<std::string, Object*> children_hash;
+	std::map<std::string, std::vector<Object*>> children_hash;
 	std::map<std::string, int> flags;
 public:
 
@@ -36,12 +35,14 @@ public:
 		WEARABLE = 0x100
 	};
 
+    Word name;
+
 	//If VISIBLE
 	std::string shallow_description;
 	std::string deep_description;
 	bool discovered;
 	bool show_children;
-	void describe(Terminal* t, bool deep, bool describe_this);
+	virtual void describe(Terminal* t, bool deep, bool describe_this);
 
 	//If GOABLE
 	std::string goable_data;	//The room that going through this object leads to
@@ -68,5 +69,6 @@ public:
 
 	int get_flag(std::string name);
 	void set_flag(std::string name, int value);
+    void set_name(std::string name_in);
 };
 

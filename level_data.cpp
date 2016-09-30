@@ -24,7 +24,7 @@ World* generate_world()
 		jamal_bedroom->directions[SOUTH] = "jamal_bathroom";
 		jamal_bedroom->run_action = [](World* w, Terminal* t, Action* a, Object* o)
 		{
-			if (a->word.id == a->word.parent_list->LOOK && !o->get_flag("woke_up"))
+			if (a->name.id == a->name.parent_list->LOOK && !o->get_flag("woke_up"))
 			{
 				t->disp("You wake up feeling destitute.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen.");
 				o->set_flag("woke_up", 1);
@@ -62,9 +62,9 @@ World* generate_world()
 		hole->goable_data = "sewer";
 		hole->run_action = [](World* w, Terminal* t, Action* a, Object* o)
 		{
-			if (a->word.id == a->word.parent_list->GO)
+			if (a->name.id == a->name.parent_list->GO)
 			{
-				if (w->clothing && w->clothing->get_name() == "hazmat")
+				if (w->clothing && w->clothing->name.word == "hazmat")
 				{
 					t->disp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage.");
 					t->pause();
@@ -139,7 +139,7 @@ World* generate_world()
 		secret_switch->properties = Object::HITTABLE;
 		secret_switch->run_action = [=](World* w, Terminal* t, Action* a, Object* o)
 		{
-			if (a->word.id == a->word.parent_list->HIT)
+			if (a->name.id == a->name.parent_list->HIT)
 			{
 				t->disp("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west.");
 				henrik_library->shallow_description += "\nA doorway leads to the west.";
@@ -152,7 +152,7 @@ World* generate_world()
 		henrik_library->add_child(secret_switch);
 		book->run_action = [=](World* w, Terminal* t, Action* a, Object* o)
 		{
-			if (a->word.id == a->word.parent_list->TAKE)
+			if (a->name.id == a->name.parent_list->TAKE)
 			{
 				t->disp("Taking the book reveals a secret switch.");
 				shelf->shallow_description += " One book is missing, leaving an empty slot.";
@@ -172,7 +172,7 @@ World* generate_world()
 		world->add_child(henrik_lab);
 
 		Object* hazmat_suit = new Object("hazmat", "A hazmat suit lies crumpled on the ground.");
-		hazmat_suit->set_aliases({ "suit" });
+		hazmat_suit->name.aliases = { "suit" };
 		hazmat_suit->deep_description = "This frumpy apparel doesn't suit your style.";
 		hazmat_suit->properties |= Object::WEARABLE;
 		hazmat_suit->properties |= Object::TAKEABLE;

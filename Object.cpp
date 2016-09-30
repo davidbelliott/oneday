@@ -2,9 +2,8 @@
 #include "Terminal.h"
 
 Object::Object(std::string name_in, std::string description_in)
-	: parent(NULL), shallow_description(description_in), discovered(false), properties(VISIBLE), show_children(true)
+	: name(name_in, {""}, Word::OBJECT), parent(NULL), shallow_description(description_in), discovered(false), properties(VISIBLE), show_children(true)
 {
-	set_name(name_in);
 	run_action = [](World*, Terminal*, Action*, Object*) { return true; };
 }
 
@@ -42,10 +41,9 @@ void Object::add_child(Object* child)
 {
 	child->parent = this;
 	children.push_back(child);
-	children_hash[child->get_name()] = child;
-	std::vector<std::string> aliases = child->get_aliases();
-	for (size_t i = 0; i < aliases.size(); i++)
-		children_hash[aliases[i]] = child;
+	children_hash[child->name.word].push_back(child);
+	for (size_t i = 0; i < child->name.aliases.size(); i++)
+		children_hash[child->name.aliases[i]].push_back(child);
 }
 
 void Object::remove_child(Object* child)
@@ -61,8 +59,8 @@ bool Object::has_direct_child(std::string name)
 Object* Object::get_direct_child(std::string name, bool filter_discovered)
 {
 	Object* child = NULL;
-	if (has_direct_child(name) && (!filter_discovered || children_hash[name]->discovered))
-		return children_hash[name];
+	if (has_direct_child(name) && (!filter_discovered || children_hash[name][0]->discovered))
+		return children_hash[name][0];
 	else
 		return NULL;
 }
@@ -90,4 +88,9 @@ int Object::get_flag(std::string name)
 void Object::set_flag(std::string name, int value)
 {
 	flags[name] = value;
+}
+
+void Object::set_name(std::string name_in)
+{
+    name.word = name_in;
 }

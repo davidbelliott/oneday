@@ -1,10 +1,12 @@
 #pragma once
-#include "TextReferencable.h"
-class ActionModifier :
-	public TextReferencable
+
+#include "Word.h"
+
+class ActionModifier
 {
 public:
-	ActionModifier();
+	Word name;
+    ActionModifier();
 	virtual ~ActionModifier();
 };
 
