@@ -3,8 +3,9 @@
 #include <iostream>
 
 Terminal::Terminal(Config* config_in)
-: config(config_in)
+: config(config_in), cur_color(WHITE)
 {
+    set_color();
 }
 
 
@@ -23,6 +24,16 @@ void Terminal::clr()
 
 void Terminal::pause()
 {
+    set_color(BLUE);
+    disp("Press any key to continue...");
+    getchar();
+    set_color();
+}
+
+void Terminal::set_color(Color color)
+{
+    cur_color = color;
+    std::cout << "\033[3" << cur_color << "m";
 }
 
 std::string Terminal::get_input()

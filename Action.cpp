@@ -218,6 +218,8 @@ void ActionRead::act(World* w, Terminal* t, Object* o)
 
 void ActionHelp::act(World* w, Terminal* t, Object* o)
 {
-    t->disp("\033[1;31mIt's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
-    t->disp("Type sentences to do stuff.\033[0m\n");
+    t->set_color(RED);
+    t->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
+    t->disp("Type sentences to do stuff.");
+    t->set_color();
 }
