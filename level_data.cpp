@@ -15,18 +15,18 @@ World* generate_world()
 		{ "woke_up", 0 }
 	};
 	world->cur_room = "jamal_bedroom";
-
 	{
 		Room* jamal_bedroom = new Room();
 		jamal_bedroom->set_name("jamal_bedroom");
-		jamal_bedroom->shallow_description = "Jamal's Bedroom\nThe walls of this cluttered hovel are plastered with layers of grime and old posters.";
+        jamal_bedroom->pretty_name = "Jamal's bedroom";
+		jamal_bedroom->shallow_description = "The walls of this cluttered hovel are plastered with layers of grime and old posters.";
 		jamal_bedroom->directions[EAST] = "jamal_corridor";
 		jamal_bedroom->directions[SOUTH] = "jamal_bathroom";
 		jamal_bedroom->run_action = [](World* w, Terminal* t, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->LOOK && !o->get_flag("woke_up"))
 			{
-				t->disp("You wake up feeling destitute.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen.");
+				t->disp("You wake.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen.");
 				o->set_flag("woke_up", 1);
 				t->pause();
 			}
@@ -38,15 +38,24 @@ World* generate_world()
 		jamal_bedroom->add_child(window);
 
 		Object* hall_door = new Object("west_door", "A dilapidated door hangs from the east wall on its hinges.");
+        hall_door->name.aliases = { "door" };
 		hall_door->properties |= Object::GOABLE;
 		hall_door->goable_data = "jamal_corridor";
 		jamal_bedroom->add_child(hall_door);
 
 		Object* bath_door = new Object("south_door", "Another door leads to the south.");
+        hall_door->name.aliases = { "door" };
 		bath_door->properties |= Object::GOABLE;
 		bath_door->deep_description = "The door is made of rusted metal.";
 		bath_door->goable_data = "jamal_bathroom";
 		jamal_bedroom->add_child(bath_door);
+        
+        Object* paper = new Object("paper", "A crumpled sheeit of paper lies on the floor.");
+        paper->name.aliases = { "sheet", "sheeit" };
+        paper->properties |= Object::READABLE | Object::TAKEABLE;
+        paper->readable_data = "Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog.";
+        paper->readable_data += "\nY'all cowards type help, pls.";
+        jamal_bedroom->add_child(paper);
 
 		world->add_child(jamal_bedroom);
 	}
@@ -54,7 +63,8 @@ World* generate_world()
 	{
 		Room* jamal_bathroom = new Room();
 		jamal_bathroom->set_name("jamal_bathroom");
-		jamal_bathroom->shallow_description = "Jamal's Bathroom\nThis is where you defecate daily. This cesuo is a reeking pigsty.\nOne door leads to the north.";
+        jamal_bathroom->pretty_name = "Jamal's bathroom";
+		jamal_bathroom->shallow_description = "This is where you defecate daily. This cesuo is a reeking pigsty.\nOne door leads to the north.";
 		jamal_bathroom->directions[NORTH] = "jamal_bedroom";
 
 		Object* hole = new Object("hole", "A dark hole gapes in the floor, presumably where a toilet used to be.");
@@ -84,7 +94,7 @@ World* generate_world()
 	}
 
 	{
-		Room* jamal_corridor = new Room("jamal_corridor", "Magick Corridor\nThis hallway is imbued with a strong Faerie Magick.\nIt runs from north to south.\nThe front door of the house exits to the north.\nOne door exits to the east, and one to the west.\nA series of bare bulbs dangle from the ceiling.");
+		Room* jamal_corridor = new Room("jamal_corridor", "the Magick corridor", "This hallway is imbued with a strong Faerie Magick.\nIt runs from north to south.\nThe front door of the house exits to the north.\nOne door exits to the east, and one to the west.\nA series of bare bulbs dangle from the ceiling.");
 		jamal_corridor->directions[NORTH] = "jamal_house_block";
 		jamal_corridor->directions[EAST] = "jamal_kitchen";
 		jamal_corridor->directions[SOUTH] = "jamal_staircase";
@@ -94,13 +104,13 @@ World* generate_world()
 	}
 
 	{
-		Room* jamal_house_block = new Room("jamal_house_block", "As you open the door, an angry mob of thugs accosts you. They drag you to the ground and kill you. You die, killed by the angry mob of thugs.");
+		Room* jamal_house_block = new Room("jamal_house_block", "Jamal's front yard", "As you open the door, an angry mob of thugs accosts you. They drag you to the ground and kill you. You die, killed by the angry mob of thugs.");
 		
 		world->add_child(jamal_house_block);
 	}
 
 	{
-		Room* jamal_kitchen = new Room("jamal_kitchen", "Jamal's Kitchen\nThis beautiful, state-of-the-art culinary space would make Martha Stewart turn over in her grave with envy.");
+		Room* jamal_kitchen = new Room("jamal_kitchen", "Jamal's kitchen", "This beautiful, state-of-the-art culinary space would make Martha Stewart turn over in her grave with envy.");
 		jamal_kitchen->directions[WEST] = "jamal_corridor";
 
 		Object* sink = new Object("sink", "A large stainless sink glitters like a jewel, inset into a spacious marble countertop.");
@@ -116,7 +126,7 @@ World* generate_world()
 	}
 
 	{
-		Room* jamal_staircase = new Room("jamal_staircase", "Staircase\nA rickety staircase descending into the basement.");
+		Room* jamal_staircase = new Room("jamal_staircase", "the staircase", "A rickety staircase descending into the basement.");
 		jamal_staircase->directions[UP] = "jamal_corridor";
 		jamal_staircase->directions[DOWN] = "henrik_library";
 
@@ -124,7 +134,7 @@ World* generate_world()
 	}
 
 	{
-		Room* henrik_library = new Room("henrik_library", "Henrik's Library\nThis subterranean den is where the father of realism does his stuff.");
+		Room* henrik_library = new Room("henrik_library", "Henrik's library", "This subterranean den is where the father of realism does his stuff.");
 		henrik_library->directions[NORTH] = "jamal_staircase";
 		Object* desk = new Object("desk", "A green banker's lamp dimly lights Henrik's cluttered desk.");
 		henrik_library->add_child(desk);
@@ -167,7 +177,7 @@ World* generate_world()
 	}
 
 	{
-		Room* henrik_lab = new Room("henrik_lab", "Henrik\'s Lab\nAn underground laboratory where Henrik does his stuff.\nA door leads out to the east.");
+		Room* henrik_lab = new Room("henrik_lab", "Henrik\'s lab", "An underground laboratory where Henrik does his stuff.\nA door leads out to the east.");
 		henrik_lab->directions[EAST] = "henrik_library";
 		world->add_child(henrik_lab);
 
@@ -180,7 +190,7 @@ World* generate_world()
 	}
 
 	{
-		Room* sewer = new Room("sewer", "Sewer\nA slimy underground pipe, goin' to the west. Sewage runs thickly around your calves as you wade inna water.");
+		Room* sewer = new Room("sewer", "the sewer", "A slimy underground pipe, goin' to the west. Sewage runs thickly around your calves as you wade inna water.");
 		sewer->directions[WEST] = "jamal_house_block";
         world->add_child(sewer);
 	}

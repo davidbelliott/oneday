@@ -33,6 +33,7 @@ public:
 		CLOSE_DOOR,
 		BREAK,
 		BLESSUP,
+        HELP,
 
 		//Action modifiers
 		NORTH,

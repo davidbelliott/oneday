@@ -198,3 +198,26 @@ void ActionShout::act(World* w, Terminal* t, Object* o)
 {
 	t->disp("SHEEEEIT!");
 }
+
+void ActionRead::act(World* w, Terminal* t, Object* o)
+{
+    if(o && (o->properties & Object::READABLE))
+    {
+        t->disp("The " + o->name.word + " reads:");
+        t->disp(o->readable_data);
+    }
+    else if(o)
+    {
+        t->disp("There's nothing to read on the " + o->name.word + ".");
+    }
+    else
+    {
+        t->disp("Read what?");
+    }
+}
+
+void ActionHelp::act(World* w, Terminal* t, Object* o)
+{
+    t->disp("\033[1;31mIt's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
+    t->disp("Type sentences to do stuff.\033[0m\n");
+}

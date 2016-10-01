@@ -41,9 +41,9 @@ class ActionWear : public Action { public: ActionWear(Word name_in) : Action(nam
 /*class ActionThrow : public Action { public: ActionThrow(); void act(World* w, Terminal* t); };*/
 class ActionOpenContainer : public Action { public: ActionOpenContainer(Word name_in) : Action(name_in) {}; void act(World* w, Terminal* t, Object* o); };
 class ActionHit : public Action { public: ActionHit(Word name_in) : Action(name_in) {}; void act(World* w, Terminal* t, Object* o); };
-/*class ActionOpenDoor : public Action { public: ActionOpenDoor(); void act(World* w, Terminal* t); };
-class ActionRead : public Action { public: ActionRead(); void act(World* w, Terminal* t); };
-class ActionDrop : public Action { public: ActionDrop(); void act(World* w, Terminal* t); };
+/*class ActionOpenDoor : public Action { public: ActionOpenDoor(); void act(World* w, Terminal* t); };*/
+class ActionRead : public Action { public: ActionRead(Word name_in) : Action(name_in) {}; void act(World* w, Terminal* t, Object* o); };
+/*class ActionDrop : public Action { public: ActionDrop(); void act(World* w, Terminal* t); };
 class ActionPutInContainer : public Action { public: ActionPutInContainer(); void act(World* w, Terminal* t); };
 class ActionTurnOn : public Action { public: ActionTurnOn(); void act(World* w, Terminal* t); };
 class ActionTurnOff : public Action { public: ActionTurnOff(); void act(World* w, Terminal* t); };
@@ -56,4 +56,5 @@ class ActionShout : public Action { public: ActionShout(Word name_in) : Action(n
 /*class ActionCloseDoor : public Action { public: ActionCloseDoor(); void act(World* w, Terminal* t); };
 class ActionBreak : public Action { public: ActionBreak(); void act(World* w, Terminal* t); };
 class ActionBlessup : public Action { public: ActionBlessup(); void act(World* w, Terminal* t); };*/
+class ActionHelp : public Action { public: ActionHelp(Word name_in) : Action(name_in) {}; void act(World* w, Terminal* t, Object* o); };
 

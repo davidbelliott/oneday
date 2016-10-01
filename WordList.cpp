@@ -26,6 +26,7 @@ WordList::WordList()
 	CLOSE_DOOR(add_word({ "close", { "shut" }, Word::ACTION })),
 	BREAK(add_word({ "break", { "destroy" }, Word::ACTION })),
 	BLESSUP(add_word({ "bless up", { }, Word::ACTION })),
+    HELP(add_word({ "help", { "h" }, Word::ACTION })),
 
 	//Action modifiers
 	NORTH(add_word({ "north", { "n" }, Word::ACTION_MODIFIER })),

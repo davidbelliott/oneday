@@ -36,6 +36,7 @@ public:
 	};
 
     Word name;
+    std::string pretty_name;
 
 	//If VISIBLE
 	std::string shallow_description;
@@ -43,6 +44,9 @@ public:
 	bool discovered;
 	bool show_children;
 	virtual void describe(Terminal* t, bool deep, bool describe_this);
+
+    //If READABLE
+    std::string readable_data;  //The text that can be read
 
 	//If GOABLE
 	std::string goable_data;	//The room that going through this object leads to

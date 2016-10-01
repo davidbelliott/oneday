@@ -24,9 +24,9 @@ Action* ActionFactory::create_action(Word word)
 		/*else if (action_type == Action::THROW) return new ActionThrow();*/
 		else if (word.id == l->HIT) return new ActionHit(word);
 		else if (word.id == l->OPEN_CONTAINER) return new ActionOpenContainer(word);
-		/*else if (action_type == Action::OPEN_DOOR) return new ActionOpenDoor();
-		else if (action_type == Action::READ) return new ActionRead();
-		else if (action_type == Action::DROP) return new ActionDrop();
+		/*else if (action_type == Action::OPEN_DOOR) return new ActionOpenDoor();*/
+		else if (word.id == l->READ) return new ActionRead(word);
+		/*else if (action_type == Action::DROP) return new ActionDrop();
 		else if (action_type == Action::PUT_IN_CONTAINER) return new ActionPutInContainer();
 		else if (action_type == Action::TURN_ON) return new ActionTurnOn();
 		else if (action_type == Action::TURN_OFF) return new ActionTurnOff();
@@ -39,6 +39,7 @@ Action* ActionFactory::create_action(Word word)
 		/*else if (action_type == Action::CLOSE_DOOR) return new ActionCloseDoor();
 		else if (action_type == Action::BREAK) return new ActionBreak();
 		else if (action_type == Action::BLESSUP) return new ActionBlessup();*/
+        else if (word.id == l->HELP) return new ActionHelp(word);
 	}
 	return NULL;
 }
