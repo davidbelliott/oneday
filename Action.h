@@ -23,7 +23,6 @@ public:
 	virtual void run(World* w, Terminal* t);
 	
 	Word name;
-protected:
 
 	virtual void act(World* w, Terminal* t, Object* o);
 

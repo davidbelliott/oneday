@@ -28,7 +28,9 @@ void Action::add_preposition(Word preposition_in)
 void Action::run(World* w, Terminal* t)
 {
 	if (objects.empty())
-		act(w, t, NULL);
+    {	
+            act(w, t, NULL);
+    }
 	else
 	{
 		for (size_t i = 0; i < objects.size(); i++)

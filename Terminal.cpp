@@ -33,7 +33,10 @@ void Terminal::pause()
 void Terminal::set_color(Color color)
 {
     cur_color = color;
-    std::cout << "\033[3" << cur_color << "m";
+    if(color == DEFAULT)
+        std::cout << "\033[0m";
+    else
+        std::cout << "\033[3" << cur_color << "m";
 }
 
 std::string Terminal::get_input()

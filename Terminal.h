@@ -23,7 +23,7 @@ public:
 	void pause();
 
     /*Sets the color of all text outputted after this command.*/
-    void set_color(Color color = WHITE);
+    void set_color(Color color = DEFAULT);
 
 	/*Collects user input and returns the user string.*/
 	std::string get_input();

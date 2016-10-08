@@ -8,5 +8,6 @@ enum Color {
     BLUE,
     MAGENTA,
     CYAN,
-    WHITE
+    WHITE,
+    DEFAULT
 };

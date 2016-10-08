@@ -4,6 +4,7 @@
 #include "Room.h"
 #include "common.h"
 #include "level_data.h"
+#include <iostream>
 
 World* generate_world()
 {
@@ -37,19 +38,6 @@ World* generate_world()
 		window->deep_description = "Looking through the window, you notice a gang of thugs gathered in front of your house.";
 		jamal_bedroom->add_child(window);
 
-		Object* hall_door = new Object("west_door", "A dilapidated door hangs from the east wall on its hinges.");
-        hall_door->name.aliases = { "door" };
-		hall_door->properties |= Object::GOABLE;
-		hall_door->goable_data = "jamal_corridor";
-		jamal_bedroom->add_child(hall_door);
-
-		Object* bath_door = new Object("south_door", "Another door leads to the south.");
-        hall_door->name.aliases = { "door" };
-		bath_door->properties |= Object::GOABLE;
-		bath_door->deep_description = "The door is made of rusted metal.";
-		bath_door->goable_data = "jamal_bathroom";
-		jamal_bedroom->add_child(bath_door);
-        
         Object* paper = new Object("paper", "A crumpled sheeit of paper lies on the floor.");
         paper->name.aliases = { "sheet", "sheeit" };
         paper->properties |= Object::READABLE | Object::TAKEABLE;
@@ -95,10 +83,24 @@ World* generate_world()
 
 	{
 		Room* jamal_corridor = new Room("jamal_corridor", "the Magick corridor", "This hallway is imbued with a strong Faerie Magick.\nIt runs from north to south.\nThe front door of the house exits to the north.\nOne door exits to the east, and one to the west.\nA series of bare bulbs dangle from the ceiling.");
-		jamal_corridor->directions[NORTH] = "jamal_house_block";
-		jamal_corridor->directions[EAST] = "jamal_kitchen";
+        jamal_corridor->directions[NORTH] = "jamal_house_block";
 		jamal_corridor->directions[SOUTH] = "jamal_staircase";
 		jamal_corridor->directions[WEST] = "jamal_bedroom";
+
+        jamal_corridor->run_action = [](World* w, Terminal* t, Action* a, Object* o)
+        {
+            std::cout << a->name.id << std::endl;
+            if(a->name.id == a->name.parent_list->GO)
+            {
+                t->disp("Going");
+                /*if(!a->prepositions.empty() && a->prepositions[0].word == "north")
+                {
+                    t->disp("You hear the intense rustling of thugs lying in wait outside your door. Best not go out this way.");
+                    return false;
+                }*/
+            }
+            return true;
+        };
 
 		world->add_child(jamal_corridor);
 	}
@@ -107,22 +109,6 @@ World* generate_world()
 		Room* jamal_house_block = new Room("jamal_house_block", "Jamal's front yard", "As you open the door, an angry mob of thugs accosts you. They drag you to the ground and kill you. You die, killed by the angry mob of thugs.");
 		
 		world->add_child(jamal_house_block);
-	}
-
-	{
-		Room* jamal_kitchen = new Room("jamal_kitchen", "Jamal's kitchen", "This beautiful, state-of-the-art culinary space would make Martha Stewart turn over in her grave with envy.");
-		jamal_kitchen->directions[WEST] = "jamal_corridor";
-
-		Object* sink = new Object("sink", "A large stainless sink glitters like a jewel, inset into a spacious marble countertop.");
-		jamal_kitchen->add_child(sink);
-
-		Object* oven = new Object("oven", "This kitchen boasts a sleek stainless-steel oven.");
-		jamal_kitchen->add_child(oven);
-
-		Object* cb = new Object("cupboards", "A row of polished oak cupboards are tucked beneath the marble vanity.");
-		jamal_kitchen->add_child(cb);
-
-		world->add_child(jamal_kitchen);
 	}
 
 	{
