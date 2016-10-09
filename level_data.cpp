@@ -23,7 +23,7 @@ World* generate_world()
 		jamal_bedroom->shallow_description = "The walls of this cluttered hovel are plastered with layers of grime and old posters.";
 		jamal_bedroom->directions[EAST] = "jamal_corridor";
 		jamal_bedroom->directions[SOUTH] = "jamal_bathroom";
-		jamal_bedroom->run_action = [](World* w, Terminal* t, Action* a, Object* o)
+		jamal_bedroom->pre_action = [](World* w, Terminal* t, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->LOOK && !o->get_flag("woke_up"))
 			{
@@ -31,7 +31,7 @@ World* generate_world()
 				o->set_flag("woke_up", 1);
 				t->pause();
 			}
-			return true;
+            return true;
 		};
 
 		Object* window = new Object("window", "A single smeared window to the north suffuses the room in dim light.");
@@ -58,7 +58,7 @@ World* generate_world()
 		Object* hole = new Object("hole", "A dark hole gapes in the floor, presumably where a toilet used to be.");
 		hole->properties |= Object::GOABLE;
 		hole->goable_data = "sewer";
-		hole->run_action = [](World* w, Terminal* t, Action* a, Object* o)
+		hole->pre_action = [](World* w, Terminal* t, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->GO)
 			{
@@ -66,15 +66,14 @@ World* generate_world()
 				{
 					t->disp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage.");
 					t->pause();
-					return true;
+                    return true;
 				}
 				else
 				{
 					t->disp("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~");
-					return false;
+                    return false;
 				}
 			}
-			return true;
 		};
 		jamal_bathroom->add_child(hole);
 
@@ -87,17 +86,15 @@ World* generate_world()
 		jamal_corridor->directions[SOUTH] = "jamal_staircase";
 		jamal_corridor->directions[WEST] = "jamal_bedroom";
 
-        jamal_corridor->run_action = [](World* w, Terminal* t, Action* a, Object* o)
+        jamal_corridor->pre_action = [](World* w, Terminal* t, Action* a, Object* o)
         {
-            std::cout << a->name.id << std::endl;
             if(a->name.id == a->name.parent_list->GO)
             {
-                t->disp("Going");
-                /*if(!a->prepositions.empty() && a->prepositions[0].word == "north")
+                if(!a->prepositions.empty() && a->prepositions[0].word == "north")
                 {
                     t->disp("You hear the intense rustling of thugs lying in wait outside your door. Best not go out this way.");
                     return false;
-                }*/
+                }
             }
             return true;
         };
@@ -122,9 +119,8 @@ World* generate_world()
 	{
 		Room* henrik_library = new Room("henrik_library", "Henrik's library", "This subterranean den is where the father of realism does his stuff.");
 		henrik_library->directions[NORTH] = "jamal_staircase";
-		Object* desk = new Object("desk", "A green banker's lamp dimly lights Henrik's cluttered desk.");
-		henrik_library->add_child(desk);
 		Object* shelf = new Object("bookshelf", "A massive bookshelf covers the wall to the west.");
+        shelf->name.aliases = { "shelf" };
 		shelf->deep_description = "The shelf is full of books written by dead white men.";
 		henrik_library->add_child(shelf);
 		Object* book = new Object("book", "One book protrudes farther than the rest.");
@@ -133,31 +129,28 @@ World* generate_world()
 		shelf->add_child(book);
 		Object* secret_switch = new Object("switch", "A secret switch protrudes from the empty slot where a book used to be.");
 		secret_switch->properties = Object::HITTABLE;
-		secret_switch->run_action = [=](World* w, Terminal* t, Action* a, Object* o)
+		secret_switch->post_action = [=](World* w, Terminal* t, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->HIT)
 			{
 				t->disp("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west.");
-				henrik_library->shallow_description += "\nA doorway leads to the west.";
 				shelf->shallow_description = "A massive bookshelf is slid to one side of the west wall.";
 				henrik_library->directions[WEST] = "henrik_lab";
-				return true;
 			}
-			return true;
+            return true;
 		};
 		henrik_library->add_child(secret_switch);
-		book->run_action = [=](World* w, Terminal* t, Action* a, Object* o)
+		book->post_action = [=](World* w, Terminal* t, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->TAKE)
 			{
-				t->disp("Taking the book reveals a secret switch.");
+			    t->disp("Taking the book reveals a secret switch.");
 				shelf->shallow_description += " One book is missing, leaving an empty slot.";
 				shelf->deep_description += " One book is missing, leaving an empty slot.";
 				secret_switch->properties |= Object::VISIBLE;
 				secret_switch->describe(t, false, true);
-				return true;
 			}
-			return true;
+            return true;
 		};
 		world->add_child(henrik_library);
 	}

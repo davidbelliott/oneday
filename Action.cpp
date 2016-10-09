@@ -3,6 +3,7 @@
 #include "Terminal.h"
 #include "Room.h"
 #include "Word.h"
+#include "WordList.h"
 #include "World.h"
 #include "common.h"
 
@@ -29,14 +30,15 @@ void Action::run(World* w, Terminal* t)
 {
 	if (objects.empty())
     {	
-            act(w, t, NULL);
+        act(w, t, NULL);
     }
-	else
-	{
+    else
+    {
 		for (size_t i = 0; i < objects.size(); i++)
 		{
-			if (objects[i]->run_action(w, t, this, objects[i]))
-				act(w, t, objects[i]);
+			if(objects[i]->pre_action(w, t, this, objects[i]))
+                act(w, t, objects[i]);
+            objects[i]->post_action(w, t, this, objects[i]);
 		}
 	}
 }
@@ -48,62 +50,56 @@ void Action::act(World* w, Terminal* t, Object* o)
 
 void ActionGo::act(World* w, Terminal* t, Object* o)
 {
-	if (!o && prepositions.empty())
-	{
-		t->disp("Go where?");
-	}
-	else if(!prepositions.empty())
-	{
-		std::string modifier_name = prepositions[0].word;
-		Room* room = (Room*)w->get_direct_child(w->cur_room);
-
-		int direction = -1;
-		if (modifier_name == "north")
-			direction = NORTH;
-		else if (modifier_name == "east")
-			direction = EAST;
-		else if (modifier_name == "south")
-			direction = SOUTH;
-		else if (modifier_name == "west")
-			direction = WEST;
-		else if (modifier_name == "up")
-			direction = UP;
-		else if (modifier_name == "down")
-			direction = DOWN;
-		if (direction != -1)
-		{
-			if (room->directions[direction] != "")
-				w->set_current_room(room->directions[direction], t);
-			else
-				t->disp("You can't go " + modifier_name + " from here.");
-		}
-	}
-	if(o)
-	{
-		if (o->properties & Object::GOABLE)
-		{
+    if(o)
+    {
+        if(o->properties & Object::GOABLE)
+        {
 			std::string new_room_name = o->goable_data;
 			w->set_current_room(new_room_name, t);
-		}
-		else
-		{
-			t->disp("You can't go through the " + o->name.word + ", baka.");
-		}
-	}
+        }
+        else
+        {
+			t->disp("You can't go there, baka.");
+        }
+
+    }
+    else
+    {
+        DirectionId direction = DIRECTION_MAX;
+        for(int i = 0; i < prepositions.size() && direction == DIRECTION_MAX; i++)
+        {
+            for(int j = 0; j < DIRECTION_MAX && direction == DIRECTION_MAX; j++)
+            {
+                if(prepositions[i].word == dir[(DirectionId)j].name)
+                    direction = (DirectionId)j;
+            }
+        }
+        if(direction == DIRECTION_MAX)
+        {
+            t->disp("Go where?");
+        }
+        else
+        {
+            Room* room = w->get_current_room();
+            if(room && room->directions[direction] != "") {
+                w->set_current_room(room->directions[direction], t);
+            } else {
+                t->disp("You can't go " + dir[direction].name + " from here.");
+            }
+        }
+    }
 }
 
 void ActionLook::act(World* w, Terminal* t, Object* o)
 {
-	if (!o)
-	{
-		Room* room = w->get_current_room();
-		if (room->run_action(w, t, this, room))
-			room->describe(t, true, true);
-	}
-	else
-	{
-		o->describe(t, true, true);
-	}
+    if(o)
+        o->describe(t, true, true);
+    else
+    {
+        Room* room = w->get_current_room();
+        if(room)
+            room->describe(t, true, true);
+    }
 }
 
 void ActionQuit::act(World* w, Terminal* t, Object* o)
@@ -222,6 +218,11 @@ void ActionHelp::act(World* w, Terminal* t, Object* o)
 {
     t->set_color(RED);
     t->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
-    t->disp("Type sentences to do stuff.");
+    t->disp("Type sentences to do stuff. You can use the following verbs:");
+    
+    for(int i = 0; i < name.parent_list->ACTION_MAX; i++)
+    {
+        t->disp("-" + name.parent_list->words_by_id[i].word);
+    }
     t->set_color();
 }

@@ -11,7 +11,7 @@ public:
 	std::map<int, Word> words_by_id;
 
 	const int //Actions
-		GO,
+        GO,
 		LOOK,
 		QUIT,
 		TAKE,
@@ -34,6 +34,8 @@ public:
 		BREAK,
 		BLESSUP,
         HELP,
+        ACTION_MAX,
+
 
 		//Action modifiers
 		NORTH,

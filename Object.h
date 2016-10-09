@@ -5,6 +5,7 @@ class World;
 class Terminal;
 class Object;
 #include "Word.h"
+#include "common.h"
 #include <functional>
 #include <vector>
 #include <string>
@@ -58,7 +59,8 @@ public:
 	bool flipped;
 
 	uint16_t properties;
-	ActionFunc run_action;
+	ActionFunc pre_action;
+    ActionFunc post_action;
 
 
 	Object(std::string name_in, std::string description_in);

@@ -1,10 +1,12 @@
+#include "Action.h"
 #include "Object.h"
 #include "Terminal.h"
 
 Object::Object(std::string name_in, std::string description_in)
 	: name(name_in, {""}, Word::OBJECT), pretty_name(""), parent(NULL), shallow_description(description_in), discovered(false), properties(VISIBLE), show_children(true)
 {
-	run_action = [](World*, Terminal*, Action*, Object*) { return true; };
+	pre_action = [](World* w, Terminal* t, Action* a, Object* o) { return true; };
+	post_action = [](World* w, Terminal* t, Action* a, Object* o) { return true; };
 }
 
 Object::Object()

@@ -41,8 +41,10 @@ void Terminal::set_color(Color color)
 
 std::string Terminal::get_input()
 {
-	std::cout << "\n>";
+    set_color(CYAN);
+	std::cout << ">";
 	std::string input;
 	std::getline(std::cin, input, '\n');
+    set_color();
 	return input;
 }

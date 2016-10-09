@@ -27,6 +27,7 @@ WordList::WordList()
 	BREAK(add_word({ "break", { "destroy" }, Word::ACTION })),
 	BLESSUP(add_word({ "bless up", { }, Word::ACTION })),
     HELP(add_word({ "help", { "h" }, Word::ACTION })),
+    ACTION_MAX(HELP + 1),
 
 	//Action modifiers
 	NORTH(add_word({ "north", { "n" }, Word::ACTION_MODIFIER })),
