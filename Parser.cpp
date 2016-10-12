@@ -57,8 +57,9 @@ Action* Parser::parse(std::string statement, World* w, Terminal* t)
 	{
 		if (tokens[i].get_part_of_speech() == Word::ACTION && !found_action)
 		{
-			found_action = true;
 			action = action_factory.create_action(tokens[i]);
+            if(action)
+                found_action = true;
 		}
 		else if (tokens[i].get_part_of_speech() == Word::ACTION_MODIFIER && found_action)
 		{
