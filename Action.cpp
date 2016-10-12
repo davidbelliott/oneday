@@ -219,6 +219,26 @@ void ActionRead::act(World* w, Terminal* t, Object* o)
     }
 }
 
+void ActionTalkTo::act(World* w, Terminal* t, Object* o)
+{
+    if(o && (o->properties & Object::TALKABLE))
+    {
+        for(int i = 0; i < o->talkable_data.size(); i++)
+        {
+            t->disp(o->talkable_data[i]);
+            t->pause();
+        }
+    }
+    else if(o)
+    {
+        t->disp("You can't talk to the " + o->name.word + ", baka gaijin!");
+    }
+    else
+    {
+        t->disp("Talk to what?");
+    }
+}
+
 void ActionHelp::act(World* w, Terminal* t, Object* o)
 {
     t->set_color(RED);

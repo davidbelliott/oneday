@@ -24,10 +24,7 @@ void Terminal::clr()
 
 void Terminal::pause()
 {
-    set_color(CYAN);
-    disp("Press any key to continue...");
     getchar();
-    set_color();
 }
 
 void Terminal::set_color(Color color)

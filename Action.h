@@ -55,5 +55,6 @@ class ActionShout : public Action { public: ActionShout(Word name_in) : Action(n
 /*class ActionCloseDoor : public Action { public: ActionCloseDoor(); void act(World* w, Terminal* t); };
 class ActionBreak : public Action { public: ActionBreak(); void act(World* w, Terminal* t); };
 class ActionBlessup : public Action { public: ActionBlessup(); void act(World* w, Terminal* t); };*/
+class ActionTalkTo : public Action { public: ActionTalkTo(Word name_in) : Action(name_in) {}; void act(World* w, Terminal* t, Object* o); };
 class ActionHelp : public Action { public: ActionHelp(Word name_in) : Action(name_in) {}; void act(World* w, Terminal* t, Object* o); };
 

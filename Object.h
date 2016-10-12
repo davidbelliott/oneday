@@ -33,7 +33,8 @@ public:
 		GOABLE = 0x20,
 		CONTAINER = 0x40,
 		HITTABLE = 0x80,
-		WEARABLE = 0x100
+		WEARABLE = 0x100,
+        TALKABLE = 0x200
 	};
 
     Word name;
@@ -57,6 +58,9 @@ public:
 	
 	//If HITTABLE
 	bool flipped;
+
+    //If TALKABLE
+    std::vector<std::string> talkable_data; //Vector of strings that will be displayed one after another when you talk to the object
 
 	uint16_t properties;
 	ActionFunc pre_action;

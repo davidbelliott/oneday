@@ -189,6 +189,8 @@ World* generate_world()
         sam->name.aliases = { "youth", "man", "person", "sam" };
         sam->deep_description = "He has been unhappy lately. He slept without a proper room recently. He admired a fine Sloot lately.\nHe is tall. His eyes are hazel. His extraordinarily broad tall ears have great swinging lobes. His nose is broad. His skin is ebony.";
         sam->deep_description += "\nA sturdy creature fond of drink.";
+        sam->properties |= Object::TALKABLE;
+        sam->talkable_data = { "-What are you standing here for?", "-I'm here for da people, man. Gotta tell the president...about da people." };
         main_street->add_child(sam);
     }
 

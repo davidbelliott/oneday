@@ -39,6 +39,7 @@ Action* ActionFactory::create_action(Word word)
 		/*else if (action_type == Action::CLOSE_DOOR) return new ActionCloseDoor();
 		else if (action_type == Action::BREAK) return new ActionBreak();
 		else if (action_type == Action::BLESSUP) return new ActionBlessup();*/
+        else if (word.id == l->TALK_TO) return new ActionTalkTo(word);
         else if (word.id == l->HELP) return new ActionHelp(word);
 	}
 	return NULL;

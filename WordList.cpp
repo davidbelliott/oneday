@@ -26,6 +26,7 @@ WordList::WordList()
 	CLOSE_DOOR(add_word({ "close", { "shut" }, Word::ACTION })),
 	BREAK(add_word({ "break", { "destroy" }, Word::ACTION })),
 	BLESSUP(add_word({ "bless up", { }, Word::ACTION })),
+    TALK_TO(add_word({ "talk to", { "talk" }, Word::ACTION })),
     HELP(add_word({ "help", { "h" }, Word::ACTION })),
     ACTION_MAX(HELP + 1),
 

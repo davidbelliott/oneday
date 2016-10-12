@@ -34,6 +34,7 @@ public:
 		BREAK,
 		BLESSUP,
         HELP,
+        TALK_TO,
         ACTION_MAX,
 
 
