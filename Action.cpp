@@ -28,19 +28,24 @@ void Action::add_preposition(Word preposition_in)
 
 void Action::run(World* w, Terminal* t)
 {
-	if (objects.empty())
-    {	
+    bool run = true;
+    Room* cur_room = w->get_current_room();
+    if(cur_room)
+        run = cur_room->pre_action(w, t, this, cur_room);
+    if(run && objects.empty())
         act(w, t, NULL);
-    }
-    else
+    else if(!objects.empty())
     {
-		for (size_t i = 0; i < objects.size(); i++)
-		{
-			if(objects[i]->pre_action(w, t, this, objects[i]))
+        for(int i = 0; i < objects.size(); i++)
+        {
+            if(objects[i]->pre_action(w, t, this, objects[i]))
                 act(w, t, objects[i]);
             objects[i]->post_action(w, t, this, objects[i]);
-		}
-	}
+        }
+    }
+    if(cur_room)
+        cur_room->post_action(w, t, this, cur_room);
+
 }
 
 void Action::act(World* w, Terminal* t, Object* o)

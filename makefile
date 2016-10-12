@@ -1,2 +1,3 @@
 all:
-	g++ *.cpp -o oneday
+	g++ -g *.cpp -o oneday
+

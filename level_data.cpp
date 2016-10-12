@@ -15,7 +15,7 @@ World* generate_world()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "sewer";
 	{
 		Room* jamal_bedroom = new Room();
 		jamal_bedroom->set_name("jamal_bedroom");
@@ -148,7 +148,6 @@ World* generate_world()
 				shelf->shallow_description += " One book is missing, leaving an empty slot.";
 				shelf->deep_description += " One book is missing, leaving an empty slot.";
 				secret_switch->properties |= Object::VISIBLE;
-				secret_switch->describe(t, false, true);
 			}
             return true;
 		};
@@ -169,10 +168,31 @@ World* generate_world()
 	}
 
 	{
-		Room* sewer = new Room("sewer", "the sewer", "A slimy underground pipe, goin' to the west. Sewage runs thickly around your calves as you wade inna water.");
-		sewer->directions[WEST] = "jamal_house_block";
+		Room* sewer = new Room("sewer", "the sewer", "A slimy underground pipe, going to the west. Sewage runs thickly around your calves as you wade inna water.");
+		sewer->directions[WEST] = "main_street";
         world->add_child(sewer);
 	}
+
+    {
+        Room* main_street = new Room("main_street", "Hoover Street", "A desolate wind blows the asphalt.");
+        main_street->directions[WEST] = "club";
+        main_street->directions[SOUTH] = "bus_stop";
+        world->add_child(main_street);
+
+        Object* sewer_drain = new Object("sewer_drain", "A sewer drain lies open to the right of the road.");
+        sewer_drain->name.aliases = { "sewer", "drain" };
+        sewer_drain->properties |= Object::GOABLE;
+        sewer_drain->goable_data = "sewer";
+        main_street->add_child(sewer_drain);
+
+        Object* sam = new Object("urban_youth", "An urban youth stands on the street corner.");
+        sam->name.aliases = { "youth", "man", "person", "sam" };
+        sam->deep_description = "He has been unhappy lately. He slept without a proper room recently. He admired a fine Sloot lately.\nHe is tall. His eyes are hazel. His extraordinarily broad tall ears have great swinging lobes. His nose is broad. His skin is ebony.";
+        sam->deep_description += "\nA sturdy creature fond of drink.";
+        main_street->add_child(sam);
+    }
+
+
 
 	return world;
 }
