@@ -41,6 +41,9 @@ void Engine::get_input()
             game_states.back()->handle_event(&event);
         }
     }
+
+    if(!game_states.back()->running)
+        running = false;
 }
 
 

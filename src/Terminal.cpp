@@ -43,10 +43,10 @@ void Terminal::output(std::string str, int& x, int& y)
 	}
 }
 
-void Terminal::disp(std::string string)
+void Terminal::disp(std::string string, bool newline)
 {
 	//std::cout << string << std::endl;
-    output(string, state.cursor_x, state.cursor_y);
+    output(string + (newline ? "\n" : ""), state.cursor_x, state.cursor_y);
 }
 
 void Terminal::clr()
@@ -54,6 +54,19 @@ void Terminal::clr()
     buffer.clear();
     state.cursor_x = 0;
     state.cursor_y = 0;
+}
+
+void Terminal::backspace()
+{
+    //Index where the cursor rests after backspace
+    size_t stop_index = state.cursor_x + state.cursor_y * config->screen_w_chars;
+    if(stop_index > 0)
+    {
+        stop_index -= 1;
+        buffer.setChar(stop_index, '\0', sf::Color::Transparent, sf::Color::Transparent);
+    }
+    state.cursor_y = stop_index / config->screen_w_chars;
+    state.cursor_x = stop_index % config->screen_w_chars;
 }
 
 void Terminal::pause()
@@ -66,16 +79,6 @@ void Terminal::pause()
 
 void Terminal::set_color(Color color)
 {
-}
-
-std::string Terminal::get_input()
-{
-    set_color(CYAN);
-	std::cout << ">";
-	std::string input;
-	std::getline(std::cin, input, '\n');
-    set_color();
-	return input;
 }
 
 void Terminal::draw(sf::RenderTarget* target)

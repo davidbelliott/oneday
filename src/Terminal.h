@@ -27,20 +27,20 @@ public:
      * the last modified character. */
     void output(std::string string, int& x, int& y);
 
-	/*Outputs the specified string at the current cursor location, wrapping if wrap is true.*/
-	void disp(std::string string);
+	/*Outputs the specified string at the current cursor location. Adds a newline if newline is true.*/
+	void disp(std::string string, bool newline = true);
 
 	/*Clears the screen.*/
 	void clr();
+
+    /*Removes last character (if one exists) and moves the cursor back one space (if possible).*/
+    void backspace();
 
 	/*Pauses until the user presses ENTER.*/
 	void pause();
 
     /*Sets the color of all text outputted after this command.*/
     void set_color(Color color = DEFAULT);
-
-	/*Collects user input and returns the user string.*/
-	std::string get_input();
 
     /*Print's the terminal's buffer to the render target.*/
     void draw(sf::RenderTarget* target);

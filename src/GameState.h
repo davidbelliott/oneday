@@ -11,6 +11,7 @@ class GameState : public EventSink
 public:
 	Engine* engine;
 	bool paused;		//Is this game state paused?
+    bool running;       //Is this game state running?
 	bool blocks_update;	//Does the state block the update of states beneath it?
 	bool blocks_draw;	//Does the state block the draw of states beneath it?
 

@@ -3,7 +3,7 @@
 
 
 GameState::GameState(Engine* engine_in)
-: engine(engine_in), paused(false), blocks_update(false), blocks_draw(false)
+: engine(engine_in), paused(false), running(true), blocks_update(false), blocks_draw(false)
 {
 }
 

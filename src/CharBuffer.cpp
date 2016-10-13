@@ -7,7 +7,7 @@ using namespace std;
 CharBuffer::CharBuffer(Config* config_in)
   : contents(), scrollValue(0), config(config_in)
 {
-    contents.resize(config->screen_w_chars * config->screen_h_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent});
+    clear();
 }
 
 CharBuffer::~CharBuffer()
@@ -58,5 +58,5 @@ void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::R
 
 void CharBuffer::clear()
 {
-    contents.resize(config->screen_w_chars * config->screen_h_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent} );
+    contents.assign(config->screen_w_chars * config->screen_h_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent} );
 }
