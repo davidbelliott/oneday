@@ -15,7 +15,7 @@ World* generate_world()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "sewer";
 	{
 		Room* jamal_bedroom = new Room();
 		jamal_bedroom->set_name("jamal_bedroom");
@@ -179,18 +179,38 @@ World* generate_world()
         main_street->directions[SOUTH] = "bus_stop";
         world->add_child(main_street);
 
-        Object* sewer_drain = new Object("sewer_drain", "A sewer drain lies open to the right of the road.");
+        Object* sewer_drain = new Object("sewer drain", "A sewer drain lies open to the right of the road.");
         sewer_drain->name.aliases = { "sewer", "drain" };
         sewer_drain->properties |= Object::GOABLE;
         sewer_drain->goable_data = "sewer";
         main_street->add_child(sewer_drain);
 
-        Object* sam = new Object("urban_youth", "An urban youth stands on the street corner.");
+        Object* sam = new Object("urban youth", "An urban youth stands on the street corner.");
         sam->name.aliases = { "youth", "man", "person", "sam" };
         sam->deep_description = "He has been unhappy lately. He slept without a proper room recently. He admired a fine Sloot lately.\nHe is tall. His eyes are hazel. His extraordinarily broad tall ears have great swinging lobes. His nose is broad. His skin is ebony.";
         sam->deep_description += "\nA sturdy creature fond of drink.";
         sam->properties |= Object::TALKABLE;
-        sam->talkable_data = { "-What are you standing here for?", "-I'm here for da people, man. Gotta tell the president...about da people." };
+        sam->talkable_data = { "-What are you standing here for?", 
+            "-I'm here for da people, Favio. Do you understand?",
+            "-What do you mean?",
+            "-Favio, examining into antiquity, we find that Big L was styled Fang-xun.",
+            " He was reverential, intelligent, accomplished, and thoughtful--naturally and without effort.",
+            " However, we, like kings, were led astray. We were kept down by the Man, and none but the president can deliver.",
+            "Shocked by this revelation, you stammer:",
+            "-Th-that's horrible! How can I change this?",
+            "-Now listen here, young feller. You must visit the president.",
+            "-But how?",
+            "-Viper will host a rap contest at the Club. His offer? A trip to the White House to meet the president.",
+            "You gasp. Such great opportunity--but at such a price!",
+            " Go, Favio. Be not afraid.",
+            " Do it for da people.",
+            "The man disappears in a puff of smoke.",
+            "Your objective: get to the Club and out-rap Viper." };
+        sam->post_action = [](World* w, Terminal* t, Action* a, Object* o) {
+            o->parent->remove_child(o);
+            return true;
+        };
+
         main_street->add_child(sam);
     }
 

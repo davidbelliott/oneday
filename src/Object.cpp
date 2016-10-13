@@ -51,6 +51,14 @@ void Object::add_child(Object* child)
 void Object::remove_child(Object* child)
 {
 	children.erase(std::remove(children.begin(), children.end(), child), children.end());
+    for(auto it = children_hash.begin(); it != children_hash.end(); )
+    {
+        it->second.erase(std::remove(it->second.begin(), it->second.end(), child), it->second.end());
+        if(it->second.empty())
+            children_hash.erase(it++);
+        else
+            ++it;
+    }
 }
 
 bool Object::has_direct_child(std::string name)
