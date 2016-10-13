@@ -34,7 +34,8 @@ public:
 		CONTAINER = 0x40,
 		HITTABLE = 0x80,
 		WEARABLE = 0x100,
-        TALKABLE = 0x200
+        TALKABLE = 0x200,
+        DISCOVERED = 0x400
 	};
 
     Word name;
@@ -43,7 +44,6 @@ public:
 	//If VISIBLE
 	std::string shallow_description;
 	std::string deep_description;
-	bool discovered;
 	bool show_children;
 	virtual void describe(Terminal* t, bool deep, bool describe_this);
 
@@ -74,8 +74,8 @@ public:
 	void add_child(Object* child);
 	void remove_child(Object* child);
 	bool has_direct_child(std::string name);
-	Object* get_direct_child(std::string name, bool filter_discovered = true);
-	Object* get_indirect_child(std::string name, bool filter_discovered = true);
+	Object* get_direct_child(std::string name, int filter);
+	Object* get_indirect_child(std::string name, int filter);
 
 	int get_flag(std::string name);
 	void set_flag(std::string name, int value);

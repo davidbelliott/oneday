@@ -207,7 +207,8 @@ World* generate_world()
             "The man disappears in a puff of smoke.",
             "Your objective: get to the Club and out-rap Viper." };
         sam->post_action = [](World* w, Terminal* t, Action* a, Object* o) {
-            o->parent->remove_child(o);
+            if(a->name.id == a->name.parent_list->TALK_TO)
+                o->properties = 0;
             return true;
         };
 

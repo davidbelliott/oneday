@@ -3,7 +3,7 @@
 #include "Terminal.h"
 
 Object::Object(std::string name_in, std::string description_in)
-	: name(name_in, {""}, Word::OBJECT), pretty_name(""), parent(NULL), shallow_description(description_in), discovered(false), properties(VISIBLE), show_children(true)
+	: name(name_in, {""}, Word::OBJECT), pretty_name(""), parent(NULL), shallow_description(description_in), properties(VISIBLE), show_children(true)
 {
 	pre_action = [](World* w, Terminal* t, Action* a, Object* o) { return true; };
 	post_action = [](World* w, Terminal* t, Action* a, Object* o) { return true; };
@@ -28,15 +28,19 @@ void Object::describe(Terminal* t, bool deep, bool describe_this)
 		else
 			t->disp(shallow_description);
 	}
+    // If this isn't a container and show_children is true, show the children;
+    // If this is a container and it's open, show the children.
 	if ((!(properties & CONTAINER) && show_children) || ((properties & CONTAINER) && open))
 	{
 		for (size_t i = 0; i < children.size(); i++)
 		{
-			if(deep || children[i]->discovered)
+            // If it's a deep description, show all children.
+            // Otherwise, don't show the undiscovered children.
+			if(deep || (children[i]->properties & DISCOVERED))
 				children[i]->describe(t, false, true);
 		}
 	}
-	discovered = true;
+    properties |= DISCOVERED;
 }
 
 void Object::add_child(Object* child)
@@ -66,25 +70,25 @@ bool Object::has_direct_child(std::string name)
 	return children_hash.count(name) > 0;
 }
 
-Object* Object::get_direct_child(std::string name, bool filter_discovered)
+Object* Object::get_direct_child(std::string name, int filter)
 {
 	Object* child = NULL;
-	if (has_direct_child(name) && (!filter_discovered || children_hash[name][0]->discovered))
+	if (has_direct_child(name) && (children_hash[name][0]->properties & filter) == filter)
 		return children_hash[name][0];
 	else
 		return NULL;
 }
 
-Object* Object::get_indirect_child(std::string name, bool filter_discovered)
+Object* Object::get_indirect_child(std::string name, int filter)
 {
-	Object* child = get_direct_child(name, filter_discovered);
+	Object* child = get_direct_child(name, filter);
 	if (child)
 		return child;
 	else
 	{
 		for (size_t i = 0; i < children.size() && !child; i++)
 		{
-			child = children[i]->get_indirect_child(name, filter_discovered);
+			child = children[i]->get_indirect_child(name, filter);
 		}
 		return child;
 	}

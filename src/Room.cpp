@@ -32,7 +32,7 @@ void Room::describe(Terminal* t, bool deep, bool describe_this)
         if(directions[i] != "")
         {
             DirectionId dir_id = (DirectionId)i;
-            Object* dir_room = parent->get_direct_child(directions[i], false);
+            Object* dir_room = parent->get_direct_child(directions[i], 0);
             if(dir_room && dir_room->pretty_name != "")
             {
                 std::string dir_reference = dir[dir_id].dir_reference;

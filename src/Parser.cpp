@@ -67,7 +67,7 @@ Action* Parser::parse(std::string statement, World* w, Terminal* t)
 		}
 		else if (!found_object && found_action)
 		{
-			if (object = room->get_indirect_child(tokens[i].word, true))
+			if (object = room->get_indirect_child(tokens[i].word, (Object::VISIBLE | Object::DISCOVERED)))
 			{
 				found_object = true;
 				action->add_object(object);

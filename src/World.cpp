@@ -17,7 +17,7 @@ World::~World()
 Room* World::get_current_room()
 {
 	if (has_direct_child(cur_room))
-		return (Room*)get_direct_child(cur_room, false);
+		return (Room*)get_direct_child(cur_room, 0);
 	else
 		return NULL;
 }
