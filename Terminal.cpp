@@ -24,7 +24,10 @@ void Terminal::clr()
 
 void Terminal::pause()
 {
+    set_color(CYAN);
+    std::cout << "#";
     getchar();
+    set_color();
 }
 
 void Terminal::set_color(Color color)
