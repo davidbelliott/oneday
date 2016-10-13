@@ -1,9 +1,6 @@
 #include "Config.h"
 #include "Engine.h"
-#include "Parser.h"
-#include "World.h"
-#include "Terminal.h"
-#include "level_data.h"
+#include "GameStateText.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
@@ -26,27 +23,37 @@ int main()
 
 
 
+
 	Config* config = new Config();
-	Terminal* terminal = new Terminal(config);
 
-    int x = 0;
-    int y = 0;
-    terminal->output("Testing", x, y);
+    sf::Text test;
+    test.setFont(config->font);
+    test.setString("This is a test");
+    test.setPosition(0, 0);
+    window.clear();
+    window.draw(test);
+    window.display();
+    float bounds = test.getLocalBounds().width;
 
-	Parser* parser = new Parser();
-	World* world = generate_world();
-	{
-		Action* change_room_action = parser->action_factory.create_action(parser->word_list.get_word("look"));
-		world->change_room_action = change_room_action;
-	}
-	Engine* engine = new Engine(world, terminal, parser);
-	engine->run();
+
+
+
+
+	Engine* engine = new Engine(&window);
+    GameStateText* game_state_text = new GameStateText(engine, config);
+    engine->game_states.push_back(game_state_text);
+
+    while(engine->running)
+    {
+        engine->get_input();
+        sf::Time dt = sf::seconds(1.0f / 60.0f);
+        engine->update(dt);
+        engine->draw();
+    }
 
 	delete config;
-	delete world;
-	delete terminal;
-	delete parser;
 	delete engine;
+    delete game_state_text;
 
 	return 0;
 }

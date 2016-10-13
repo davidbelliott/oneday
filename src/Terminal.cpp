@@ -41,13 +41,12 @@ void Terminal::output(std::string str, int& x, int& y)
 			y--;
 		}*/
 	}
-    draw(NULL);
 }
 
 void Terminal::disp(std::string string)
 {
 	//std::cout << string << std::endl;
-    output(string + "\n", state.cursor_x, state.cursor_y);
+    output(string, state.cursor_x, state.cursor_y);
 }
 
 void Terminal::clr()
@@ -82,5 +81,5 @@ std::string Terminal::get_input()
 void Terminal::draw(sf::RenderTarget* target)
 {
     //target->draw(buffer);
-    buffer.draw();
+    buffer.draw(target);
 }

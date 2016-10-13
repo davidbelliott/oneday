@@ -24,7 +24,7 @@ public:
     void nextLine();
     void scroll(int delta);
 
-    void draw();//sf::RenderTarget& target, sf::RenderStates states) const override;
+    void draw(sf::RenderTarget* target);//sf::RenderTarget& target, sf::RenderStates states) const override;
     void clear();
 
 private:

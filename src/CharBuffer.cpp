@@ -35,10 +35,11 @@ void CharBuffer::scroll(int delta)
     scrollValue = static_cast<size_t>(std::max(0, static_cast<int>(scrollValue) + delta));
 }
 
-void CharBuffer::draw()//sf::RenderTarget& target, sf::RenderStates states) const
+void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::RenderStates states) const
 {
     sf::Text text;
     text.setFont(config->font);
+    text.setCharacterSize(config->char_size);
 
     for(size_t i = 0; i < config->screen_h_chars; i++)
     {
@@ -49,9 +50,7 @@ void CharBuffer::draw()//sf::RenderTarget& target, sf::RenderStates states) cons
             text.setString(str);
             text.setPosition(j * config->char_width, i * config->char_height);
             //text.setColor(contents[i * j].foreground_color);
-            //target.draw(text);
-            if(str != "\n")
-                std::cout << contents[i * config->screen_w_chars + j].c;
+            target->draw(text);
         }
         std::cout << std::endl;
     }

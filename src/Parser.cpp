@@ -29,7 +29,7 @@ std::vector<std::string> Parser::tokenize(std::string input, char delim)
 }
 
 Parser::Parser()
- : action_factory()
+ : action_factory(), word_list()
 {
 }
 

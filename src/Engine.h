@@ -1,24 +1,26 @@
 #pragma once
 
+class GameState;
 class EventSource;
 class Terminal;
 class World;
 
 #include "Parser.h"
 #include <SFML/Graphics.hpp>
+#include <vector>
 
 class Engine
 {
 public:
-	World* world;
-	Terminal* terminal;
-	Parser* parser;
-    EventSource* event_source;
+    sf::RenderWindow* window;
+    std::vector<GameState*> game_states;
 
-	Engine(World* world_in, Terminal* terminal_in, Parser* parser_in);
+	Engine(sf::RenderWindow* window_in);
 	virtual ~Engine();
-	void run();
-    void draw(sf::RenderTarget* target);
+
+    void get_input();
+    void update(sf::Time dt);
+    void draw();
 
 	bool paused;
 	bool running;

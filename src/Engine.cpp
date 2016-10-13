@@ -1,34 +1,50 @@
 #include "EventSource.h"
 #include "Engine.h"
+#include "GameState.h"
 #include "Room.h"
 #include "World.h"
 #include "Terminal.h"
 #include "common.h"
 
-Engine::Engine(World* world_in, Terminal* terminal_in, Parser* parser_in)
-: event_source(new EventSource()), world(world_in), terminal(terminal_in), parser(parser_in), paused(false), running(true)
+Engine::Engine(sf::RenderWindow* window_in)
+: paused(false), running(true), window(window_in)
 {
 }
 
 
 Engine::~Engine()
 {
-    delete event_source;
 }
 
-void Engine::run()
+void Engine::draw()
 {
-	Action* action;
-	world->set_current_room(world->get_current_room()->name.word, terminal);
-	while (world->active)
-	{
-		action = parser->parse(terminal->get_input(), world, terminal);
-		if(action)
-			action->run(world, terminal);
-	}
+    window->clear();
+    game_states.back()->draw(window);
+    window->display();
 }
 
-void Engine::draw(sf::RenderTarget* target)
+void Engine::get_input()
 {
-    terminal->draw(target);
+    sf::Event sf_event;
+    Event event;
+    event.type = Event::SFML;
+
+    while(window->pollEvent(sf_event))
+    {
+        if(sf_event.type == sf::Event::KeyPressed && sf_event.key.code == sf::Keyboard::Escape)
+        {
+            running = false;
+        }
+        else
+        {
+            event.sfml_event_data.sf_event = sf_event;
+            game_states.back()->handle_event(&event);
+        }
+    }
+}
+
+
+void Engine::update(sf::Time dt)
+{
+    game_states.back()->update(dt);
 }

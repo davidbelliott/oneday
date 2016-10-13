@@ -15,8 +15,8 @@ Config::Config()
 	text.setFont(font);
 	text.setCharacterSize(char_size);
 	text.setString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-	char_height = text.getLocalBounds().height;
-	char_width = text.getLocalBounds().width / 52;
+	char_height = static_cast<int>(text.getLocalBounds().height);
+	char_width = static_cast<int>(text.getLocalBounds().width / 52.0f);
 	window_height = char_height * screen_h_chars;
 	window_width = char_width * screen_w_chars + 2 * lr_margin;
 }

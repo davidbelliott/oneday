@@ -49,5 +49,6 @@ public:
 	Config* config;
     State state;
     CharBuffer buffer;
+    sf::Window* window;
 };
 
