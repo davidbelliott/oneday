@@ -17,6 +17,7 @@ GameStateText::GameStateText(Engine* engine_in, Config* config_in)
     Action* change_room_action = parser->action_factory.create_action(parser->word_list.get_word("look"));
     world->change_room_action = change_room_action;
 	world->set_current_room(world->get_current_room()->name.word, terminal);
+    terminal->prompt_input();
 }
 
 GameStateText::~GameStateText()
@@ -43,11 +44,13 @@ void GameStateText::handle_event(Event* event)
             char c = static_cast<char>(event->sfml_event_data.sf_event.text.unicode);
             if(c == '\n' || c == '\r')
             {
+                terminal->set_color();
                 terminal->disp("");
                 Action* action = parser->parse(cur_user_string, world, terminal);
                 if(action)
                     action->run(world, terminal);
                 cur_user_string = "";
+                terminal->prompt_input();
             }
             else if(c == '\b')
             {

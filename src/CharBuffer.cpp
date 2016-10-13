@@ -49,7 +49,7 @@ void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::R
             str += contents[i * config->screen_w_chars + j].c;
             text.setString(str);
             text.setPosition(j * config->char_width, i * config->char_height);
-            //text.setColor(contents[i * j].foreground_color);
+            text.setFillColor(contents[i * config->screen_w_chars + j].foreground_color);
             target->draw(text);
         }
         std::cout << std::endl;

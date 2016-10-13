@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CharBuffer.h"
-#include "Color.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
@@ -39,8 +38,11 @@ public:
 	/*Pauses until the user presses ENTER.*/
 	void pause();
 
+    /*Displays a carat and changes color to cyan.*/
+    void prompt_input();
+
     /*Sets the color of all text outputted after this command.*/
-    void set_color(Color color = DEFAULT);
+    void set_color(sf::Color color = sf::Color::White);
 
     /*Print's the terminal's buffer to the render target.*/
     void draw(sf::RenderTarget* target);

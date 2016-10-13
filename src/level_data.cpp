@@ -15,7 +15,7 @@ World* generate_world()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "sewer";
+	world->cur_room = "jamal_bedroom";
 	{
 		Room* jamal_bedroom = new Room();
 		jamal_bedroom->set_name("jamal_bedroom");
