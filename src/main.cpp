@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "GameStateText.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 
 int main()
@@ -20,8 +21,6 @@ int main()
         window.clear();
         window.display();
     }*/
-
-
 
 
 	Config* config = new Config();

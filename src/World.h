@@ -2,6 +2,7 @@
 
 class Room;
 #include "Object.h"
+#include <SFML/Audio.hpp>
 #include <map>
 
 class World : public Object
@@ -13,6 +14,7 @@ public:
 	std::string cur_room;
 	bool active;
 	Action* change_room_action;
+    sf::Music good_day;
 
 	World();
 	virtual ~World();

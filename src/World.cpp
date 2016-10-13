@@ -8,6 +8,8 @@
 World::World()
 	: Object(), active(true), change_room_action(NULL), clothing(NULL)
 {
+    if(!good_day.openFromFile("good_day.ogg"))
+        std::cerr << "Error: unable to load good_day.ogg" << std::endl;
 }
 
 World::~World()

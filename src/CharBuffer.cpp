@@ -45,14 +45,14 @@ void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::R
     {
         for(size_t j = 0; j < config->screen_w_chars; j++)
         {
+            size_t index = (i + scrollValue) * config->screen_w_chars + j;
             std::string str = "";
-            str += contents[i * config->screen_w_chars + j].c;
+            str += contents[index].c;
             text.setString(str);
             text.setPosition(j * config->char_width, i * config->char_height);
-            text.setFillColor(contents[i * config->screen_w_chars + j].foreground_color);
+            text.setFillColor(contents[index].foreground_color);
             target->draw(text);
         }
-        std::cout << std::endl;
     }
 }
 

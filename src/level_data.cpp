@@ -4,6 +4,7 @@
 #include "Room.h"
 #include "common.h"
 #include "level_data.h"
+#include <SFML/Audio.hpp>
 #include <iostream>
 
 World* generate_world()
@@ -43,6 +44,12 @@ World* generate_world()
         paper->properties |= Object::READABLE | Object::TAKEABLE;
         paper->readable_data = "Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog.";
         paper->readable_data += "\nY'all cowards type help, pls.";
+        paper->post_action = [](World* w, Terminal* t, Action* a, Object* o)
+        {
+            if(a->name.id == a->name.parent_list->READ)
+                w->good_day.play();
+            return true;
+        };
         jamal_bedroom->add_child(paper);
 
 		world->add_child(jamal_bedroom);

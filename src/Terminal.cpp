@@ -19,8 +19,6 @@ void Terminal::output(std::string str, int& x, int& y)
 		size_t index = x + y * config->screen_w_chars;
         if (index < config->screen_w_chars * config->screen_h_chars)
         {
-            if(state.foreground_color != sf::Color::White)
-                std::cout<<"error"<<std::endl;
             buffer.setChar(index, str[i], state.foreground_color, state.background_color);
         }
 		if (str[i] == '\n')
