@@ -27,3 +27,8 @@ void Engine::run()
 			action->run(world, terminal);
 	}
 }
+
+void Engine::draw(sf::RenderTarget* target)
+{
+    terminal->draw(target);
+}

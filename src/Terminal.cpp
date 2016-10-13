@@ -3,9 +3,8 @@
 #include <iostream>
 
 Terminal::Terminal(Config* config_in)
-: config(config_in), cur_color(WHITE)
+: config(config_in), state({ 0, 0, sf::Color::White, sf::Color::Black }), buffer(config_in)
 {
-    set_color();
 }
 
 
@@ -13,13 +12,49 @@ Terminal::~Terminal()
 {
 }
 
+void Terminal::output(std::string str, int& x, int& y)
+{
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		size_t index = x + y * config->screen_w_chars;
+        if (index < config->screen_w_chars * config->screen_h_chars)
+        {
+            buffer.setChar(index, str[i], state.foreground_color, state.background_color);
+        }
+		if (str[i] == '\n')
+		{
+			x = 0;
+			y++;
+		}
+		else
+		{
+			x++;
+			if (x >= config->screen_w_chars)
+			{
+				x = 0;
+				y++;
+			}
+		}
+		/*while (y >= config->screen_h_chars)
+		{
+			buffer.nextLine();
+			y--;
+		}*/
+	}
+    draw(NULL);
+}
+
 void Terminal::disp(std::string string)
 {
-	std::cout << string << std::endl;
+	//std::cout << string << std::endl;
+    output(string + "\n", state.cursor_x, state.cursor_y);
 }
 
 void Terminal::clr()
 {
+    buffer.clear();
+    state.cursor_x = 0;
+    state.cursor_y = 0;
 }
 
 void Terminal::pause()
@@ -32,11 +67,6 @@ void Terminal::pause()
 
 void Terminal::set_color(Color color)
 {
-    cur_color = color;
-    if(color == DEFAULT)
-        std::cout << "\033[0m";
-    else
-        std::cout << "\033[3" << cur_color << "m";
 }
 
 std::string Terminal::get_input()
@@ -47,4 +77,10 @@ std::string Terminal::get_input()
 	std::getline(std::cin, input, '\n');
     set_color();
 	return input;
+}
+
+void Terminal::draw(sf::RenderTarget* target)
+{
+    //target->draw(buffer);
+    buffer.draw();
 }

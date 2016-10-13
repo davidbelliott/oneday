@@ -1,11 +1,11 @@
 #pragma once
 
-//#include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>
 
 class Config
 {
 public:
-	//sf::Font font;
+	sf::Font font;
 	int screen_w_chars;
 	int screen_h_chars;
 	int char_size;
