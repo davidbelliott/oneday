@@ -3,9 +3,9 @@
 
 
 Config::Config()
-: font(), screen_h_chars(20), screen_w_chars(80), char_size(20), char_height(0), char_width(0), lr_margin(2), window_height(0), window_width(0)
+: font(), screen_h_chars(20), screen_w_chars(80), char_size(14), char_height(0), char_width(0), lr_margin(2), window_height(0), window_width(0)
 {
-	if (!font.loadFromFile("bin/Inconsolata.otf"))
+	if (!font.loadFromFile("bin/gohufont.pcf.gz"))
 	{
 		std::cerr << "Error: unable to load font Incolsolata.otf." << std::endl;
 		exit(1);
