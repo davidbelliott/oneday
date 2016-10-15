@@ -17,7 +17,7 @@ void EventSource::send_event(Event* event)
 	{
 		for (size_t i = 0; i < sinks[event->type].size(); i++)
 		{
-			sinks[event->type][i]->catch_event(event);
+			sinks[event->type][i]->handle_event(event);
 		}
 	}
 	//delete event;

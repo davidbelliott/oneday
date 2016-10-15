@@ -4,6 +4,7 @@
 #include "Room.h"
 #include "common.h"
 #include "level_data.h"
+#include <SFML/Audio.hpp>
 #include <iostream>
 
 World* generate_world()
@@ -30,6 +31,7 @@ World* generate_world()
 				t->disp("You wake.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen.");
 				o->set_flag("woke_up", 1);
 				t->pause();
+                w->good_day.play();
 			}
             return true;
 		};

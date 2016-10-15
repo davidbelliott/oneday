@@ -1,4 +1,3 @@
-#include "Color.h"
 #include "Room.h"
 #include "Terminal.h"
 
@@ -23,7 +22,7 @@ Room::~Room()
 
 void Room::describe(Terminal* t, bool deep, bool describe_this)
 {
-    t->set_color(WHITE);
+    t->set_color(sf::Color::Yellow);
     t->disp("You in " + pretty_name + ".");
     t->set_color();
     Object::describe(t, deep, describe_this);
