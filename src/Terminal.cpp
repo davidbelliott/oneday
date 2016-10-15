@@ -26,11 +26,6 @@ void Terminal::output(std::string str, int& x, int& y)
 			buffer.add_line();
 			y--;
 		}
-        while((x == config->screen_w_chars - 1 && y == config->screen_h_chars - 1 && disp_cursor))
-        {
-            buffer.add_line();
-            y--;
-        }
 		size_t index = buffer.get_index(x, y);
         if (index < buffer.contents.size())
         {
@@ -45,6 +40,16 @@ void Terminal::output(std::string str, int& x, int& y)
 		{
 			x++;
 		}
+        if (x == config->screen_w_chars && disp_cursor)
+        {
+            x = 0;
+            y++;
+            while (y >= config->screen_h_chars)
+            {
+                buffer.add_line();
+                y--;
+            }
+        }
 	}
 }
 
@@ -94,4 +99,13 @@ void Terminal::draw(sf::RenderTarget* target)
 {
     //target->draw(buffer);
     buffer.draw(target);
+
+    if(disp_cursor)
+    {
+        sf::RectangleShape cursor_shape;
+        cursor_shape.setSize(sf::Vector2f(config->char_width, config->char_height));
+        cursor_shape.setFillColor(state.foreground_color);
+        cursor_shape.setPosition(state.cursor_x * config->char_width, state.cursor_y * config->char_height);
+        target->draw(cursor_shape);
+    }
 }

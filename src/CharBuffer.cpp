@@ -76,4 +76,5 @@ void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::R
 void CharBuffer::clear()
 {
     contents.assign(config->screen_w_chars * config->screen_h_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent} );
+    scrollValue = 0;
 }
