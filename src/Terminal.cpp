@@ -3,13 +3,19 @@
 #include <iostream>
 
 Terminal::Terminal(Config* config_in)
-: config(config_in), state({ 0, 0, sf::Color::White, sf::Color::Black }), buffer(config_in), disp_cursor(false)
+:   config(config_in),
+    window(new sf::RenderWindow(sf::VideoMode(config->window_width, config->window_height), "One Day in the Life of Young Jamal")),
+    state({ 0, 0, sf::Color::White, sf::Color::Black }),
+    buffer(config_in),
+    disp_cursor(false),
+    dirty(true)
 {
 }
 
 
 Terminal::~Terminal()
 {
+    delete window;
 }
 
 void Terminal::output(std::string str, int& x, int& y)
@@ -50,6 +56,7 @@ void Terminal::output(std::string str, int& x, int& y)
                 y--;
             }
         }
+        dirty = true;
 	}
 }
 
@@ -64,6 +71,7 @@ void Terminal::clr()
     buffer.clear();
     state.cursor_x = 0;
     state.cursor_y = 0;
+    dirty = true;
 }
 
 void Terminal::backspace()
@@ -77,17 +85,59 @@ void Terminal::backspace()
     }
     state.cursor_x = buffer.get_x(stop_index);//stop_index / config->screen_w_chars;
     state.cursor_y = buffer.get_y(stop_index);//stop_index % config->screen_w_chars;
+    dirty = true;
 }
 
 void Terminal::pause()
 {
 }
 
-void Terminal::prompt_input()
+std::string Terminal::get_input()
 {
     set_color(sf::Color::Cyan);
     disp(">", false);
-    disp_cursor = true;
+    set_disp_cursor(true);
+    draw();
+
+    std::string cur_user_string = "";
+    sf::Event window_event;
+    while(true)
+    {
+        while(window->pollEvent(window_event))
+        {
+            if(window_event.type == sf::Event::TextEntered)
+            {
+                if(window_event.text.unicode < 128)
+                {
+                    char c = static_cast<char>(window_event.text.unicode);
+                    if(c == '\n' || c == '\r')
+                    {
+                        set_color();
+                        disp("");
+                        draw();
+                        return cur_user_string;
+                    }
+                    else if(c == '\b')
+                    {
+                        if(cur_user_string.length() > 0)
+                        {
+                            backspace();
+                            draw();
+                            cur_user_string.pop_back();
+                        }
+                    }
+                    else
+                    {
+                        cur_user_string += c;
+                        std::string str = "";
+                        str += c;
+                        disp(str, false);
+                        draw();
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Terminal::set_color(sf::Color color)
@@ -95,17 +145,32 @@ void Terminal::set_color(sf::Color color)
     state.foreground_color = color;
 }
 
-void Terminal::draw(sf::RenderTarget* target)
+void Terminal::set_disp_cursor(bool disp_cursor_in)
 {
-    //target->draw(buffer);
-    buffer.draw(target);
-
-    if(disp_cursor)
+    if(disp_cursor != disp_cursor_in)
     {
-        sf::RectangleShape cursor_shape;
-        cursor_shape.setSize(sf::Vector2f(config->char_width, config->char_height));
-        cursor_shape.setFillColor(state.foreground_color);
-        cursor_shape.setPosition(state.cursor_x * config->char_width, state.cursor_y * config->char_height);
-        target->draw(cursor_shape);
+        disp_cursor = disp_cursor_in;
+        dirty = true;
+    }
+}
+
+void Terminal::draw()
+{
+    if(dirty)
+    {
+        window->clear();
+        buffer.draw(window);
+
+        if(disp_cursor)
+        {
+            sf::RectangleShape cursor_shape;
+            cursor_shape.setSize(sf::Vector2f(config->char_width, config->char_height));
+            cursor_shape.setFillColor(state.foreground_color);
+            cursor_shape.setPosition(state.cursor_x * config->char_width, state.cursor_y * config->char_height);
+            window->draw(cursor_shape);
+        }
+        dirty = false;
+
+        window->display();
     }
 }

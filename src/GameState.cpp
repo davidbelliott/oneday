@@ -26,12 +26,12 @@ void GameState::handle_event(Event* event)
 {
 }
 
-void GameState::update(sf::Time dt)
+void GameState::run(sf::Time dt)
 {
 	
 }
 
-void GameState::draw(sf::RenderTarget* target)
+void GameState::draw()
 {
 	
 }

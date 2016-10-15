@@ -7,6 +7,7 @@
 
 class Config;
 
+/* A Terminal is a wrapper for a sf::RenderWindow which handles input and textual output. */
 class Terminal
 {
 public:
@@ -37,24 +38,31 @@ public:
     /*Removes last character (if one exists) and moves the cursor back one space (if possible).*/
     void backspace();
 
-	/*Pauses until the user presses ENTER.*/
+	/*Pauses until the user presses ENTER. Blocking.*/
 	void pause();
 
-    /*Displays a carat and changes color to cyan.*/
-    void prompt_input();
+    /*Gets a string input from the user. Blocking.*/
+    std::string get_input();
+
+    /*Gets an event off the top of the window's event queue. Returns false if no event.*/
+    bool get_event(sf::Event* event);
 
     /*Sets the color of all text outputted after this command.*/
     void set_color(sf::Color color = sf::Color::White);
 
-    /*Print's the terminal's buffer to the render target.*/
-    void draw(sf::RenderTarget* target);
+    /*Sets whether or not to display the cursor rectangle at the current cursor x and y.*/
+    void set_disp_cursor(bool disp_cursor_in);
 
 //private:
 
+    /*Print's the terminal's buffer to the render target.*/
+    void draw();
+
 	Config* config;
+    sf::RenderWindow* window;
     State state;
     CharBuffer buffer;
-    sf::Window* window;
     bool disp_cursor;
+    bool dirty;
 };
 

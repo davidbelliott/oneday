@@ -10,7 +10,6 @@ class GameStateText: public GameState
 {
     public:
         World* world;
-        Terminal* terminal;
         Parser* parser;
         std::string cur_user_string;
 
@@ -20,6 +19,6 @@ class GameStateText: public GameState
         virtual void init();
         virtual void cleanup();
         virtual void handle_event(Event* event);
-        virtual void update(sf::Time dt);
+        virtual void run(sf::Time dt);
         virtual void draw(sf::RenderTarget* target);
 };

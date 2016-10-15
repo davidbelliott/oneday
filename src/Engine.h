@@ -12,14 +12,13 @@ class World;
 class Engine
 {
 public:
-    sf::RenderWindow* window;
+    Terminal* terminal;
     std::vector<GameState*> game_states;
 
-	Engine(sf::RenderWindow* window_in);
+	Engine(Terminal* terminal_in);
 	virtual ~Engine();
 
-    void get_input();
-    void update(sf::Time dt);
+    void run(sf::Time dt);
     void draw();
 
 	bool paused;

@@ -27,10 +27,10 @@ public:
 	/*Handles event from the queue.*/
 	virtual void handle_event(Event* event);
 
-	/*Update the gamestate for timestep dt.*/
-	virtual void update(sf::Time dt);
+	/*Run one cycle of the gamestate. dt is time elapsed in last engine cycle.*/
+	virtual void run(sf::Time dt);
 
 	/*Draw the gamestate.*/
-	virtual void draw(sf::RenderTarget* target);
+	virtual void draw();
 };
 

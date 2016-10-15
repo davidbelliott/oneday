@@ -6,8 +6,8 @@
 #include "Terminal.h"
 #include "common.h"
 
-Engine::Engine(sf::RenderWindow* window_in)
-: paused(false), running(true), window(window_in)
+Engine::Engine(Terminal* terminal_in)
+: paused(false), running(true), terminal(terminal_in)
 {
 }
 
@@ -18,36 +18,13 @@ Engine::~Engine()
 
 void Engine::draw()
 {
-    window->clear();
-    game_states.back()->draw(window);
-    window->display();
+    game_states.back()->draw();
+    terminal->draw();
 }
 
-void Engine::get_input()
+void Engine::run(sf::Time dt)
 {
-    sf::Event sf_event;
-    Event event;
-    event.type = Event::SFML;
-
-    while(window->pollEvent(sf_event))
-    {
-        if(sf_event.type == sf::Event::KeyPressed && sf_event.key.code == sf::Keyboard::Escape)
-        {
-            running = false;
-        }
-        else
-        {
-            event.sfml_event_data.sf_event = sf_event;
-            game_states.back()->handle_event(&event);
-        }
-    }
-
+    game_states.back()->run(dt);
     if(!game_states.back()->running)
         running = false;
-}
-
-
-void Engine::update(sf::Time dt)
-{
-    game_states.back()->update(dt);
 }
