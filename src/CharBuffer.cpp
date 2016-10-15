@@ -14,9 +14,24 @@ CharBuffer::~CharBuffer()
 {
 }
 
+size_t CharBuffer::get_index(int x, int y)
+{
+    return x + (y + scrollValue) * config->screen_w_chars;
+}
+
+int CharBuffer::get_x(size_t index)
+{
+    return index % config->screen_w_chars;
+}
+
+int CharBuffer::get_y(size_t index)
+{
+    return index / config->screen_w_chars - scrollValue;
+}
+
 void CharBuffer::setChar(size_t index, char c, sf::Color foreground_color, sf::Color background_color)
 {
-    if(index < config->screen_w_chars * config->screen_h_chars && index >= 0)
+    if(index < contents.size() && index >= 0)
     {
         contents[index] = { c, foreground_color, background_color };;
     }
@@ -26,8 +41,10 @@ void CharBuffer::setChar(size_t index, char c, sf::Color foreground_color, sf::C
     }
 }
 
-void CharBuffer::nextLine()
+void CharBuffer::add_line()
 {
+    contents.resize(contents.size() + config->screen_w_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent} );
+    scrollValue++;
 }
 
 void CharBuffer::scroll(int delta)

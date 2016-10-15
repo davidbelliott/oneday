@@ -16,8 +16,8 @@ void Terminal::output(std::string str, int& x, int& y)
 {
 	for (size_t i = 0; i < str.size(); i++)
 	{
-		size_t index = x + y * config->screen_w_chars;
-        if (index < config->screen_w_chars * config->screen_h_chars)
+		size_t index = buffer.get_index(x, y);
+        if (index < buffer.contents.size())
         {
             buffer.setChar(index, str[i], state.foreground_color, state.background_color);
         }
@@ -35,11 +35,11 @@ void Terminal::output(std::string str, int& x, int& y)
 				y++;
 			}
 		}
-		/*while (y >= config->screen_h_chars)
+		while (y >= config->screen_h_chars)
 		{
-			buffer.nextLine();
+			buffer.add_line();
 			y--;
-		}*/
+		}
 	}
 }
 
@@ -59,14 +59,14 @@ void Terminal::clr()
 void Terminal::backspace()
 {
     //Index where the cursor rests after backspace
-    size_t stop_index = state.cursor_x + state.cursor_y * config->screen_w_chars;
+    size_t stop_index = buffer.get_index(state.cursor_x, state.cursor_y); 
     if(stop_index > 0)
     {
         stop_index -= 1;
         buffer.setChar(stop_index, '\0', sf::Color::Transparent, sf::Color::Transparent);
     }
-    state.cursor_y = stop_index / config->screen_w_chars;
-    state.cursor_x = stop_index % config->screen_w_chars;
+    state.cursor_x = buffer.get_x(stop_index);//stop_index / config->screen_w_chars;
+    state.cursor_y = buffer.get_y(stop_index);//stop_index % config->screen_w_chars;
 }
 
 void Terminal::pause()
