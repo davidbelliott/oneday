@@ -43,6 +43,8 @@ void GameStateText::run(sf::Time dt)
     Action* action = parser->parse(user_input, world, engine->terminal);
     if(action)
         action->run(world, engine->terminal);
+    if(!world->active)
+        running = false;
 }
 
 void GameStateText::draw(sf::RenderTarget* target)
