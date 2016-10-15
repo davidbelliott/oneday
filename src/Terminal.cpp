@@ -3,7 +3,7 @@
 #include <iostream>
 
 Terminal::Terminal(Config* config_in)
-: config(config_in), state({ 0, 0, sf::Color::White, sf::Color::Black }), buffer(config_in)
+: config(config_in), state({ 0, 0, sf::Color::White, sf::Color::Black }), buffer(config_in), disp_cursor(false)
 {
 }
 
@@ -16,6 +16,21 @@ void Terminal::output(std::string str, int& x, int& y)
 {
 	for (size_t i = 0; i < str.size(); i++)
 	{
+        if (x >= config->screen_w_chars)
+        {
+            x = 0;
+            y++;
+        }
+		while (y >= config->screen_h_chars)
+		{
+			buffer.add_line();
+			y--;
+		}
+        while((x == config->screen_w_chars - 1 && y == config->screen_h_chars - 1 && disp_cursor))
+        {
+            buffer.add_line();
+            y--;
+        }
 		size_t index = buffer.get_index(x, y);
         if (index < buffer.contents.size())
         {
@@ -29,16 +44,6 @@ void Terminal::output(std::string str, int& x, int& y)
 		else
 		{
 			x++;
-			if (x >= config->screen_w_chars)
-			{
-				x = 0;
-				y++;
-			}
-		}
-		while (y >= config->screen_h_chars)
-		{
-			buffer.add_line();
-			y--;
 		}
 	}
 }
@@ -77,6 +82,7 @@ void Terminal::prompt_input()
 {
     set_color(sf::Color::Cyan);
     disp(">", false);
+    disp_cursor = true;
 }
 
 void Terminal::set_color(sf::Color color)

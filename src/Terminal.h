@@ -55,5 +55,6 @@ public:
     State state;
     CharBuffer buffer;
     sf::Window* window;
+    bool disp_cursor;
 };
 
