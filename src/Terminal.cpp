@@ -90,6 +90,19 @@ void Terminal::backspace()
 
 void Terminal::pause()
 {
+    set_disp_cursor(true);
+    draw();
+    set_disp_cursor(false);
+    sf::Event window_event;
+    bool key_pressed = false;
+    while(!key_pressed)
+    {
+        while(window->pollEvent(window_event))
+        {
+            if(window_event.type == sf::Event::KeyPressed)
+                key_pressed = true;
+        }
+    }
 }
 
 std::string Terminal::get_input()
