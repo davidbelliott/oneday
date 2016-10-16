@@ -1,5 +1,6 @@
 #include "Room.h"
 #include "Terminal.h"
+#include "Config.h"
 
 Room::Room(std::string name_in, std::string pretty_name_in, std::string description_in)
 	: Object(name_in, description_in)
@@ -22,7 +23,7 @@ Room::~Room()
 
 void Room::describe(Terminal* t, bool deep, bool describe_this)
 {
-    t->set_color(sf::Color::Yellow);
+    t->set_color(config::colors[config::color_room_title]);
     t->disp("You in " + pretty_name + ".");
     t->set_color();
     Object::describe(t, deep, describe_this);
