@@ -11,9 +11,15 @@ public:
 	int char_size;
 	int char_height;
 	int char_width;
-	int lr_margin;
+	int padding;
 	int window_height;
 	int window_width;
+    int update_frequency;
+
+    sf::Color base0;
+    sf::Color base1;
+    sf::Color base2;
+
 
 	Config();
 	virtual ~Config();

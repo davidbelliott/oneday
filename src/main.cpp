@@ -29,11 +29,18 @@ int main()
     GameStateText* game_state_text = new GameStateText(engine, config);
     engine->game_states.push_back(game_state_text);
 
+    sf::Clock clock;
+    sf::Time dt;
     while(engine->running)
     {
-        sf::Time dt = sf::seconds(1.0f / 60.0f);
+        dt = clock.restart();
+        std::cout << "Time:" << dt.asSeconds() << std::endl;
         engine->run(dt);
         engine->draw();
+        while(clock.getElapsedTime().asSeconds() < 1.0f / config->update_frequency)
+        {
+            sf::sleep(sf::milliseconds(1.0f));
+        }
     }
 
 	delete config;

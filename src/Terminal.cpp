@@ -5,7 +5,7 @@
 Terminal::Terminal(Config* config_in)
 :   config(config_in),
     window(new sf::RenderWindow(sf::VideoMode(config->window_width, config->window_height), "One Day in the Life of Young Jamal")),
-    state({ 0, 0, sf::Color::White, sf::Color::Black }),
+    state({ 0, 0, sf::Color(153, 209, 206), sf::Color(17, 21, 28) }),
     buffer(config_in),
     disp_cursor(false),
     dirty(true)
@@ -101,6 +101,9 @@ void Terminal::pause()
         {
             if(window_event.type == sf::Event::KeyPressed)
                 key_pressed = true;
+            else if(window_event.type == sf::Event::Resized ||
+                    window_event.type == sf::Event::GainedFocus)
+                draw();
         }
     }
 }
@@ -127,7 +130,7 @@ std::string Terminal::get_input()
                     {
                         set_color();
                         disp("");
-                        draw();
+                        //draw();
                         return cur_user_string;
                     }
                     else if(c == '\b')
@@ -149,8 +152,12 @@ std::string Terminal::get_input()
                     }
                 }
             }
+            else if(window_event.type == sf::Event::Resized ||
+                    window_event.type == sf::Event::GainedFocus)
+                draw();
         }
     }
+    set_disp_cursor(false);
 }
 
 void Terminal::set_color(sf::Color color)
@@ -169,9 +176,8 @@ void Terminal::set_disp_cursor(bool disp_cursor_in)
 
 void Terminal::draw()
 {
-    if(dirty)
-    {
-        window->clear();
+        window->clear(state.background_color);
+
         buffer.draw(window);
 
         if(disp_cursor)
@@ -179,11 +185,10 @@ void Terminal::draw()
             sf::RectangleShape cursor_shape;
             cursor_shape.setSize(sf::Vector2f(config->char_width, config->char_height));
             cursor_shape.setFillColor(state.foreground_color);
-            cursor_shape.setPosition(state.cursor_x * config->char_width, state.cursor_y * config->char_height);
+            cursor_shape.setPosition(state.cursor_x * config->char_width + config->padding, state.cursor_y * config->char_height + config->padding);
             window->draw(cursor_shape);
         }
         dirty = false;
 
         window->display();
-    }
 }

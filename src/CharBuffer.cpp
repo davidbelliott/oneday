@@ -66,7 +66,7 @@ void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::R
             std::string str = "";
             str += contents[index].c;
             text.setString(str);
-            text.setPosition(j * config->char_width, i * config->char_height);
+            text.setPosition(j * config->char_width + config->padding, i * config->char_height);
             text.setFillColor(contents[index].foreground_color);
             target->draw(text);
         }

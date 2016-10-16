@@ -19,7 +19,6 @@ Engine::~Engine()
 void Engine::draw()
 {
     game_states.back()->draw();
-    terminal->draw();
 }
 
 void Engine::run(sf::Time dt)
