@@ -13,7 +13,7 @@ class GameStateText: public GameState
         Parser* parser;
         std::string cur_user_string;
 
-        GameStateText(Engine* engine_in, Config* config_in);
+        GameStateText(Engine* engine_in);
         virtual ~GameStateText();
 
         virtual void init();

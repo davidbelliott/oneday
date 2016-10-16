@@ -1,7 +1,5 @@
 #pragma once
 
-class Config;
-
 #include <SFML/Graphics.hpp>
 #include <vector>
 
@@ -17,21 +15,20 @@ public:
 
     std::vector<Char> contents;
 
-    CharBuffer(Config* config_in);
+    CharBuffer();
     virtual ~CharBuffer();
 
-    size_t get_index(int x, int y);
-    int get_x(size_t index);
-    int get_y(size_t index);
+    int get_index(int x, int y);
+    int get_x(int index);
+    int get_y(int index);
 
-    void setChar(size_t index, char c, sf::Color foreground_color, sf::Color background_color);
+    void setChar(int index, char c, sf::Color foreground_color, sf::Color background_color);
     void add_line();
     void scroll(int delta);
 
     void draw(sf::RenderTarget* target);//sf::RenderTarget& target, sf::RenderStates states) const override;
     void clear();
 
-private:
-	Config* config;
-    size_t scrollValue;
+    int scroll_value;
+    int scroll_value_max;
 };

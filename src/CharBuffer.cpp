@@ -4,8 +4,8 @@
 
 using namespace std;
 
-CharBuffer::CharBuffer(Config* config_in)
-  : contents(), scrollValue(0), config(config_in)
+CharBuffer::CharBuffer()
+  : contents(), scroll_value(0), scroll_value_max(0)
 {
     clear();
 }
@@ -14,22 +14,22 @@ CharBuffer::~CharBuffer()
 {
 }
 
-size_t CharBuffer::get_index(int x, int y)
+int CharBuffer::get_index(int x, int y)
 {
-    return x + (y + scrollValue) * config->screen_w_chars;
+    return x + (y + scroll_value) * config::screen_w_chars;
 }
 
-int CharBuffer::get_x(size_t index)
+int CharBuffer::get_x(int index)
 {
-    return index % config->screen_w_chars;
+    return index % config::screen_w_chars;
 }
 
-int CharBuffer::get_y(size_t index)
+int CharBuffer::get_y(int index)
 {
-    return index / config->screen_w_chars - scrollValue;
+    return index / config::screen_w_chars - scroll_value;
 }
 
-void CharBuffer::setChar(size_t index, char c, sf::Color foreground_color, sf::Color background_color)
+void CharBuffer::setChar(int index, char c, sf::Color foreground_color, sf::Color background_color)
 {
     if(index < contents.size() && index >= 0)
     {
@@ -43,30 +43,31 @@ void CharBuffer::setChar(size_t index, char c, sf::Color foreground_color, sf::C
 
 void CharBuffer::add_line()
 {
-    contents.resize(contents.size() + config->screen_w_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent} );
-    scrollValue++;
+    contents.resize(contents.size() + config::screen_w_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent} );
+    scroll_value_max++;
+    scroll_value = scroll_value_max;
 }
 
 void CharBuffer::scroll(int delta)
 {
-    scrollValue = static_cast<size_t>(std::max(0, static_cast<int>(scrollValue) + delta));
+    scroll_value = std::max(0, std::min(scroll_value_max, scroll_value + delta));
 }
 
 void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::RenderStates states) const
 {
     sf::Text text;
-    text.setFont(config->font);
-    text.setCharacterSize(config->char_size);
+    text.setFont(config::font);
+    text.setCharacterSize(config::char_size);
 
-    for(size_t i = 0; i < config->screen_h_chars; i++)
+    for(int i = 0; i < config::screen_h_chars; i++)
     {
-        for(size_t j = 0; j < config->screen_w_chars; j++)
+        for(int j = 0; j < config::screen_w_chars; j++)
         {
-            size_t index = (i + scrollValue) * config->screen_w_chars + j;
+            int index = (i + scroll_value) * config::screen_w_chars + j;
             std::string str = "";
             str += contents[index].c;
             text.setString(str);
-            text.setPosition(j * config->char_width, i * config->char_height);
+            text.setPosition(j * config::char_width + config::padding, i * config::char_height);
             text.setFillColor(contents[index].foreground_color);
             target->draw(text);
         }
@@ -75,6 +76,7 @@ void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::R
 
 void CharBuffer::clear()
 {
-    contents.assign(config->screen_w_chars * config->screen_h_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent} );
-    scrollValue = 0;
+    contents.assign(config::screen_w_chars * config::screen_h_chars, {'\0', sf::Color::Transparent, sf::Color::Transparent} );
+    scroll_value = 0;
+    scroll_value_max = 0;
 }

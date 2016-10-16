@@ -9,7 +9,7 @@
 #include "level_data.h"
 #include "Engine.h"
 
-GameStateText::GameStateText(Engine* engine_in, Config* config_in)
+GameStateText::GameStateText(Engine* engine_in)
     : GameState(engine_in), cur_user_string("")
 {
     world = generate_world();

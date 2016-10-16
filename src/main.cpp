@@ -22,21 +22,37 @@ int main()
         window.display();
     }*/
 
+    config::config_init();
 
-	Config* config = new Config();
-    Terminal* terminal = new Terminal(config);
+    Terminal* terminal = new Terminal();
 	Engine* engine = new Engine(terminal);
-    GameStateText* game_state_text = new GameStateText(engine, config);
+
+
+
+    for(int i = 0; i < config::N_COLORS; i++)
+    {
+        terminal->set_color(config::colors[config::ColorIndex(i)]);
+        terminal->disp("The quick brown fox jumped over the lazy dog");
+    }
+    terminal->draw();
+    terminal->pause();
+    GameStateText* game_state_text = new GameStateText(engine);
     engine->game_states.push_back(game_state_text);
 
+    sf::Clock clock;
+    sf::Time dt;
     while(engine->running)
     {
-        sf::Time dt = sf::seconds(1.0f / 60.0f);
+        dt = clock.restart();
+        std::cout << "Time:" << dt.asSeconds() << std::endl;
         engine->run(dt);
         engine->draw();
+        while(clock.getElapsedTime().asSeconds() < 1.0f / config::update_frequency)
+        {
+            sf::sleep(sf::milliseconds(1.0f));
+        }
     }
 
-	delete config;
     delete terminal;
 	delete engine;
     delete game_state_text;
