@@ -1,6 +1,7 @@
 #include "Config.h"
 #include "Engine.h"
 #include "Terminal.h"
+#include "GameStateIntro.h"
 #include "GameStateText.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -29,22 +30,24 @@ int main()
 
 
 
-    for(int i = 0; i < config::N_COLORS; i++)
+/*    for(int i = 0; i < config::N_COLORS; i++)
     {
         terminal->set_color(config::colors[config::ColorIndex(i)]);
         terminal->disp("The quick brown fox jumped over the lazy dog");
     }
     terminal->draw();
-    terminal->pause();
+    terminal->pause();*/
+
     GameStateText* game_state_text = new GameStateText(engine);
-    engine->game_states.push_back(game_state_text);
+    GameStateIntro* game_state_intro = new GameStateIntro(engine, game_state_text);
+    engine->push_state(game_state_intro);
 
     sf::Clock clock;
     sf::Time dt;
     while(engine->running)
     {
+        engine->get_input();
         dt = clock.restart();
-        std::cout << "Time:" << dt.asSeconds() << std::endl;
         engine->run(dt);
         engine->draw();
         while(clock.getElapsedTime().asSeconds() < 1.0f / config::update_frequency)

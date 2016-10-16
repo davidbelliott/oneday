@@ -18,6 +18,8 @@ class GameStateText: public GameState
 
         virtual void init();
         virtual void cleanup();
+        virtual void start_input();
+        virtual void end_input();
         virtual void handle_event(Event* event);
         virtual void run(sf::Time dt);
         virtual void draw(sf::RenderTarget* target);

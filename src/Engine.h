@@ -18,6 +18,10 @@ public:
 	Engine(Terminal* terminal_in);
 	virtual ~Engine();
 
+    void push_state(GameState* state);
+    void pop_state();
+
+    void get_input();
     void run(sf::Time dt);
     void draw();
 

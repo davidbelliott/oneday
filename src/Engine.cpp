@@ -16,14 +16,44 @@ Engine::~Engine()
 {
 }
 
+void Engine::push_state(GameState* state)
+{
+    game_states.push_back(state);
+    state->init();
+}
+
+void Engine::pop_state()
+{
+    if(!game_states.empty())
+    {
+        game_states.back()->cleanup();
+        game_states.pop_back();
+    }
+}
+
+void Engine::get_input()
+{
+    sf::Event terminal_event;
+    while(terminal->get_event(&terminal_event))
+    {
+        Event event;
+        event.type = Event::SFML;
+        event.sfml_event_data.sf_event = terminal_event;
+        game_states.back()->handle_event(&event);
+    }
+}
+
 void Engine::draw()
 {
     game_states.back()->draw();
+    terminal->draw();
 }
 
 void Engine::run(sf::Time dt)
 {
     game_states.back()->run(dt);
-    if(!game_states.back()->running)
+    while(game_states.size() > 0 && !game_states.back()->running)
+        pop_state();
+    if(game_states.size() == 0)
         running = false;
 }

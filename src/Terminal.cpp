@@ -17,6 +17,10 @@ Terminal::~Terminal()
     delete window;
 }
 
+void Terminal::pause()
+{
+}
+
 void Terminal::output(std::string str, int& index)
 {
     int x = buffer.get_x(index);
@@ -91,80 +95,9 @@ void Terminal::backspace()
     dirty = true;
 }
 
-void Terminal::pause()
+bool Terminal::get_event(sf::Event* event)
 {
-    set_disp_cursor(true);
-    draw();
-    set_disp_cursor(false);
-    sf::Event window_event;
-    bool key_pressed = false;
-    while(!key_pressed)
-    {
-        while(window->pollEvent(window_event))
-        {
-            if(window_event.type == sf::Event::KeyPressed)
-                key_pressed = true;
-            else if(window_event.type == sf::Event::Resized ||
-                    window_event.type == sf::Event::GainedFocus)
-                draw();
-        }
-    }
-}
-
-std::string Terminal::get_input()
-{
-    set_color(config::colors[config::color_user_input]);
-    disp(">", false);
-    set_disp_cursor(true);
-    draw();
-
-    std::string cur_user_string = "";
-    sf::Event window_event;
-    while(true)
-    {
-        while(window->pollEvent(window_event))
-        {
-            if(window_event.type == sf::Event::TextEntered)
-            {
-                if(window_event.text.unicode < 128)
-                {
-                    char c = static_cast<char>(window_event.text.unicode);
-                    if(c == '\n' || c == '\r')
-                    {
-                        set_color();
-                        disp("");
-                        //draw();
-                        return cur_user_string;
-                    }
-                    else if(c == '\b')
-                    {
-                        if(cur_user_string.length() > 0)
-                        {
-                            backspace();
-                            draw();
-                            cur_user_string.pop_back();
-                        }
-                    }
-                    else
-                    {
-                        cur_user_string += c;
-                        std::string str = "";
-                        str += c;
-                        disp(str, false);
-                        draw();
-                    }
-                }
-            }
-            else if(window_event.type == sf::Event::MouseWheelScrolled)
-            {
-                int scroll_delta = -window_event.mouseWheelScroll.delta;
-                buffer.scroll(scroll_delta);
-            }
-            else
-                draw();
-        }
-    }
-    set_disp_cursor(false);
+    return window->pollEvent(*event);
 }
 
 void Terminal::set_color(sf::Color color)

@@ -30,17 +30,13 @@ public:
 	/*Outputs the specified string at the current cursor location. Adds a newline if newline is true.*/
 	void disp(std::string string, bool newline = true);
 
+    void pause();
+
 	/*Clears the screen.*/
 	void clr();
 
     /*Removes last character (if one exists) and moves the cursor back one space (if possible).*/
     void backspace();
-
-	/*Pauses until the user presses ENTER. Blocking.*/
-	void pause();
-
-    /*Gets a string input from the user. Blocking.*/
-    std::string get_input();
 
     /*Gets an event off the top of the window's event queue. Returns false if no event.*/
     bool get_event(sf::Event* event);
