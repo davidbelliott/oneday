@@ -1,4 +1,5 @@
 #include "Action.h"
+#include "Player.h"
 #include "Terminal.h"
 #include "Room.h"
 #include "Word.h"
@@ -116,9 +117,9 @@ void ActionTake::act(World* w, Terminal* t, Object* o)
 	if (o && (o->properties & Object::TAKEABLE))
 	{
 		t->disp("You take the " + o->name.word + ".");
-		w->inventory.push_back(o);
 		if (o->parent)
 			o->parent->remove_child(o);
+		w->player->add_child(o);
 	}
 	else if (o)
 	{
@@ -135,9 +136,19 @@ void ActionWear::act(World* w, Terminal* t, Object* o)
 	if (o && (o->properties & Object::WEARABLE))
 	{
 		t->disp("You put on the " + o->name.word + ".");
-		w->clothing = o;
-		if (o->parent)
-			o->parent->remove_child(o);
+        if(o->parent)
+        {
+            if(o->parent != w->player)
+            {
+                o->parent->remove_child(o);
+                w->player->add_child(o);
+            }
+        }
+        else
+        {
+            w->player->add_child(o);
+        }
+		w->player->clothing = o->name.word;
 	}
 	else if (o)
 	{
@@ -241,12 +252,13 @@ void ActionTalkTo::act(World* w, Terminal* t, Object* o)
 void ActionHelp::act(World* w, Terminal* t, Object* o)
 {
     t->set_color(sf::Color::Red);
-    t->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
+    t->disp("Your objective: " + w->player->objective);
+    /*t->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
     t->disp("Type sentences to do stuff. You can use the following verbs:");
     
     for(int i = 0; i < name.parent_list->ACTION_MAX; i++)
     {
         t->disp("-" + name.parent_list->words_by_id[i].word);
-    }
+    }*/
     t->set_color();
 }

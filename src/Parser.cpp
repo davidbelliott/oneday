@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include "Player.h"
 #include "Room.h"
 #include "Terminal.h"
 #include "Word.h"
@@ -67,11 +68,16 @@ Action* Parser::parse(std::string statement, World* w, Terminal* t)
 		}
 		else if (!found_object && found_action)
 		{
-			if (object = room->get_indirect_child(tokens[i].word, (Object::VISIBLE | Object::DISCOVERED)))
+			if (object = room->get_indirect_child(tokens[i].word, Object::DISCOVERED))
 			{
 				found_object = true;
 				action->add_object(object);
 			}
+            else if (object = w->player->get_indirect_child(tokens[i].word, Object::DISCOVERED))
+            {
+                found_object = true;
+                action->add_object(object);
+            }
 		}
 	}
 	if (!found_action)

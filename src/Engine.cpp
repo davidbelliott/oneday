@@ -39,19 +39,22 @@ void Engine::get_input()
         Event event;
         event.type = Event::SFML;
         event.sfml_event_data.sf_event = terminal_event;
-        game_states.back()->handle_event(&event);
+        if(!game_states.empty())
+            game_states.back()->handle_event(&event);
     }
 }
 
 void Engine::draw()
 {
-    game_states.back()->draw();
+    if(!game_states.empty())
+        game_states.back()->draw();
     terminal->draw();
 }
 
 void Engine::run(sf::Time dt)
 {
-    game_states.back()->run(dt);
+    if(!game_states.empty())
+        game_states.back()->run(dt);
     while(game_states.size() > 0 && !game_states.back()->running)
         pop_state();
     if(game_states.size() == 0)

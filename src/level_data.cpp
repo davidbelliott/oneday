@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include "Terminal.h"
+#include "Player.h"
 #include "World.h"
 #include "Room.h"
 #include "common.h"
@@ -17,6 +18,11 @@ World* generate_world()
 		{ "woke_up", 0 }
 	};
 	world->cur_room = "jamal_bedroom";
+    {
+        Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
+        player->objective = "Get outta da crib";
+        world->player = player;
+    }
 	{
 		Room* jamal_bedroom = new Room();
 		jamal_bedroom->set_name("jamal_bedroom");
@@ -64,7 +70,7 @@ World* generate_world()
 		{
 			if (a->name.id == a->name.parent_list->GO)
 			{
-				if (w->clothing && w->clothing->name.word == "hazmat")
+				if (w->player->clothing == "hazmat")
 				{
 					t->disp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage.");
 					t->pause();

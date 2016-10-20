@@ -1,6 +1,7 @@
 #pragma once
 
 class Room;
+class Player;
 #include "Object.h"
 #include <SFML/Audio.hpp>
 #include <map>
@@ -9,8 +10,10 @@ class World : public Object
 {
 public:
 	std::map<std::string, int> flags;
-	std::vector<Object*> inventory;
-	Object* clothing;
+
+    Player* player;
+
+
 	std::string cur_room;
 	bool active;
 	Action* change_room_action;

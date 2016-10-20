@@ -39,8 +39,7 @@ int main()
     terminal->pause();*/
 
     GameStateText* game_state_text = new GameStateText(engine);
-    GameStateIntro* game_state_intro = new GameStateIntro(engine, game_state_text);
-    engine->push_state(game_state_intro);
+    engine->push_state(game_state_text);
 
     sf::Clock clock;
     sf::Time dt;
