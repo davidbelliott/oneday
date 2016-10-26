@@ -1,5 +1,6 @@
 #pragma once
 #include "Object.h"
+class Terminal;
 
 class Player: public Object
 {
@@ -9,4 +10,6 @@ class Player: public Object
         
         Player(std::string name_in, std::string description_in);
         virtual ~Player();
+
+        virtual void set_objective(std::string objective_in, Terminal* t);
 };

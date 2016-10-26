@@ -18,6 +18,7 @@ namespace config
     ColorIndex color_default_bg = BASE_0;
     ColorIndex color_room_title = ORANGE;
     ColorIndex color_user_input = GREEN;
+    ColorIndex color_objective = RED;
 
     void config_init()
     {

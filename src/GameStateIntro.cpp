@@ -36,3 +36,9 @@ void GameStateIntro::handle_event(Event* event)
         }
     }
 }
+
+void GameStateIntro::update(sf::Time dt)
+{
+    
+
+}

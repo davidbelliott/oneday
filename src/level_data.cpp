@@ -20,7 +20,6 @@ World* generate_world()
 	world->cur_room = "jamal_bedroom";
     {
         Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
-        player->objective = "Get outta da crib";
         world->player = player;
     }
 	{
@@ -35,6 +34,7 @@ World* generate_world()
 			if (a->name.id == a->name.parent_list->LOOK && !o->get_flag("woke_up"))
 			{
 				t->disp("You wake.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen.");
+                w->player->set_objective("Get outta dis crib", t);
 				o->set_flag("woke_up", 1);
 				t->pause();
                 w->good_day.play();
