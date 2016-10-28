@@ -17,10 +17,9 @@ void EventSource::send_event(Event* event)
 	{
 		for (size_t i = 0; i < sinks[event->type].size(); i++)
 		{
-			sinks[event->type][i]->handle_event(event);
+			sinks[event->type][i]->notify(event);
 		}
 	}
-	//delete event;
 }
 
 void EventSource::register_sink(EventSink* sink_to_register, Event::EventType type_to_register)
