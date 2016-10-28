@@ -7,7 +7,10 @@
 #include "common.h"
 
 Engine::Engine(Terminal* terminal_in)
-: paused(false), running(true), terminal(terminal_in), event_source(new EventSource())
+: EventSource(),
+    paused(false),
+    running(true),
+    terminal(terminal_in)
 {
 }
 
@@ -31,19 +34,19 @@ void Engine::pop_state()
     }
 }
 
-void Engine::get_input()
+void Engine::handle_events()
 {
     sf::Event terminal_event;
     while(terminal->get_event(&terminal_event))
     {
-        Event event;
-        event.type = Event::SFML;
-        event.sfml_event_data.sf_event = terminal_event;
-        if(!game_states.empty())
-            game_states.back()->handle_event(&event);
+        Event* event = new Event();
+        event->type = Event::SFML;
+        event->sfml_event_data.sf_event = terminal_event;
+        send_event(event);
     }
 
-    
+    if(!game_states.empty())
+        game_states.back()->handle_events();
 }
 
 void Engine::draw()

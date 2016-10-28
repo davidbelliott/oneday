@@ -16,13 +16,15 @@ int main()
 	Engine* engine = new Engine(terminal);
 
     GameStateText* game_state_text = new GameStateText(engine);
+    GameStateIntro* game_state_intro = new GameStateIntro(engine);
     engine->push_state(game_state_text);
+    engine->push_state(game_state_intro);
 
     sf::Clock clock;
     sf::Time dt;
     while(engine->running)
     {
-        engine->get_input();
+        engine->handle_events();
         dt = clock.restart();
         engine->run(dt);
         engine->draw();

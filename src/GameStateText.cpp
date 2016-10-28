@@ -20,6 +20,7 @@ GameStateText::~GameStateText()
 
 void GameStateText::init()
 {
+    engine->register_sink(this, Event::SFML);
     running = true;
     cur_user_string = "";
     world = generate_world();
@@ -32,6 +33,7 @@ void GameStateText::init()
 
 void GameStateText::cleanup()
 {
+    engine->unregister_sink(this, Event::SFML);
     delete world;
     delete parser;
     end_input();

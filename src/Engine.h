@@ -1,20 +1,19 @@
 #pragma once
 
 class GameState;
-class EventSource;
 class Terminal;
 class World;
 
+#include "EventSource.h"
 #include "Parser.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
 
-class Engine
+class Engine : public EventSource
 {
 public:
     Terminal* terminal;
     std::vector<GameState*> game_states;
-    EventSource* event_source;
 
 	Engine(Terminal* terminal_in);
 	virtual ~Engine();
@@ -22,7 +21,7 @@ public:
     void push_state(GameState* state);
     void pop_state();
 
-    void get_input();
+    void handle_events();
     void run(sf::Time dt);
     void draw();
 
