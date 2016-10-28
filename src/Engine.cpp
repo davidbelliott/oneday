@@ -36,15 +36,6 @@ void Engine::pop_state()
 
 void Engine::handle_events()
 {
-    sf::Event terminal_event;
-    while(terminal->get_event(&terminal_event))
-    {
-        Event* event = new Event();
-        event->type = Event::SFML;
-        event->sfml_event_data.sf_event = terminal_event;
-        send_event(event);
-    }
-
     if(!game_states.empty())
         game_states.back()->handle_events();
 }

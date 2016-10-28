@@ -1,5 +1,7 @@
 #pragma once
 
+class EventSource;
+
 #include "CharBuffer.h"
 #include "Config.h"
 #include <SFML/Graphics.hpp>
@@ -21,8 +23,6 @@ public:
 	Terminal();
 	virtual ~Terminal();
 
-
-
     /* Outputs the specified string at the specified index. Leaves index at the position following
      * the last modified character. */
     void output(std::string string, int& index);
@@ -38,8 +38,8 @@ public:
     /*Removes last character (if one exists) and moves the cursor back one space (if possible).*/
     void backspace();
 
-    /*Gets an event off the top of the window's event queue. Returns false if no event.*/
-    bool get_event(sf::Event* event);
+    /* Sends out all SFML events using the specified source. */
+    void get_input(EventSource* source);
 
     /*Sets the color of all text outputted after this command.*/
     void set_color(sf::Color color = config::colors[config::color_default_fg]);

@@ -24,6 +24,7 @@ int main()
     sf::Time dt;
     while(engine->running)
     {
+        terminal->get_input(engine);
         engine->handle_events();
         dt = clock.restart();
         engine->run(dt);

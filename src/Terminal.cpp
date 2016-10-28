@@ -1,5 +1,6 @@
 #include "Config.h"
 #include "Terminal.h"
+#include "EventSource.h"
 #include <iostream>
 
 Terminal::Terminal()
@@ -95,9 +96,16 @@ void Terminal::backspace()
     dirty = true;
 }
 
-bool Terminal::get_event(sf::Event* event)
+void Terminal::get_input(EventSource* source)
 {
-    return window->pollEvent(*event);
+    sf::Event sf_event;
+    while(window->pollEvent(sf_event))
+    {
+        Event* event = new Event(); // The wrapper to put sf_event in before sending to engine
+        event->type = Event::SFML;
+        event->sfml_event_data.sf_event = sf_event;
+        source->send_event(event);
+    }
 }
 
 void Terminal::set_color(sf::Color color)
