@@ -14,6 +14,7 @@ class Engine
 public:
     Terminal* terminal;
     std::vector<GameState*> game_states;
+    EventSource* event_source;
 
 	Engine(Terminal* terminal_in);
 	virtual ~Engine();
