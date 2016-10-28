@@ -13,4 +13,5 @@ class GameStateIntro: public GameState
 
         virtual void init();
         virtual void handle_event(Event* event);
+        virtual void update(sf::Time dt);
 };

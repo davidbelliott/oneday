@@ -251,7 +251,7 @@ void ActionTalkTo::act(World* w, Terminal* t, Object* o)
 
 void ActionHelp::act(World* w, Terminal* t, Object* o)
 {
-    t->set_color(sf::Color::Red);
+    t->set_color(config::colors[config::color_objective]);
     t->disp("Your objective: " + w->player->objective);
     /*t->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
     t->disp("Type sentences to do stuff. You can use the following verbs:");

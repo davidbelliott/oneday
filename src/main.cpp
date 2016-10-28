@@ -6,37 +6,14 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
+#include <thread>
 
 int main()
 {
-
-	/*while (window.isOpen())
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-
-        window.clear();
-        window.display();
-    }*/
-
     config::config_init();
 
     Terminal* terminal = new Terminal();
 	Engine* engine = new Engine(terminal);
-
-
-
-/*    for(int i = 0; i < config::N_COLORS; i++)
-    {
-        terminal->set_color(config::colors[config::ColorIndex(i)]);
-        terminal->disp("The quick brown fox jumped over the lazy dog");
-    }
-    terminal->draw();
-    terminal->pause();*/
 
     GameStateText* game_state_text = new GameStateText(engine);
     engine->push_state(game_state_text);

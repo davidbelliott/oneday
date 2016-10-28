@@ -39,6 +39,12 @@ Parser::~Parser()
 {
 }
 
+bool matches_regex(std::string regex, std::string str)
+{
+
+
+}
+
 Action* Parser::parse(std::string statement, World* w, Terminal* t)
 {
 	Action* action = NULL;
@@ -51,7 +57,7 @@ Action* Parser::parse(std::string statement, World* w, Terminal* t)
 	{
 		tokens.push_back(word_list.get_word(token_strings[i]));
 	}
-	
+
 	bool found_action = false;
 	bool found_object = false;
 	for (size_t i = 0; i < tokens.size(); i++)

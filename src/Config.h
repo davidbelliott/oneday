@@ -38,6 +38,7 @@ namespace config
     extern ColorIndex color_default_bg;
     extern ColorIndex color_room_title;
     extern ColorIndex color_user_input;
+    extern ColorIndex color_objective;
     extern sf::Color colors[N_COLORS];
 
     void config_init();

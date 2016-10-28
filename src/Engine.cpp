@@ -7,7 +7,7 @@
 #include "common.h"
 
 Engine::Engine(Terminal* terminal_in)
-: paused(false), running(true), terminal(terminal_in)
+: paused(false), running(true), terminal(terminal_in), event_source(new EventSource())
 {
 }
 
@@ -42,6 +42,8 @@ void Engine::get_input()
         if(!game_states.empty())
             game_states.back()->handle_event(&event);
     }
+
+    
 }
 
 void Engine::draw()
