@@ -21,7 +21,11 @@ public:
     void push_state(GameState* state);
     void pop_state();
 
+    /* Inherited from EventSource */
+    void push_event(Event* event);
+    void handle_event(Event* event);
     void handle_events();
+
     void run(sf::Time dt);
     void draw();
 

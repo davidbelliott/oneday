@@ -3,7 +3,10 @@
 
 
 GameState::GameState(Engine* engine_in)
-: engine(engine_in), paused(false), running(true)
+:   EventSink(),
+    engine(engine_in),
+    paused(false),
+    running(true)
 {
 }
 
@@ -20,14 +23,7 @@ void GameState::cleanup()
 {
 }
 
-void GameState::handle_events()
-{
-    Event* top_event = nullptr;
-    while(top_event = pop_event())
-        handle_event(top_event);
-}
-
-void GameState::handle_event(Event* event)
+void GameState::notify(Event* event)
 {
 }
 

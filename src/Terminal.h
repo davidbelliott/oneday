@@ -1,7 +1,7 @@
 #pragma once
 
-class EventSource;
-
+#include "EventSink.h"
+#include "EventSource.h"
 #include "CharBuffer.h"
 #include "Config.h"
 #include <SFML/Graphics.hpp>
@@ -9,7 +9,7 @@ class EventSource;
 #include <vector>
 
 /* A Terminal is a wrapper for a sf::RenderWindow which handles input and textual output. */
-class Terminal
+class Terminal : public EventSink
 {
 public:
 
@@ -38,7 +38,7 @@ public:
     /*Removes last character (if one exists) and moves the cursor back one space (if possible).*/
     void backspace();
 
-    /* Sends out all SFML events using the specified source. */
+    /* Pushes all SFML events to the specified source. */
     void get_input(EventSource* source);
 
     /*Sets the color of all text outputted after this command.*/
@@ -46,6 +46,9 @@ public:
 
     /*Sets whether or not to display the cursor rectangle at the current cursor x and y.*/
     void set_disp_cursor(bool disp_cursor_in);
+
+    /* Inherited from EventSink */
+    void notify(Event* event);
 
 //private:
 

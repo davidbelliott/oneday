@@ -31,7 +31,7 @@ void GameStateIntro::cleanup()
     engine->unregister_sink(this, Event::SFML);
 }
 
-void GameStateIntro::handle_event(Event* event)
+void GameStateIntro::notify(Event* event)
 {
     if(event->type == Event::SFML)
     {

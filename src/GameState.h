@@ -22,11 +22,8 @@ public:
 	/*Called when the gamestate is removed from the engine.*/
 	virtual void cleanup();
 
-	/*If the gamestate is unpaused, pops events from the queue and passes each to handle_event.*/
-	virtual void handle_events();
-
-    /*Handles a single event.*/
-    virtual void handle_event(Event* event);
+    /* Inherited from EventSink */
+    virtual void notify(Event* event);
 
 	/*Run one cycle of the gamestate. dt is time elapsed in last engine cycle.*/
 	virtual void run(sf::Time dt);

@@ -140,3 +140,7 @@ void Terminal::draw()
 
         window->display();
 }
+
+void Terminal::notify(Event* event)
+{
+}
