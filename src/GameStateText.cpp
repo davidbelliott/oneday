@@ -27,7 +27,7 @@ void GameStateText::init()
     parser = new Parser();
     Action* change_room_action = parser->action_factory.create_action(parser->word_list.get_word("look"));
     world->change_room_action = change_room_action;
-	world->set_current_room(world->get_current_room()->name.word, engine->terminal);
+	world->set_current_room(world->get_current_room()->name.word, engine);
     start_input();
 }
 
@@ -74,7 +74,7 @@ void GameStateText::notify(Event* event)
 
                     Action* action = parser->parse(cur_user_string, world, engine->terminal);
                     if(action)
-                        action->run(world, terminal);
+                        action->run(world, engine);
                     if(!world->active)
                         running = false;
 
@@ -101,7 +101,7 @@ void GameStateText::notify(Event* event)
         else if(sf_event->type == sf::Event::MouseWheelScrolled)
         {
             int scroll_delta = -sf_event->mouseWheelScroll.delta;
-            terminal->buffer.scroll(scroll_delta);
+            terminal->buffer->scroll(scroll_delta);
         }
     }
 }

@@ -2,6 +2,7 @@
 
 class Room;
 class Player;
+class Engine;
 #include "Object.h"
 #include <SFML/Audio.hpp>
 #include <map>
@@ -23,6 +24,6 @@ public:
 	virtual ~World();
 
 	Room* get_current_room();
-	void set_current_room(std::string room_name, Terminal* t);
+	void set_current_room(std::string room_name, Engine* e);
 };
 

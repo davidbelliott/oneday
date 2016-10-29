@@ -5,17 +5,19 @@
 #include "Terminal.h"
 #include "common.h"
 
-Engine::Engine(Terminal* terminal_in)
+Engine::Engine()
 :   EventSource(),
     paused(false),
     running(true),
-    terminal(terminal_in)
+    terminal(nullptr)
 {
+    terminal = new Terminal(this);
 }
 
 
 Engine::~Engine()
 {
+    delete terminal;
 }
 
 void Engine::push_state(GameState* state)
@@ -58,6 +60,11 @@ void Engine::handle_events()
     }
 }
 
+void Engine::get_input()
+{
+    terminal->get_input(this);
+}
+
 void Engine::draw()
 {
     if(!game_states.empty())
@@ -73,4 +80,13 @@ void Engine::run(sf::Time dt)
         pop_state();
     if(game_states.size() == 0)
         running = false;
+}
+
+void Engine::disp(std::string t)
+{
+    std::string* s = new std::string(t);
+    Event* disp_event = new Event();
+    disp_event->type = Event::CMD_DISP;
+    disp_event->cmd_disp_event_data.string = s;
+    push_event(disp_event);
 }

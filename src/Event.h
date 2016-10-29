@@ -24,13 +24,13 @@ public:
 
 	struct CmdDispEventData
 	{
-		std::string string;
+		std::string* string;
 		bool wrap = true;
 	};
 
 	struct CmdOutputEventData
 	{
-		std::string string;
+		std::string* string;
 		int x;
 		int y;
 		bool wrap = true;

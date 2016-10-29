@@ -1,5 +1,6 @@
 #pragma once
 
+class Engine;
 #include "EventSink.h"
 #include "EventSource.h"
 #include "CharBuffer.h"
@@ -20,7 +21,7 @@ public:
         sf::Color background_color;
     };
 
-	Terminal();
+	Terminal(Engine* engine_in);
 	virtual ~Terminal();
 
     /* Outputs the specified string at the specified index. Leaves index at the position following
@@ -57,7 +58,7 @@ public:
 
     sf::RenderWindow* window;
     State state;
-    CharBuffer buffer;
+    CharBuffer* buffer;
     bool disp_cursor;
     bool dirty;
 };

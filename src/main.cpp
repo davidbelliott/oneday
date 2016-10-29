@@ -12,19 +12,20 @@ int main()
 {
     config::config_init();
 
-    Terminal* terminal = new Terminal();
-	Engine* engine = new Engine(terminal);
+	Engine* engine = new Engine();
 
     GameStateText* game_state_text = new GameStateText(engine);
     GameStateIntro* game_state_intro = new GameStateIntro(engine);
     engine->push_state(game_state_text);
     //engine->push_state(game_state_intro);
 
+
+
     sf::Clock clock;
     sf::Time dt;
     while(engine->running)
     {
-        terminal->get_input(engine);
+        engine->get_input();
         engine->handle_events();
         dt = clock.restart();
         engine->run(dt);
@@ -35,7 +36,6 @@ int main()
         }
     }
 
-    delete terminal;
 	delete engine;
     delete game_state_text;
 

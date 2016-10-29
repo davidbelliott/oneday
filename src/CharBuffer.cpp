@@ -5,7 +5,8 @@
 using namespace std;
 
 CharBuffer::CharBuffer()
-  : contents(), scroll_value(0), scroll_value_max(0)
+:   contents({}),
+    scroll_value(0), scroll_value_max(0)
 {
     clear();
 }
