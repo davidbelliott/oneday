@@ -55,7 +55,7 @@ void GameStateText::end_input()
     terminal->set_color(config::colors[config::color_default_fg]);
 }
 
-void GameStateText::handle_event(Event* event)
+void GameStateText::notify(Event* event)
 {
     Terminal* terminal = engine->terminal;
     if(event->type == Event::SFML)
