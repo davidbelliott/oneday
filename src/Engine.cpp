@@ -1,19 +1,24 @@
-#include "EventSource.h"
 #include "Engine.h"
 #include "GameState.h"
 #include "Room.h"
 #include "World.h"
 #include "Terminal.h"
 #include "common.h"
+#include <iostream>
 
-Engine::Engine(Terminal* terminal_in)
-: paused(false), running(true), terminal(terminal_in), event_source(new EventSource())
+Engine::Engine()
+:   EventSource(),
+    paused(false),
+    running(true),
+    terminal(nullptr)
 {
+    terminal = new Terminal(this);
 }
 
 
 Engine::~Engine()
 {
+    delete terminal;
 }
 
 void Engine::push_state(GameState* state)
@@ -31,19 +36,43 @@ void Engine::pop_state()
     }
 }
 
+void Engine::push_event(Event* event)
+{
+    std::cout<<event->type<<std::endl;
+    if(paused)
+    {
+        if(event->type == Event::KEY_PRESSED)
+        {
+            paused = false;
+            ignore_next_event = true;
+        }
+    }
+    else if(ignore_next_event)
+        ignore_next_event = false;
+    else
+        EventSource::push_event(event);
+}
+
+void Engine::handle_event(Event* event)
+{
+    if(!paused && event->type == Event::CMD_PAUSE)
+        pause();
+}
+
+void Engine::handle_events()
+{
+    while(!paused && !incoming_queue.empty())
+    {
+        Event* front_event = incoming_queue.front();
+        incoming_queue.pop();
+        handle_event(front_event);
+        send_event(front_event);
+    }
+}
+
 void Engine::get_input()
 {
-    sf::Event terminal_event;
-    while(terminal->get_event(&terminal_event))
-    {
-        Event event;
-        event.type = Event::SFML;
-        event.sfml_event_data.sf_event = terminal_event;
-        if(!game_states.empty())
-            game_states.back()->handle_event(&event);
-    }
-
-    
+    terminal->get_input(this);
 }
 
 void Engine::draw()
@@ -61,4 +90,28 @@ void Engine::run(sf::Time dt)
         pop_state();
     if(game_states.size() == 0)
         running = false;
+}
+
+void Engine::disp(std::string t)
+{
+    CmdDisp* disp_cmd = new CmdDisp(t);
+    push_event(disp_cmd);
+}
+
+void Engine::pause()
+{
+    if(!paused)
+    {
+        paused = true;
+    }
+}
+
+void Engine::unpause()
+{
+    if(paused)
+    {
+        paused = false;
+        CmdUnpause* cmd_unpause = new CmdUnpause();
+        push_event(cmd_unpause);
+    }
 }

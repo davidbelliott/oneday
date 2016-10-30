@@ -1,12 +1,13 @@
+#include "World.h"
 #include "Action.h"
+#include "Engine.h"
 #include "Object.h"
-#include "Terminal.h"
 
 Object::Object(std::string name_in, std::string description_in)
 	: name(name_in, {""}, Word::OBJECT), pretty_name(""), parent(NULL), shallow_description(description_in), properties(VISIBLE), show_children(true)
 {
-	pre_action = [](World* w, Terminal* t, Action* a, Object* o) { return true; };
-	post_action = [](World* w, Terminal* t, Action* a, Object* o) { return true; };
+	pre_action = [](World* w, Engine* e, Action* a, Object* o) { return true; };
+	post_action = [](World* w, Engine* e, Action* a, Object* o) { return true; };
 }
 
 Object::Object()
@@ -19,14 +20,14 @@ Object::~Object()
 {
 }
 
-void Object::describe(Terminal* t, bool deep, bool describe_this)
+void Object::describe(Engine* e, bool deep, bool describe_this)
 {
 	if (describe_this && (properties & VISIBLE))
 	{
 		if (deep && !deep_description.empty())
-			t->disp(deep_description);
+			e->push_event(new CmdDisp(deep_description));
 		else
-			t->disp(shallow_description);
+			e->push_event(new CmdDisp(shallow_description));
 	}
     // If this isn't a container and show_children is true, show the children;
     // If this is a container and it's open, show the children.
@@ -37,7 +38,7 @@ void Object::describe(Terminal* t, bool deep, bool describe_this)
             // If it's a deep description, show all children.
             // Otherwise, don't show the undiscovered children.
 			if(deep || (children[i]->properties & DISCOVERED))
-				children[i]->describe(t, false, true);
+				children[i]->describe(e, false, true);
 		}
 	}
     properties |= DISCOVERED;

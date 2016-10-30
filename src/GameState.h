@@ -12,8 +12,6 @@ public:
 	Engine* engine;
 	bool paused;		//Is this game state paused?
     bool running;       //Is this game state running?
-	bool blocks_update;	//Does the state block the update of states beneath it?
-	bool blocks_draw;	//Does the state block the draw of states beneath it?
 
 	GameState(Engine* engine_in);
 	virtual ~GameState();
@@ -24,8 +22,8 @@ public:
 	/*Called when the gamestate is removed from the engine.*/
 	virtual void cleanup();
 
-	/*Handles event from the queue.*/
-	virtual void handle_event(Event* event);
+    /* Inherited from EventSink */
+    virtual void notify(Event* event);
 
 	/*Run one cycle of the gamestate. dt is time elapsed in last engine cycle.*/
 	virtual void run(sf::Time dt);

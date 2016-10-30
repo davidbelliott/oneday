@@ -4,8 +4,8 @@
 #include "Engine.h"
 #include "Config.h"
 
-GameStateIntro::GameStateIntro(Engine* engine_in, GameState* state_to_push_in)
-    : GameState(engine_in), state_to_push(state_to_push_in)
+GameStateIntro::GameStateIntro(Engine* engine_in)
+    : GameState(engine_in)
 {
 }
 
@@ -16,29 +16,29 @@ GameStateIntro::~GameStateIntro()
 void GameStateIntro::init()
 {
     running = true;
+    engine->register_sink(this, Event::KEY_PRESSED);
     Terminal* terminal = engine->terminal;
-    terminal->clr();
+    //terminal->clr();
     for(int i = 0; i < config::N_COLORS; i++)
     {
-        terminal->set_color(config::colors[i]);
-        terminal->disp("One Day in the Life of Young Jamal");
+        //terminal->set_color(config::colors[i]);
+        engine->push_event(new CmdDisp("One Day in the Life of Young Jamal"));
     }
 }
 
-void GameStateIntro::handle_event(Event* event)
+void GameStateIntro::cleanup()
 {
-    if(event->type == Event::SFML)
+    engine->unregister_sink(this, Event::KEY_PRESSED);
+}
+
+void GameStateIntro::notify(Event* event)
+{
+    if(event->type == Event::KEY_PRESSED)
     {
-        sf::Event* sf_event = &event->sfml_event_data.sf_event;
-        if(sf_event->type == sf::Event::KeyPressed && sf_event->key.code == sf::Keyboard::Space)
-        {
-            engine->push_state(state_to_push);
-        }
+        running = false;
     }
 }
 
 void GameStateIntro::update(sf::Time dt)
 {
-    
-
 }

@@ -4,11 +4,10 @@ EventSink::EventSink()
 {
 }
 
-
 EventSink::~EventSink()
 {
 }
 
-void EventSink::handle_event(Event* event)
+void EventSink::notify(Event* event)
 {
 }

@@ -5,13 +5,14 @@
 class GameStateIntro: public GameState
 {
     private:
-        GameState* state_to_push;
+        //GameState* state_to_push;
     public:
         
-        GameStateIntro(Engine* engine_in, GameState* state_to_push_in);
+        GameStateIntro(Engine* engine_in);
         virtual ~GameStateIntro();
 
         virtual void init();
-        virtual void handle_event(Event* event);
+        virtual void cleanup();
+        virtual void notify(Event* event);
         virtual void update(sf::Time dt);
 };

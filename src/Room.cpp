@@ -1,6 +1,7 @@
 #include "Room.h"
 #include "Terminal.h"
 #include "Config.h"
+#include "Engine.h"
 
 Room::Room(std::string name_in, std::string pretty_name_in, std::string description_in)
 	: Object(name_in, description_in)
@@ -21,12 +22,12 @@ Room::~Room()
 		//delete objects[i];
 }
 
-void Room::describe(Terminal* t, bool deep, bool describe_this)
+void Room::describe(Engine* e, bool deep, bool describe_this)
 {
-    t->set_color(config::colors[config::color_room_title]);
-    t->disp("You in " + pretty_name + ".");
-    t->set_color();
-    Object::describe(t, deep, describe_this);
+    e->push_event(new CmdSetColor(config::colors[config::color_room_title]));
+    e->push_event(new CmdDisp("You in " + pretty_name + "."));
+    e->push_event(new CmdSetColor());
+    Object::describe(e, deep, describe_this);
     for(int i = 0; i < DIRECTION_MAX; i++)
     {
         if(directions[i] != "")
@@ -36,7 +37,7 @@ void Room::describe(Terminal* t, bool deep, bool describe_this)
             if(dir_room && dir_room->pretty_name != "")
             {
                 std::string dir_reference = dir[dir_id].dir_reference;
-                t->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                e->push_event(new CmdDisp(dir_reference + " is " + dir_room->pretty_name + "."));
             }
         }
     }

@@ -1,10 +1,11 @@
 #include "Action.h"
 #include "Player.h"
-#include "Terminal.h"
+#include "Engine.h"
 #include "Room.h"
 #include "Word.h"
 #include "WordList.h"
 #include "World.h"
+#include "Terminal.h"
 #include "common.h"
 
 Action::Action(Word name_in)
@@ -26,45 +27,45 @@ void Action::add_preposition(Word preposition_in)
 	prepositions.push_back(preposition_in);
 }
 
-void Action::run(World* w, Terminal* t)
+void Action::run(World* w, Engine* e)
 {
     bool run = true;
     Room* cur_room = w->get_current_room();
     if(cur_room)
-        run = cur_room->pre_action(w, t, this, cur_room);
+        run = cur_room->pre_action(w, e, this, cur_room);
     if(run && objects.empty())
-        act(w, t, NULL);
+        act(w, e, NULL);
     else if(!objects.empty())
     {
         for(int i = 0; i < objects.size(); i++)
         {
-            if(objects[i]->pre_action(w, t, this, objects[i]))
-                act(w, t, objects[i]);
-            objects[i]->post_action(w, t, this, objects[i]);
+            if(objects[i]->pre_action(w, e, this, objects[i]))
+                act(w, e, objects[i]);
+            objects[i]->post_action(w, e, this, objects[i]);
         }
     }
     if(cur_room)
-        cur_room->post_action(w, t, this, cur_room);
+        cur_room->post_action(w, e, this, cur_room);
 
 }
 
-void Action::act(World* w, Terminal* t, Object* o)
+void Action::act(World* w, Engine* e, Object* o)
 {
 
 }
 
-void ActionGo::act(World* w, Terminal* t, Object* o)
+void ActionGo::act(World* w, Engine* e, Object* o)
 {
     if(o)
     {
         if(o->properties & Object::GOABLE)
         {
 			std::string new_room_name = o->goable_data;
-			w->set_current_room(new_room_name, t);
+			w->set_current_room(new_room_name, e);
         }
         else
         {
-			t->disp("You can't go there, baka.");
+			e->disp("You can't go there, baka.");
         }
 
     }
@@ -81,61 +82,61 @@ void ActionGo::act(World* w, Terminal* t, Object* o)
         }
         if(direction == DIRECTION_MAX)
         {
-            t->disp("Go where?");
+            e->disp("Go where?");
         }
         else
         {
             Room* room = w->get_current_room();
             if(room && room->directions[direction] != "") {
-                w->set_current_room(room->directions[direction], t);
+                w->set_current_room(room->directions[direction], e);
             } else {
-                t->disp("You can't go " + dir[direction].name + " from here.");
+                e->disp("You can't go " + dir[direction].name + " from here.");
             }
         }
     }
 }
 
-void ActionLook::act(World* w, Terminal* t, Object* o)
+void ActionLook::act(World* w, Engine* e, Object* o)
 {
     if(o)
-        o->describe(t, true, true);
+        o->describe(e, true, true);
     else
     {
         Room* room = w->get_current_room();
         if(room)
-            room->describe(t, true, true);
+            room->describe(e, true, true);
     }
 }
 
-void ActionQuit::act(World* w, Terminal* t, Object* o)
+void ActionQuit::act(World* w, Engine* e, Object* o)
 {
 	w->active = false;
 }
 
-void ActionTake::act(World* w, Terminal* t, Object* o)
+void ActionTake::act(World* w, Engine* e, Object* o)
 {
 	if (o && (o->properties & Object::TAKEABLE))
 	{
-		t->disp("You take the " + o->name.word + ".");
+		e->disp("You take the " + o->name.word + ".");
 		if (o->parent)
 			o->parent->remove_child(o);
 		w->player->add_child(o);
 	}
 	else if (o)
 	{
-		t->disp("You can't take the " + o->name.word + ", baka gaijin!");
+		e->disp("You can't take the " + o->name.word + ", baka gaijin!");
 	}
 	else
 	{
-		t->disp("Take what?");
+		e->disp("Take what?");
 	}
 }
 
-void ActionWear::act(World* w, Terminal* t, Object* o)
+void ActionWear::act(World* w, Engine* e, Object* o)
 {
 	if (o && (o->properties & Object::WEARABLE))
 	{
-		t->disp("You put on the " + o->name.word + ".");
+		e->disp("You put on the " + o->name.word + ".");
         if(o->parent)
         {
             if(o->parent != w->player)
@@ -152,113 +153,113 @@ void ActionWear::act(World* w, Terminal* t, Object* o)
 	}
 	else if (o)
 	{
-		t->disp("You can't wear a " + o->name.word + ".");
+		e->disp("You can't wear a " + o->name.word + ".");
 	}
 	else
 	{
-		t->disp("Wear what?");
+		e->disp("Wear what?");
 	}
 }
 
-void ActionHit::act(World* w, Terminal* t, Object* o)
+void ActionHit::act(World* w, Engine* e, Object* o)
 {
 	if (o && (o->properties & Object::HITTABLE))
 	{
 		if (o->flipped)
-			t->disp("The " + o->name.word + " has already been hit.");
+			e->disp("The " + o->name.word + " has already been hit.");
 		else
 		{
-			t->disp("You hit the " + o->name.word + ".");
+			e->disp("You hit the " + o->name.word + ".");
 			o->flipped = true;
 		}
 	}
 	else if (o)
 	{
-		t->disp("You can't hit the " + o->name.word);
+		e->disp("You can't hit the " + o->name.word);
 	}
 	else
 	{
-		t->disp("Hit what?");
+		e->disp("Hit what?");
 	}
 }
 
-void ActionOpenContainer::act(World* w, Terminal* t, Object* o)
+void ActionOpenContainer::act(World* w, Engine* e, Object* o)
 {
 	if (o && o->properties & Object::CONTAINER)
 	{
 		if (!o->open)
 		{
-			t->disp("You open the " + o->name.word + ".");
+			e->disp("You open the " + o->name.word + ".");
 			o->open = true;
-			o->describe(t, true, false);
+			o->describe(e, true, false);
 		}
 		else
 		{
-			t->disp("The " + o->name.word + " is already open.");
+			e->disp("The " + o->name.word + " is already open.");
 		}
 	}
 	else if(o)
 	{
-		t->disp("You can't open a " + o->name.word + "!");
+		e->disp("You can't open a " + o->name.word + "!");
 	}
 	else
 	{
-		t->disp("Open what?");
+		e->disp("Open what?");
 	}
 }
 
-void ActionShout::act(World* w, Terminal* t, Object* o)
+void ActionShout::act(World* w, Engine* e, Object* o)
 {
-	t->disp("SHEEEEIT!");
+	e->disp("SHEEEEIT!");
 }
 
-void ActionRead::act(World* w, Terminal* t, Object* o)
+void ActionRead::act(World* w, Engine* e, Object* o)
 {
     if(o && (o->properties & Object::READABLE))
     {
-        t->disp("The " + o->name.word + " reads:");
-        t->disp(o->readable_data);
+        e->disp("The " + o->name.word + " reads:");
+        e->disp(o->readable_data);
     }
     else if(o)
     {
-        t->disp("There's nothing to read on the " + o->name.word + ".");
+        e->disp("There's nothing to read on the " + o->name.word + ".");
     }
     else
     {
-        t->disp("Read what?");
+        e->disp("Read what?");
     }
 }
 
-void ActionTalkTo::act(World* w, Terminal* t, Object* o)
+void ActionTalkTo::act(World* w, Engine* e, Object* o)
 {
     if(o && (o->properties & Object::TALKABLE))
     {
         for(int i = 0; i < o->talkable_data.size(); i++)
         {
-            t->disp(o->talkable_data[i]);
-            t->pause();
+            e->push_event(new CmdDisp(o->talkable_data[i]));
+            e->push_event(new CmdPause());
         }
     }
     else if(o)
     {
-        t->disp("You can't talk to the " + o->name.word + ", baka gaijin!");
+        e->push_event(new CmdDisp("You can't talk to the " + o->name.word + ", baka gaijin!"));
     }
     else
     {
-        t->disp("Talk to what?");
+        e->push_event(new CmdDisp("Talk to what?"));
     }
 }
 
-void ActionHelp::act(World* w, Terminal* t, Object* o)
+void ActionHelp::act(World* w, Engine* e, Object* o)
 {
-    t->set_color(config::colors[config::color_objective]);
-    t->disp("Your objective: " + w->player->objective);
-    /*t->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
-    t->disp("Type sentences to do stuff. You can use the following verbs:");
+    //e->terminal->set_color(config::colors[config::color_objective]);
+    e->disp("Your objective: " + w->player->objective);
+    /*e->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
+    e->disp("Type sentences to do stuff. You can use the following verbs:");
     
     for(int i = 0; i < name.parent_list->ACTION_MAX; i++)
     {
-        t->disp("-" + name.parent_list->words_by_id[i].word);
+        e->disp("-" + name.parent_list->words_by_id[i].word);
     }*/
-    t->set_color();
+    //e->terminal->set_color();
 }
