@@ -3,7 +3,6 @@
 #include "Terminal.h"
 #include "Engine.h"
 #include "Config.h"
-#include "CmdDisp.h"
 
 GameStateIntro::GameStateIntro(Engine* engine_in)
     : GameState(engine_in)

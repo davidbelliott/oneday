@@ -7,7 +7,6 @@
 #include "World.h"
 #include "Terminal.h"
 #include "common.h"
-#include "CmdDisp.h"
 
 Action::Action(Word name_in)
 : name(name_in)
@@ -238,7 +237,7 @@ void ActionTalkTo::act(World* w, Engine* e, Object* o)
         for(int i = 0; i < o->talkable_data.size(); i++)
         {
             e->push_event(new CmdDisp(o->talkable_data[i]));
-            //e->terminal->pause();
+            e->push_event(new CmdPause());
         }
     }
     else if(o)

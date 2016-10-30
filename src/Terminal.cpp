@@ -1,6 +1,5 @@
 #include "Config.h"
 #include "Terminal.h"
-#include "CmdDisp.h"
 #include "Engine.h"
 #include <iostream>
 
@@ -18,6 +17,7 @@ Terminal::Terminal(Engine* engine_in)
     engine_in->register_sink(this, Event::CMD_PAUSE);
     engine_in->register_sink(this, Event::CMD_UNPAUSE);
     engine_in->register_sink(this, Event::CMD_INPUT);
+    engine_in->register_sink(this, Event::CMD_SETCOLOR);
 }
 
 
@@ -29,7 +29,6 @@ Terminal::~Terminal()
 
 void Terminal::pause()
 {
-    disp(":");
 }
 
 void Terminal::unpause()
@@ -71,22 +70,23 @@ void Terminal::output(std::string str, int& index)
         {
             x = 0;
             y++;
-            while (y >= config::screen_h_chars)
-            {
-                buffer->add_line();
-                y--;
-            }
+        }
+        while (y >= config::screen_h_chars && disp_cursor)
+        {
+            buffer->add_line();
+            y--;
         }
         dirty = true;
 	}
+
+    std::cout<<"x:"<<x<<"\ty:"<<y<<std::endl;
 
     index = buffer->get_index(x, y);
 }
 
 void Terminal::input()
 {
-    set_disp_cursor(true);
-    set_color(config::colors[config::color_user_input]);
+    //set_color(config::colors[config::color_user_input]);
     disp(">", false);
     state.mode = INPUT;
 }
@@ -144,7 +144,6 @@ void Terminal::set_disp_cursor(bool disp_cursor_in)
     if(disp_cursor != disp_cursor_in)
     {
         disp_cursor = disp_cursor_in;
-        dirty = true;
     }
 }
 
@@ -154,7 +153,7 @@ void Terminal::draw()
 
     buffer->draw(window);
 
-    if(disp_cursor && buffer->get_y(state.cursor_index) < config::screen_h_chars)
+    if(state.mode == INPUT && buffer->get_y(state.cursor_index) < config::screen_h_chars)
     {
         sf::RectangleShape cursor_shape;
         cursor_shape.setSize(sf::Vector2f(config::char_width, config::char_height));
@@ -185,6 +184,10 @@ void Terminal::notify(Event* event)
     {
         input();
     }
+    else if(event->type == Event::CMD_SETCOLOR)
+    {
+        set_color(static_cast<CmdSetColor*>(event)->color);
+    }
     else if(event->type == Event::TEXT_ENTERED)
     {
         if(state.mode == INPUT)
@@ -192,7 +195,7 @@ void Terminal::notify(Event* event)
             char c = static_cast<EventTextEntered*>(event)->c;
             if(c == '\n' || c == '\r')
             {
-                set_color();
+                //set_color();
                 disp("");
                 //end_input();
                 engine->push_event(new EventUserLine(cur_user_string));

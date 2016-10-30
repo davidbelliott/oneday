@@ -1,6 +1,7 @@
 #pragma once
 
 class GameStateTerminal;
+#include "Config.h"
 #include <SFML/Graphics.hpp>
 #include <functional>
 
@@ -14,10 +15,12 @@ public:
         USER_LINE,
 		CMD_DISP,
 		CMD_OUTPUT,
+        CMD_SETCOLOR,
 		CMD_INPUT,
 		CMD_PAUSE,
         CMD_UNPAUSE,
-		CMD_CHANGE_ROOM
+		CMD_CHANGE_ROOM,
+        CMD_SET_OBJECTIVE
 	};
 
 	EventType type;
@@ -62,11 +65,40 @@ class EventUserLine : public Event
         {}
 };
 
+class CmdDisp : public Event
+{
+    public:
+        std::string str;
+
+        CmdDisp(std::string str_in)
+        :   Event(CMD_DISP),
+            str(str_in)
+        {
+        }
+};
+
+class CmdSetColor : public Event
+{
+    public:
+        sf::Color color;
+        CmdSetColor(sf::Color color_in = config::colors[config::color_default_fg])
+            : Event(CMD_SETCOLOR)
+        {}
+};
+
 class CmdInput : public Event
 {
     public:
         CmdInput()
             : Event(CMD_INPUT)
+        {}
+};
+
+class CmdPause : public Event
+{
+    public:
+        CmdPause()
+            : Event(CMD_PAUSE)
         {}
 };
 
@@ -76,4 +108,14 @@ class CmdUnpause : public Event
         CmdUnpause()
             : Event(CMD_UNPAUSE)
         {}
+};
+
+class CmdSetObjective : public Event
+{
+    public:
+        std::string objective;
+        CmdSetObjective(std::string objective_in)
+            : Event(CMD_SET_OBJECTIVE),
+              objective(objective_in)
+    {}
 };

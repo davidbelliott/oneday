@@ -21,6 +21,7 @@ GameStateText::~GameStateText()
 void GameStateText::init()
 {
     engine->register_sink(this, Event::USER_LINE);
+    engine->register_sink(this, Event::CMD_SET_OBJECTIVE);
     running = true;
     world = generate_world();
     parser = new Parser();
@@ -33,25 +34,10 @@ void GameStateText::init()
 void GameStateText::cleanup()
 {
     engine->unregister_sink(this, Event::USER_LINE);
+    engine->unregister_sink(this, Event::CMD_SET_OBJECTIVE);
     delete world;
     delete parser;
-    end_input();
     engine->terminal->clr();
-}
-
-void GameStateText::start_input()
-{
-    /*Terminal* terminal = engine->terminal;
-    terminal->set_disp_cursor(true);
-    terminal->set_color(config::colors[config::color_user_input]);
-    terminal->disp(">", false);*/
-}
-
-void GameStateText::end_input()
-{
-    /*Terminal* terminal = engine->terminal;
-    terminal->set_disp_cursor(false);
-    terminal->set_color(config::colors[config::color_default_fg]);*/
 }
 
 void GameStateText::notify(Event* event)
@@ -64,6 +50,11 @@ void GameStateText::notify(Event* event)
         if(!world->active)
             running = false;
         engine->push_event(new CmdInput());
+    }
+    else if(event->type == Event::CMD_SET_OBJECTIVE)
+    {
+        //engine->push_event(new CmdSetColor(sf::Color::Red));
+        engine->push_event(new CmdDisp("New objective: " + static_cast<CmdSetObjective*>(event)->objective + "."));
     }
 }
 

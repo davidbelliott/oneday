@@ -4,7 +4,6 @@
 #include "Engine.h"
 #include "Word.h"
 #include "World.h"
-#include "CmdDisp.h"
 
 #include <vector>
 

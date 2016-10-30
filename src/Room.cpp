@@ -1,7 +1,6 @@
 #include "Room.h"
 #include "Terminal.h"
 #include "Config.h"
-#include "CmdDisp.h"
 #include "Engine.h"
 
 Room::Room(std::string name_in, std::string pretty_name_in, std::string description_in)
@@ -26,7 +25,9 @@ Room::~Room()
 void Room::describe(Engine* e, bool deep, bool describe_this)
 {
     //t->set_color(config::colors[config::color_room_title]);
+//    e->push_event(new CmdSetColor(config::colors[config::color_room_title]));
     e->push_event(new CmdDisp("You in " + pretty_name + "."));
+ //   e->push_event(new CmdSetColor());
     //t->set_color();
     Object::describe(e, deep, describe_this);
     for(int i = 0; i < DIRECTION_MAX; i++)

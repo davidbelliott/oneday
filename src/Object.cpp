@@ -2,7 +2,6 @@
 #include "Action.h"
 #include "Engine.h"
 #include "Object.h"
-#include "CmdDisp.h"
 
 Object::Object(std::string name_in, std::string description_in)
 	: name(name_in, {""}, Word::OBJECT), pretty_name(""), parent(NULL), shallow_description(description_in), properties(VISIBLE), show_children(true)
