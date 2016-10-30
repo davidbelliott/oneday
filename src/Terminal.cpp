@@ -29,7 +29,7 @@ Terminal::~Terminal()
 
 void Terminal::pause()
 {
-    disp(":", false);
+    disp(":");
 }
 
 void Terminal::unpause()
