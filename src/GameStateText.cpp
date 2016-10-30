@@ -53,7 +53,7 @@ void GameStateText::notify(Event* event)
     }
     else if(event->type == Event::CMD_SET_OBJECTIVE)
     {
-        //engine->push_event(new CmdSetColor(sf::Color::Red));
+        engine->push_event(new CmdSetColor(sf::Color::Red));
         engine->push_event(new CmdDisp("New objective: " + static_cast<CmdSetObjective*>(event)->objective + "."));
     }
 }

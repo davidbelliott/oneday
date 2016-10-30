@@ -37,8 +37,7 @@ World* generate_world()
 				e->push_event(new CmdDisp("You wake.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen."));
 				o->set_flag("woke_up", 1);
                 e->push_event(new CmdPause());
-                e->push_event(new CmdSetObjective("Get outta dis crib"));
-                w->good_day.play();
+                //w->good_day.play();
 			}
             return true;
 		};
@@ -90,7 +89,7 @@ World* generate_world()
 	}
 
 	{
-		Room* jamal_corridor = new Room("jamal_corridor", "the Magick corridor", "This hallway is imbued with a strong Faerie Magick.\nIt runs from north to south.\nThe front door of the house exits to the north.\nOne door exits to the east, and one to the west.\nA series of bare bulbs dangle from the ceiling.");
+		Room* jamal_corridor = new Room("jamal_corridor", "the Magick corridor", "This hallway is imbued with a strong Faerie Magick.");
         jamal_corridor->directions[NORTH] = "jamal_house_block";
 		jamal_corridor->directions[SOUTH] = "jamal_staircase";
 		jamal_corridor->directions[WEST] = "jamal_bedroom";

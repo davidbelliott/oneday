@@ -47,7 +47,10 @@ private:
     void output(std::string string, int& index);
 
     /* Puts the terminal into input mode, displaying the carat and changing the color accordingly. */
-    void input();
+    void input_mode();
+
+    /* Puts the terminal into output mode, changing the color accordingly. */
+    void output_mode();
 
 	/*Outputs the specified string at the current cursor location. Adds a newline if newline is true.*/
 	void disp(std::string string, bool newline = true);

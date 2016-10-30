@@ -82,7 +82,8 @@ class CmdSetColor : public Event
     public:
         sf::Color color;
         CmdSetColor(sf::Color color_in = config::colors[config::color_default_fg])
-            : Event(CMD_SETCOLOR)
+            : Event(CMD_SETCOLOR),
+              color(color_in)
         {}
 };
 

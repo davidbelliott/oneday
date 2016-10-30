@@ -84,11 +84,17 @@ void Terminal::output(std::string str, int& index)
     index = buffer->get_index(x, y);
 }
 
-void Terminal::input()
+void Terminal::input_mode()
 {
-    //set_color(config::colors[config::color_user_input]);
+    set_color(config::colors[config::color_user_input]);
     disp(">", false);
     state.mode = INPUT;
+}
+
+void Terminal::output_mode()
+{
+    set_color(config::colors[config::color_default_fg]);
+    state.mode = OUTPUT;
 }
 
 void Terminal::disp(std::string string, bool newline)
@@ -182,7 +188,7 @@ void Terminal::notify(Event* event)
     }
     else if(event->type == Event::CMD_INPUT)
     {
-        input();
+        input_mode();
     }
     else if(event->type == Event::CMD_SETCOLOR)
     {
@@ -195,9 +201,9 @@ void Terminal::notify(Event* event)
             char c = static_cast<EventTextEntered*>(event)->c;
             if(c == '\n' || c == '\r')
             {
-                //set_color();
+                set_color();
                 disp("");
-                //end_input();
+                output_mode();
                 engine->push_event(new EventUserLine(cur_user_string));
                 cur_user_string = "";
             }
