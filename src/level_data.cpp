@@ -1,9 +1,12 @@
-#include "Parser.h"
-#include "Terminal.h"
+#include "Action.h"
+#include "WordList.h"
+#include "Engine.h"
 #include "Player.h"
 #include "World.h"
 #include "Room.h"
 #include "common.h"
+#include "CmdDisp.h"
+#include "CmdPause.h"
 #include "level_data.h"
 #include <SFML/Audio.hpp>
 #include <iostream>
@@ -29,14 +32,14 @@ World* generate_world()
 		jamal_bedroom->shallow_description = "The walls of this cluttered hovel are plastered with layers of grime and old posters.";
 		jamal_bedroom->directions[EAST] = "jamal_corridor";
 		jamal_bedroom->directions[SOUTH] = "jamal_bathroom";
-		jamal_bedroom->pre_action = [](World* w, Terminal* t, Action* a, Object* o)
+		jamal_bedroom->pre_action = [](World* w, Engine* e, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->LOOK && !o->get_flag("woke_up"))
 			{
-				t->disp("You wake.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen.");
-                w->player->set_objective("Get outta dis crib", t);
+				e->push_event(new CmdDisp("You wake.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen."));
+                w->player->set_objective("Get outta dis crib", e);
 				o->set_flag("woke_up", 1);
-				t->pause();
+                e->push_event(new CmdPause());
                 w->good_day.play();
 			}
             return true;

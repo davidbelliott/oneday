@@ -47,7 +47,12 @@ void EventSource::handle_events()
 
 void EventSource::register_sink(EventSink* sink_to_register, Event::EventType type_to_register)
 {
-	listeners[type_to_register].push_back(sink_to_register);
+    if(listeners.count(type_to_register) > 0)
+	    listeners[type_to_register].push_back(sink_to_register);
+    else
+    {
+        listeners[type_to_register] = { sink_to_register };
+    }
 }
 
 void EventSource::unregister_sink(EventSink* sink_to_unregister, Event::EventType type_to_unregister)

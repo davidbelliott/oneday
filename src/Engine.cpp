@@ -1,9 +1,11 @@
 #include "Engine.h"
+#include "CmdDisp.h"
 #include "GameState.h"
 #include "Room.h"
 #include "World.h"
 #include "Terminal.h"
 #include "common.h"
+#include <iostream>
 
 Engine::Engine()
 :   EventSource(),
@@ -37,16 +39,25 @@ void Engine::pop_state()
 
 void Engine::push_event(Event* event)
 {
-    if(paused && event->type == Event::SFML && event->sfml_event_data.sf_event.type == sf::Event::KeyPressed)
-        paused = false;
-
-    EventSource::push_event(event);
+    std::cout<<event->type<<std::endl;
+    if(paused)
+    {
+        if(event->type == Event::KEY_PRESSED)
+        {
+            paused = false;
+            ignore_next_event = true;
+        }
+    }
+    else if(ignore_next_event)
+        ignore_next_event = false;
+    else
+        EventSource::push_event(event);
 }
 
 void Engine::handle_event(Event* event)
 {
     if(!paused && event->type == Event::CMD_PAUSE)
-        paused = true;
+        pause();
 }
 
 void Engine::handle_events()
@@ -74,7 +85,7 @@ void Engine::draw()
 
 void Engine::run(sf::Time dt)
 {
-    if(!paused && !game_states.empty())
+    if(!game_states.empty())
         game_states.back()->run(dt);
     while(game_states.size() > 0 && !game_states.back()->running)
         pop_state();
@@ -84,9 +95,24 @@ void Engine::run(sf::Time dt)
 
 void Engine::disp(std::string t)
 {
-    std::string* s = new std::string(t);
-    Event* disp_event = new Event();
-    disp_event->type = Event::CMD_DISP;
-    disp_event->cmd_disp_event_data.string = s;
-    push_event(disp_event);
+    CmdDisp* disp_cmd = new CmdDisp(t);
+    push_event(disp_cmd);
+}
+
+void Engine::pause()
+{
+    if(!paused)
+    {
+        paused = true;
+    }
+}
+
+void Engine::unpause()
+{
+    if(paused)
+    {
+        paused = false;
+        CmdUnpause* cmd_unpause = new CmdUnpause();
+        push_event(cmd_unpause);
+    }
 }

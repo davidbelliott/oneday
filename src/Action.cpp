@@ -7,6 +7,7 @@
 #include "World.h"
 #include "Terminal.h"
 #include "common.h"
+#include "CmdDisp.h"
 
 Action::Action(Word name_in)
 : name(name_in)
@@ -32,20 +33,20 @@ void Action::run(World* w, Engine* e)
     bool run = true;
     Room* cur_room = w->get_current_room();
     if(cur_room)
-        run = cur_room->pre_action(w, e->terminal, this, cur_room);
+        run = cur_room->pre_action(w, e, this, cur_room);
     if(run && objects.empty())
         act(w, e, NULL);
     else if(!objects.empty())
     {
         for(int i = 0; i < objects.size(); i++)
         {
-            if(objects[i]->pre_action(w, e->terminal, this, objects[i]))
+            if(objects[i]->pre_action(w, e, this, objects[i]))
                 act(w, e, objects[i]);
-            objects[i]->post_action(w, e->terminal, this, objects[i]);
+            objects[i]->post_action(w, e, this, objects[i]);
         }
     }
     if(cur_room)
-        cur_room->post_action(w, e->terminal, this, cur_room);
+        cur_room->post_action(w, e, this, cur_room);
 
 }
 
@@ -99,12 +100,12 @@ void ActionGo::act(World* w, Engine* e, Object* o)
 void ActionLook::act(World* w, Engine* e, Object* o)
 {
     if(o)
-        o->describe(e->terminal, true, true);
+        o->describe(e, true, true);
     else
     {
         Room* room = w->get_current_room();
         if(room)
-            room->describe(e->terminal, true, true);
+            room->describe(e, true, true);
     }
 }
 
@@ -191,7 +192,7 @@ void ActionOpenContainer::act(World* w, Engine* e, Object* o)
 		{
 			e->disp("You open the " + o->name.word + ".");
 			o->open = true;
-			o->describe(e->terminal, true, false);
+			o->describe(e, true, false);
 		}
 		else
 		{
@@ -236,23 +237,23 @@ void ActionTalkTo::act(World* w, Engine* e, Object* o)
     {
         for(int i = 0; i < o->talkable_data.size(); i++)
         {
-            e->disp(o->talkable_data[i]);
-            e->terminal->pause();
+            e->push_event(new CmdDisp(o->talkable_data[i]));
+            //e->terminal->pause();
         }
     }
     else if(o)
     {
-        e->disp("You can't talk to the " + o->name.word + ", baka gaijin!");
+        e->push_event(new CmdDisp("You can't talk to the " + o->name.word + ", baka gaijin!"));
     }
     else
     {
-        e->disp("Talk to what?");
+        e->push_event(new CmdDisp("Talk to what?"));
     }
 }
 
 void ActionHelp::act(World* w, Engine* e, Object* o)
 {
-    e->terminal->set_color(config::colors[config::color_objective]);
+    //e->terminal->set_color(config::colors[config::color_objective]);
     e->disp("Your objective: " + w->player->objective);
     /*e->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
     e->disp("Type sentences to do stuff. You can use the following verbs:");
@@ -261,5 +262,5 @@ void ActionHelp::act(World* w, Engine* e, Object* o)
     {
         e->disp("-" + name.parent_list->words_by_id[i].word);
     }*/
-    e->terminal->set_color();
+    //e->terminal->set_color();
 }

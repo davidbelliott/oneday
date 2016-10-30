@@ -1,5 +1,6 @@
 #include "Player.h"
-#include "Terminal.h"
+#include "Engine.h"
+#include "CmdDisp.h"
 
 Player::Player(std::string name_in, std::string description_in)
     : Object(name_in, description_in),
@@ -12,13 +13,11 @@ Player::~Player()
 {
 }
 
-void Player::set_objective(std::string objective_in, Terminal* t)
+void Player::set_objective(std::string objective_in, Engine* e)
 {
     objective = objective_in;
-    if(t)
+    if(e)
     {
-        t->set_color(config::colors[config::color_objective]);
-        t->disp("New objective: " + objective);
-        t->set_color();
+        e->push_event(new CmdDisp("New objective: " + objective));
     }
 }

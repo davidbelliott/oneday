@@ -1,8 +1,8 @@
 #pragma once
 
-class Action;
 class World;
-class Terminal;
+class Engine;
+class Action;
 class Object;
 #include "Word.h"
 #include "common.h"
@@ -11,8 +11,8 @@ class Object;
 #include <string>
 #include <map>
 
-typedef std::function<void(World*, Terminal*)> run_func;
-typedef std::function<bool(World*, Terminal*, Action*, Object*)> ActionFunc;
+typedef std::function<void(World*, Engine*)> run_func;
+typedef std::function<bool(World*, Engine*, Action*, Object*)> ActionFunc;
 
 class Object
 {
@@ -45,7 +45,7 @@ public:
 	std::string shallow_description;
 	std::string deep_description;
 	bool show_children;
-	virtual void describe(Terminal* t, bool deep, bool describe_this);
+	virtual void describe(Engine* e, bool deep, bool describe_this);
 
     //If READABLE
     std::string readable_data;  //The text that can be read

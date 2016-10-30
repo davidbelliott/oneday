@@ -29,10 +29,14 @@ public:
     void run(sf::Time dt);
     void draw();
 
+    void pause();
+    void unpause();
+
     /* Event-creation functions */
     void disp(std::string s);
 
 	bool paused;
 	bool running;
+    bool ignore_next_event;
 };
 

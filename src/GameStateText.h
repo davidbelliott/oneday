@@ -11,7 +11,6 @@ class GameStateText: public GameState
     public:
         World* world;
         Parser* parser;
-        std::string cur_user_string;
 
         GameStateText(Engine* engine_in);
         virtual ~GameStateText();

@@ -1,9 +1,10 @@
 #include "Parser.h"
 #include "Player.h"
 #include "Room.h"
-#include "Terminal.h"
+#include "Engine.h"
 #include "Word.h"
 #include "World.h"
+#include "CmdDisp.h"
 
 #include <vector>
 
@@ -45,7 +46,7 @@ bool matches_regex(std::string regex, std::string str)
 
 }
 
-Action* Parser::parse(std::string statement, World* w, Terminal* t)
+Action* Parser::parse(std::string statement, World* w, Engine* e)
 {
 	Action* action = NULL;
 	Object* object = NULL;
@@ -89,9 +90,9 @@ Action* Parser::parse(std::string statement, World* w, Terminal* t)
 	if (!found_action)
 	{
 		if (statement.empty())
-			t->disp("Please enter a command.");
+			e->push_event(new CmdDisp("Please enter a command."));
 		else
-			t->disp("I don't understand.");
+			e->push_event(new CmdDisp("I don't understand."));
 	}
 
 	return action;

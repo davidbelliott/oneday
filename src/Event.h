@@ -9,62 +9,71 @@ class Event
 public:
 	enum EventType
 	{
-		SFML,
+        KEY_PRESSED,
+        TEXT_ENTERED,
+        USER_LINE,
 		CMD_DISP,
 		CMD_OUTPUT,
 		CMD_INPUT,
 		CMD_PAUSE,
+        CMD_UNPAUSE,
 		CMD_CHANGE_ROOM
-	};
-
-	struct SfmlEventData
-	{
-		sf::Event sf_event;
-	};
-
-	struct CmdDispEventData
-	{
-		std::string* string;
-		bool wrap = true;
-	};
-
-	struct CmdOutputEventData
-	{
-		std::string* string;
-		int x;
-		int y;
-		bool wrap = true;
-	};
-
-	struct CmdInputEventData
-	{
-		std::function<void (std::string, GameStateTerminal*)>* callback;
-	};
-
-	struct CmdPauseEventData
-	{
-
-	};
-
-	struct CmdChangeRoomEventData
-	{
-		std::string* new_room;
 	};
 
 	EventType type;
 
-	union
-	{
-		SfmlEventData sfml_event_data;
-		CmdDispEventData cmd_disp_event_data;
-		CmdOutputEventData cmd_output_event_data;
-		CmdInputEventData cmd_input_event_data;
-		CmdPauseEventData cmd_pause_event_data;
-		CmdChangeRoomEventData cmd_change_room_event_data;
-	};
-
-	Event()
-	{}
+	Event(EventType type_in)
+	: type(type_in)
+    {}
 	virtual ~Event()
 	{}
+};
+
+class EventKeyPressed : public Event
+{
+    public:
+        sf::Keyboard::Key code;
+
+        EventKeyPressed(sf::Keyboard::Key code_in)
+            : Event(KEY_PRESSED),
+              code(code_in)
+        {}
+};
+
+class EventTextEntered : public Event
+{
+    public:
+        char c;
+
+        EventTextEntered(char c_in)
+            : Event(TEXT_ENTERED),
+              c(c_in)
+        {}
+};
+
+class EventUserLine : public Event
+{
+    public:
+        std::string line;
+
+        EventUserLine(std::string line_in)
+            : Event(USER_LINE),
+              line(line_in)
+        {}
+};
+
+class CmdInput : public Event
+{
+    public:
+        CmdInput()
+            : Event(CMD_INPUT)
+        {}
+};
+
+class CmdUnpause : public Event
+{
+    public:
+        CmdUnpause()
+            : Event(CMD_UNPAUSE)
+        {}
 };

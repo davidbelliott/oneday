@@ -1,3 +1,4 @@
+#include "CmdDisp.h"
 #include "Action.h"
 #include "Terminal.h"
 #include "Room.h"
@@ -29,10 +30,10 @@ void World::set_current_room(std::string room_name, Engine* e)
 {
 	cur_room = room_name;
 	Room* room = get_current_room();
-	e->terminal->clr();
+	//e->terminal->clr();
 	if (!room)
 	{
-		e->terminal->disp("Error: room " + cur_room + " does not exist.");
+		e->push_event(new CmdDisp("Error: room " + cur_room + " does not exist."));
 		exit(1);
 	}
 	else if(change_room_action)
