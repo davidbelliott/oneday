@@ -39,6 +39,5 @@ void World::set_current_room(std::string room_name, Receiver* r)
     else
     {
         room->describe(r, true, true);
-        r->add_event(new CmdInput());
 	}
 }

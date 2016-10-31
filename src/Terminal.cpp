@@ -163,6 +163,7 @@ void Terminal::handle_event(Event* event)
                 if(owner)
                     owner->add_event(new EventUserLine(cur_user_string));
                 cur_user_string = "";
+                output_mode();
             }
             else if(c == '\b')
             {

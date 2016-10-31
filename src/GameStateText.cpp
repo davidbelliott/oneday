@@ -27,6 +27,7 @@ void GameStateText::init()
     world = generate_world();
     parser = new Parser();
 	world->set_current_room(world->get_current_room()->name.word, this);
+    add_event(new CmdInput());
 }
 
 void GameStateText::cleanup()
@@ -42,7 +43,7 @@ void GameStateText::handle_event(Event* event)
     {
         std::string line = static_cast<EventUserLine*>(event)->line;
         if(line == "")
-            terminal->disp("Please enter a command.");
+            add_event(new CmdDisp("Please enter a command."));
         else
         {
             Action* action = parser->parse(line, world, this);
@@ -52,12 +53,12 @@ void GameStateText::handle_event(Event* event)
             }
             else
             {
-                terminal->disp("I don't understand.");
+                add_event(new CmdDisp("I don't understand."));
             }
             if(!world->active)
                 running = false;
         }
-        terminal->input_mode();
+        add_event(new CmdInput());
     }
     terminal->handle_event(event);
 }
