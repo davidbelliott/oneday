@@ -1,5 +1,5 @@
 #include "GameState.h"
-
+#include "Event.h"
 
 
 GameState::GameState(Engine* engine_in)
@@ -13,6 +13,19 @@ GameState::GameState(Engine* engine_in)
 
 GameState::~GameState()
 {
+}
+
+void GameState::add_event(Event* event)
+{
+    if(paused)
+    {
+        if(event->type == Event::KEY_PRESSED)
+            paused = false;
+    }
+    else
+    {
+        Receiver::add_event(event);
+    }
 }
 
 void GameState::init()
@@ -29,7 +42,7 @@ void GameState::handle_event(Event* event)
 
 void GameState::handle_events()
 {
-    while(!mailbox.empty())
+    while(!mailbox.empty() && !paused)
     {
         Event* event = mailbox.front();
         mailbox.pop();

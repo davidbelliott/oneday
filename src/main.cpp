@@ -17,7 +17,7 @@ int main()
     GameStateText* game_state_text = new GameStateText(engine);
     GameStateIntro* game_state_intro = new GameStateIntro(engine);
     engine->push_state(game_state_text);
-    //engine->push_state(game_state_intro);
+    engine->push_state(game_state_intro);
 
     sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal");
 

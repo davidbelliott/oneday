@@ -32,17 +32,6 @@ World* generate_world()
 		jamal_bedroom->shallow_description = "The walls of this cluttered hovel are plastered with layers of grime and old posters.";
 		jamal_bedroom->directions[EAST] = "jamal_corridor";
 		jamal_bedroom->directions[SOUTH] = "jamal_bathroom";
-		jamal_bedroom->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
-		{
-			if (a->name.id == a->name.parent_list->LOOK && !o->get_flag("woke_up"))
-			{
-				r->add_event(new CmdDisp("You wake.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen."));
-				o->set_flag("woke_up", 1);
-                r->add_event(new CmdPause());
-                //w->good_day.play();
-			}
-            return true;
-		};
 
 		Object* window = new Object("window", "A single smeared window to the north suffuses the room in dim light.");
 		window->deep_description = "Looking through the window, you notice a gang of thugs gathered in front of your house.";

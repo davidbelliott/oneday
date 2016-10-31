@@ -15,6 +15,8 @@ public:
 	GameState(Engine* engine_in);
 	virtual ~GameState();
 
+    virtual void add_event(Event* event);
+
 	/*Called when the gamestate is placed in the engine.*/
 	virtual void init();
 

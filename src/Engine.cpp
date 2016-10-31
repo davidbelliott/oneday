@@ -50,22 +50,26 @@ void Engine::get_input(sf::Window* window)
 
 void Engine::handle_events()
 {
+    while(game_states.size() > 0 && !game_states.back()->running)
+        pop_state();
     if(!game_states.empty())
         game_states.back()->handle_events();
+    else
+        running = false;
 }
 
 void Engine::run(sf::Time dt)
 {
     if(!game_states.empty())
         game_states.back()->run(dt);
-    while(game_states.size() > 0 && !game_states.back()->running)
-        pop_state();
-    if(game_states.size() == 0)
-        running = false;
 }
 
 void Engine::draw(sf::RenderTarget* target)
 {
+    /*for(int i = 0; i < game_states.size(); i++)
+    {
+        game_states[i]->draw(target);
+    }*/
     if(!game_states.empty())
         game_states.back()->draw(target);
 }
