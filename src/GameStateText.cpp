@@ -20,8 +20,6 @@ GameStateText::~GameStateText()
 
 void GameStateText::init()
 {
-    engine->register_sink(this, Event::USER_LINE);
-    engine->register_sink(this, Event::CMD_SET_OBJECTIVE);
     running = true;
     world = generate_world();
     parser = new Parser();

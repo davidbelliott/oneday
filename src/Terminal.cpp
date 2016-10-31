@@ -3,27 +3,18 @@
 #include "Engine.h"
 #include <iostream>
 
-Terminal::Terminal(Engine* engine_in)
-:   window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal")),
-    state({ 0, config::colors[config::color_default_fg], config::colors[config::color_default_bg], OUTPUT }),
+Terminal::Terminal()
+:   state({ 0, config::colors[config::color_default_fg], config::colors[config::color_default_bg], OUTPUT }),
     buffer(new CharBuffer()),
     disp_cursor(false),
     dirty(true),
-    engine(engine_in),
     cur_user_string("")
 {
-    engine_in->register_sink(this, Event::TEXT_ENTERED);
-    engine_in->register_sink(this, Event::CMD_DISP);
-    engine_in->register_sink(this, Event::CMD_PAUSE);
-    engine_in->register_sink(this, Event::CMD_UNPAUSE);
-    engine_in->register_sink(this, Event::CMD_INPUT);
-    engine_in->register_sink(this, Event::CMD_SETCOLOR);
 }
 
 
 Terminal::~Terminal()
 {
-    delete window;
     delete buffer;
 }
 
@@ -124,22 +115,6 @@ void Terminal::backspace()
     dirty = true;
 }
 
-void Terminal::get_input(EventSource* source)
-{
-    sf::Event sf_event;
-    while(window->pollEvent(sf_event))
-    {
-        Event* output_event = nullptr;
-        if(sf_event.type == sf::Event::KeyPressed)
-            output_event = new EventKeyPressed(sf_event.key.code);
-        else if(sf_event.type == sf::Event::TextEntered)
-            output_event = new EventTextEntered(static_cast<char>(sf_event.text.unicode));
-
-        if(output_event)
-            source->push_event(output_event);
-    }
-}
-
 void Terminal::set_color(sf::Color color)
 {
     state.foreground_color = color;
@@ -171,7 +146,7 @@ void Terminal::draw()
 
     window->display();
 }
-
+/*
 void Terminal::notify(Event* event)
 {
     if(event->type == Event::CMD_DISP)
@@ -224,9 +199,9 @@ void Terminal::notify(Event* event)
             }
         }
     }
-    /*else if(ef_event->type == sf::Event::MouseWheelScrolled)
+    else if(ef_event->type == sf::Event::MouseWheelScrolled)
     {
         int scroll_delta = -sf_event->mouseWheelScroll.delta;
         buffer->scroll(scroll_delta);
-    }*/
-}
+    }
+}*/

@@ -1,5 +1,5 @@
 #pragma once
-class Engine;
+class Receiver;
 class World;
 #include "ActionFactory.h"
 #include "Word.h"
@@ -16,6 +16,6 @@ public:
 	virtual ~Parser();
 
     std::vector<std::string> tokenize(std::string input, char delim = ' ');
-	Action* parse(std::string statement, World* w, Engine* e);
+	Action* parse(std::string statement, World* w, Receiver* r);
 };
 

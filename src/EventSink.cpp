@@ -1,13 +1,13 @@
-#include "EventSink.h"
+#include "Receiver.h"
 
-EventSink::EventSink()
+Receiver::Receiver()
 {
 }
 
-EventSink::~EventSink()
+Receiver::~Receiver()
 {
 }
 
-void EventSink::notify(Event* event)
+void Receiver::add_event(Event* event)
 {
 }

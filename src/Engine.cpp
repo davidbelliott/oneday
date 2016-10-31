@@ -4,21 +4,18 @@
 #include "World.h"
 #include "Terminal.h"
 #include "common.h"
+#include "Event.h"
 #include <iostream>
 
 Engine::Engine()
-:   EventSource(),
-    paused(false),
-    running(true),
-    terminal(nullptr)
+:   paused(false),
+    running(true)
 {
-    terminal = new Terminal(this);
 }
 
 
 Engine::~Engine()
 {
-    delete terminal;
 }
 
 void Engine::push_state(GameState* state)
@@ -36,50 +33,26 @@ void Engine::pop_state()
     }
 }
 
-void Engine::push_event(Event* event)
+void Engine::get_input(sf::Window* window)
 {
-    std::cout<<event->type<<std::endl;
-    if(paused)
+    sf::Event sf_event;
+    while(window->pollEvent(sf_event))
     {
-        if(event->type == Event::KEY_PRESSED)
-        {
-            paused = false;
-            ignore_next_event = true;
-        }
-    }
-    else if(ignore_next_event)
-        ignore_next_event = false;
-    else
-        EventSource::push_event(event);
-}
+        Event* output_event = nullptr;
+        if(sf_event.type == sf::Event::KeyPressed)
+            output_event = new EventKeyPressed(sf_event.key.code);
+        else if(sf_event.type == sf::Event::TextEntered)
+            output_event = new EventTextEntered(static_cast<char>(sf_event.text.unicode));
 
-void Engine::handle_event(Event* event)
-{
-    if(!paused && event->type == Event::CMD_PAUSE)
-        pause();
+        if(output_event)
+            game_states.back()->add_event(output_event);
+    }
 }
 
 void Engine::handle_events()
 {
-    while(!paused && !incoming_queue.empty())
-    {
-        Event* front_event = incoming_queue.front();
-        incoming_queue.pop();
-        handle_event(front_event);
-        send_event(front_event);
-    }
-}
-
-void Engine::get_input()
-{
-    terminal->get_input(this);
-}
-
-void Engine::draw()
-{
     if(!game_states.empty())
-        game_states.back()->draw();
-    terminal->draw();
+        game_states.back()->handle_events();
 }
 
 void Engine::run(sf::Time dt)
@@ -92,26 +65,20 @@ void Engine::run(sf::Time dt)
         running = false;
 }
 
-void Engine::disp(std::string t)
+void Engine::draw(sf::RenderTarget* target)
 {
-    CmdDisp* disp_cmd = new CmdDisp(t);
-    push_event(disp_cmd);
+    if(!game_states.empty())
+        game_states.back()->draw(target);
 }
 
 void Engine::pause()
 {
     if(!paused)
-    {
         paused = true;
-    }
 }
 
 void Engine::unpause()
 {
     if(paused)
-    {
         paused = false;
-        CmdUnpause* cmd_unpause = new CmdUnpause();
-        push_event(cmd_unpause);
-    }
 }

@@ -1,12 +1,11 @@
 #pragma once
 
 class Engine;
-class Event;
-#include "EventSink.h"
+#include "Receiver.h"
 #include <SFML/Graphics.hpp>
 #include <queue>
 
-class GameState : public EventSink
+class GameState : public Receiver
 {
 public:
 	Engine* engine;
@@ -22,13 +21,16 @@ public:
 	/*Called when the gamestate is removed from the engine.*/
 	virtual void cleanup();
 
-    /* Inherited from EventSink */
-    virtual void notify(Event* event);
+    /* Handles an event from the mailbox. */
+    virtual void handle_event(Event* event);
+
+    /* Handles all events from the mailbox by popping from the queue and calling handle_event on each. */
+    virtual void handle_events();
 
 	/*Run one cycle of the gamestate. dt is time elapsed in last engine cycle.*/
 	virtual void run(sf::Time dt);
 
 	/*Draw the gamestate.*/
-	virtual void draw();
+	virtual void draw(sf::RenderTarget* target);
 };
 

@@ -16,19 +16,17 @@ GameStateIntro::~GameStateIntro()
 void GameStateIntro::init()
 {
     running = true;
-    engine->register_sink(this, Event::KEY_PRESSED);
     Terminal* terminal = engine->terminal;
     //terminal->clr();
     for(int i = 0; i < config::N_COLORS; i++)
     {
         //terminal->set_color(config::colors[i]);
-        engine->push_event(new CmdDisp("One Day in the Life of Young Jamal"));
+        //engine->push_event(new CmdDisp("One Day in the Life of Young Jamal"));
     }
 }
 
 void GameStateIntro::cleanup()
 {
-    engine->unregister_sink(this, Event::KEY_PRESSED);
 }
 
 void GameStateIntro::notify(Event* event)

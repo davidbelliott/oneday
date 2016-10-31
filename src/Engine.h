@@ -3,11 +3,10 @@
 class GameState;
 class Terminal;
 
-#include "EventSource.h"
-#include <SFML/System.hpp>
+#include <SFML/Graphics.hpp>
 #include <vector>
 
-class Engine : public EventSource
+class Engine
 {
 public:
     Terminal* terminal;
@@ -19,15 +18,11 @@ public:
     void push_state(GameState* state);
     void pop_state();
 
-    /* Inherited from EventSource */
-    void push_event(Event* event);
-    void handle_event(Event* event);
-    void handle_events();
-
     /* Gets input events from the terminal and puts them in the top of the queue. */
-    void get_input();
+    void get_input(sf::Window* window);
+    void handle_events();
     void run(sf::Time dt);
-    void draw();
+    void draw(sf::RenderTarget* target);
 
     void pause();
     void unpause();

@@ -11,6 +11,7 @@ class GameStateText: public GameState
     public:
         World* world;
         Parser* parser;
+        Terminal* terminal;
 
         GameStateText(Engine* engine_in);
         virtual ~GameStateText();

@@ -3,7 +3,7 @@
 
 
 GameState::GameState(Engine* engine_in)
-:   EventSink(),
+:   Receiver(),
     engine(engine_in),
     paused(false),
     running(true)
@@ -23,14 +23,24 @@ void GameState::cleanup()
 {
 }
 
-void GameState::notify(Event* event)
+void GameState::handle_event(Event* event)
 {
+}
+
+void GameState::handle_events()
+{
+    while(!mailbox.empty())
+    {
+        Event* event = mailbox.front();
+        mailbox.pop();
+        handle_event(event);
+    }
 }
 
 void GameState::run(sf::Time dt)
 {
 }
 
-void GameState::draw()
+void GameState::draw(sf::RenderTarget* target)
 {
 }

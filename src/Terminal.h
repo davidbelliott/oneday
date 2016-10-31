@@ -1,16 +1,12 @@
 #pragma once
 
-class Engine;
-#include "EventSink.h"
-#include "EventSource.h"
 #include "CharBuffer.h"
 #include "Config.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
 
-/* A Terminal is a wrapper for a sf::RenderWindow which handles input and textual output. */
-class Terminal : public EventSink
+class Terminal
 {
 public:
 
@@ -28,14 +24,8 @@ public:
         Mode mode;
     };
 
-	Terminal(Engine* engine_in);
+	Terminal();
 	virtual ~Terminal();
-
-    /* Inherited from EventSink */
-    void notify(Event* event);
-
-    /* Pushes all SFML events to the specified source. */
-    void get_input(EventSource* source);
 
     /*Print's the terminal's buffer to the render target.*/
     void draw();
@@ -79,9 +69,7 @@ public:
     sf::RenderWindow* window;
     State state;
     CharBuffer* buffer;
-    Engine* engine;
     bool disp_cursor;
     bool dirty;
     std::string cur_user_string;
 };
-

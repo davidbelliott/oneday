@@ -2,7 +2,8 @@
 #include "Terminal.h"
 #include "Room.h"
 #include "World.h"
-#include "Engine.h"
+#include "Receiver.h"
+#include "Event.h"
 #include <iostream>
 
 
@@ -25,18 +26,18 @@ Room* World::get_current_room()
 		return NULL;
 }
 
-void World::set_current_room(std::string room_name, Engine* e)
+void World::set_current_room(std::string room_name, Receiver* r)
 {
 	cur_room = room_name;
 	Room* room = get_current_room();
 	//e->terminal->clr();
 	if (!room)
 	{
-		e->push_event(new CmdDisp("Error: room " + cur_room + " does not exist."));
+	    r->add_event(new CmdDisp("Error: room " + cur_room + " does not exist."));
 		exit(1);
 	}
 	else if(change_room_action)
 	{
-		change_room_action->run(this, e);
+		change_room_action->run(this, r);
 	}
 }
