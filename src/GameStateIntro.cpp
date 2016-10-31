@@ -5,7 +5,8 @@
 
 GameStateIntro::GameStateIntro(Engine* engine_in)
     : GameState(engine_in),
-    terminal(new Terminal())
+    terminal(new Terminal()),
+    title_string("ONE DAY IN THE LIFE OF YOUNG JAMAL")
 {
 }
 
@@ -16,7 +17,7 @@ GameStateIntro::~GameStateIntro()
 void GameStateIntro::init()
 {
     running = true;
-    add_event(new CmdDisp("ONE DAY IN THE LIFE OF YOUNG JAMAL"));
+    add_event(new CmdOutput(10, 10, title_string));
 	add_event(new CmdDisp("Based God Interactive Fiction - a Dooby plot."));
     add_event(new CmdDisp("Copyright (c) 2016 moraine"));
     add_event(new CmdDisp("All rights reserved."));
@@ -42,6 +43,7 @@ void GameStateIntro::handle_event(Event* event)
 
 void GameStateIntro::run(sf::Time dt)
 {
+
 }
 
 void GameStateIntro::draw(sf::RenderTarget* target)

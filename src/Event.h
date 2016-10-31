@@ -77,6 +77,21 @@ class CmdDisp : public Event
         }
 };
 
+class CmdOutput : public Event
+{
+    public:
+        int x;
+        int y;
+        std::string str;
+
+        CmdOutput(int x_in, int y_in, std::string str_in)
+            : Event(CMD_OUTPUT),
+            x(x_in),
+            y(y_in),
+            str(str_in)
+    {}
+};
+
 class CmdSetColor : public Event
 {
     public:

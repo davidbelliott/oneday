@@ -19,11 +19,8 @@ Terminal::~Terminal()
     delete buffer;
 }
 
-void Terminal::output(std::string str, int& index)
+void Terminal::output(std::string str, int& x, int& y)
 {
-    int x = buffer->get_x(index);
-    int y = buffer->get_y(index);
-
 	for (int i = 0; i < str.size(); i++)
 	{
         if (x >= config::screen_w_chars)
@@ -62,10 +59,6 @@ void Terminal::output(std::string str, int& index)
         }
         dirty = true;
 	}
-
-    std::cout<<"x:"<<x<<"\ty:"<<y<<std::endl;
-
-    index = buffer->get_index(x, y);
 }
 
 void Terminal::input_mode()
@@ -85,7 +78,10 @@ void Terminal::disp(std::string string, bool newline)
 {
 	//std::cout << string << std::endl;
     buffer->scroll_value = buffer->scroll_value_max;
-    output(string + (newline ? "\n" : ""), state.cursor_index);
+    int x = buffer->get_x(state.cursor_index);
+    int y = buffer->get_y(state.cursor_index);
+    output(string + (newline ? "\n" : ""), x, y);
+    state.cursor_index = buffer->get_index(x, y);
 }
 
 void Terminal::clr()
@@ -143,6 +139,11 @@ void Terminal::handle_event(Event* event)
     if(event->type == Event::CMD_DISP)
     {
         disp(static_cast<CmdDisp*>(event)->str);
+    }
+    else if(event->type == Event::CMD_OUTPUT)
+    {
+        CmdOutput* cmd = static_cast<CmdOutput*>(event);
+        output(cmd->str, cmd->x, cmd->y);
     }
     else if(event->type == Event::CMD_INPUT)
     {

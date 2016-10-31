@@ -10,6 +10,7 @@ class GameStateIntro: public GameState
         Terminal* terminal;
         float x;
         float y;
+        std::string title_string;
     public:
         
         GameStateIntro(Engine* engine_in);

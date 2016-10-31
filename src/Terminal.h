@@ -32,9 +32,9 @@ public:
     /*Print's the terminal's buffer to the render target.*/
     void draw(sf::RenderTarget* target);
 
-    /* Outputs the specified string at the specified index. Leaves index at the position following
+    /* Outputs the specified string at the specified x and y values. Leaves x and y at the position following
      * the last modified character. */
-    void output(std::string string, int& index);
+    void output(std::string string, int& x, int& y);
 
     /* Puts the terminal into input mode, displaying the carat and changing the color accordingly. */
     void input_mode();
