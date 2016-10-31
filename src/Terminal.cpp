@@ -3,36 +3,20 @@
 #include "Engine.h"
 #include <iostream>
 
-Terminal::Terminal(Engine* engine_in)
-:   window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal")),
-    state({ 0, config::colors[config::color_default_fg], config::colors[config::color_default_bg], OUTPUT }),
+Terminal::Terminal(Receiver* owner_in)
+:   state({ 0, config::colors[config::color_default_fg], config::colors[config::color_default_bg], OUTPUT }),
     buffer(new CharBuffer()),
     disp_cursor(false),
     dirty(true),
-    engine(engine_in),
-    cur_user_string("")
+    cur_user_string(""),
+    owner(owner_in)
 {
-    engine_in->register_sink(this, Event::TEXT_ENTERED);
-    engine_in->register_sink(this, Event::CMD_DISP);
-    engine_in->register_sink(this, Event::CMD_PAUSE);
-    engine_in->register_sink(this, Event::CMD_UNPAUSE);
-    engine_in->register_sink(this, Event::CMD_INPUT);
-    engine_in->register_sink(this, Event::CMD_SETCOLOR);
 }
 
 
 Terminal::~Terminal()
 {
-    delete window;
     delete buffer;
-}
-
-void Terminal::pause()
-{
-}
-
-void Terminal::unpause()
-{
 }
 
 void Terminal::output(std::string str, int& index)
@@ -124,22 +108,6 @@ void Terminal::backspace()
     dirty = true;
 }
 
-void Terminal::get_input(EventSource* source)
-{
-    sf::Event sf_event;
-    while(window->pollEvent(sf_event))
-    {
-        Event* output_event = nullptr;
-        if(sf_event.type == sf::Event::KeyPressed)
-            output_event = new EventKeyPressed(sf_event.key.code);
-        else if(sf_event.type == sf::Event::TextEntered)
-            output_event = new EventTextEntered(static_cast<char>(sf_event.text.unicode));
-
-        if(output_event)
-            source->push_event(output_event);
-    }
-}
-
 void Terminal::set_color(sf::Color color)
 {
     state.foreground_color = color;
@@ -153,11 +121,11 @@ void Terminal::set_disp_cursor(bool disp_cursor_in)
     }
 }
 
-void Terminal::draw()
+void Terminal::draw(sf::RenderTarget* target)
 {
-    window->clear(state.background_color);
+    target->clear(state.background_color);
 
-    buffer->draw(window);
+    buffer->draw(target);
 
     if(state.mode == INPUT && buffer->get_y(state.cursor_index) < config::screen_h_chars)
     {
@@ -165,26 +133,16 @@ void Terminal::draw()
         cursor_shape.setSize(sf::Vector2f(config::char_width, config::char_height));
         cursor_shape.setFillColor(state.foreground_color);
         cursor_shape.setPosition(buffer->get_x(state.cursor_index) * config::char_width + config::padding, buffer->get_y(state.cursor_index) * config::char_height + config::padding);
-        window->draw(cursor_shape);
+        target->draw(cursor_shape);
     }
     dirty = false;
-
-    window->display();
 }
 
-void Terminal::notify(Event* event)
+void Terminal::handle_event(Event* event)
 {
     if(event->type == Event::CMD_DISP)
     {
         disp(static_cast<CmdDisp*>(event)->str);
-    }
-    else if(event->type == Event::CMD_PAUSE)
-    {
-        pause();
-    }
-    else if(event->type == Event::CMD_UNPAUSE)
-    {
-        unpause();
     }
     else if(event->type == Event::CMD_INPUT)
     {
@@ -201,11 +159,11 @@ void Terminal::notify(Event* event)
             char c = static_cast<EventTextEntered*>(event)->c;
             if(c == '\n' || c == '\r')
             {
-                set_color();
                 disp("");
-                output_mode();
-                engine->push_event(new EventUserLine(cur_user_string));
+                if(owner)
+                    owner->add_event(new EventUserLine(cur_user_string));
                 cur_user_string = "";
+                output_mode();
             }
             else if(c == '\b')
             {

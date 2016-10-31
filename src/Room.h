@@ -14,5 +14,5 @@ public:
 	Room();
 	virtual ~Room();
 
-    virtual void describe(Engine* e, bool deep, bool describe_this);
+    virtual void describe(Receiver* r, bool deep, bool describe_this);
 };

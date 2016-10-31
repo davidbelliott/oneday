@@ -6,6 +6,8 @@
 #include "Room.h"
 #include "common.h"
 #include "level_data.h"
+#include "Receiver.h"
+#include "Event.h"
 #include <SFML/Audio.hpp>
 #include <iostream>
 
@@ -30,17 +32,6 @@ World* generate_world()
 		jamal_bedroom->shallow_description = "The walls of this cluttered hovel are plastered with layers of grime and old posters.";
 		jamal_bedroom->directions[EAST] = "jamal_corridor";
 		jamal_bedroom->directions[SOUTH] = "jamal_bathroom";
-		jamal_bedroom->pre_action = [](World* w, Engine* e, Action* a, Object* o)
-		{
-			if (a->name.id == a->name.parent_list->LOOK && !o->get_flag("woke_up"))
-			{
-				e->push_event(new CmdDisp("You wake.\nNo canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen."));
-				o->set_flag("woke_up", 1);
-                e->push_event(new CmdPause());
-                //w->good_day.play();
-			}
-            return true;
-		};
 
 		Object* window = new Object("window", "A single smeared window to the north suffuses the room in dim light.");
 		window->deep_description = "Looking through the window, you notice a gang of thugs gathered in front of your house.";
@@ -66,19 +57,19 @@ World* generate_world()
 		Object* hole = new Object("hole", "A dark hole gapes in the floor, presumably where a toilet used to be.");
 		hole->properties |= Object::GOABLE;
 		hole->goable_data = "sewer";
-		hole->pre_action = [](World* w, Engine* e, Action* a, Object* o)
+		hole->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->GO)
 			{
 				if (w->player->clothing == "hazmat")
 				{
-					e->push_event(new CmdDisp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage."));
-                    e->push_event(new CmdPause());
+					r->add_event(new CmdDisp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage."));
+                    r->add_event(new CmdPause());
                     return true;
 				}
 				else
 				{
-					e->push_event(new CmdDisp("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~"));
+					r->add_event(new CmdDisp("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~"));
                     return false;
 				}
 			}
@@ -94,13 +85,13 @@ World* generate_world()
 		jamal_corridor->directions[SOUTH] = "jamal_staircase";
 		jamal_corridor->directions[WEST] = "jamal_bedroom";
 
-        jamal_corridor->pre_action = [](World* w, Engine* e, Action* a, Object* o)
+        jamal_corridor->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
         {
             if(a->name.id == a->name.parent_list->GO)
             {
                 if(!a->prepositions.empty() && a->prepositions[0].word == "north")
                 {
-                    e->push_event(new CmdDisp("You hear the intense rustling of thugs lying in wait outside your door. Best not go out this way."));
+                    r->add_event(new CmdDisp("You hear the intense rustling of thugs lying in wait outside your door. Best not go out this way."));
                     return false;
                 }
             }
@@ -137,22 +128,22 @@ World* generate_world()
 		shelf->add_child(book);
 		Object* secret_switch = new Object("switch", "A secret switch protrudes from the empty slot where a book used to be.");
 		secret_switch->properties = Object::HITTABLE;
-		secret_switch->post_action = [=](World* w, Engine* e, Action* a, Object* o)
+		secret_switch->post_action = [=](World* w, Receiver* r, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->HIT)
 			{
-				e->push_event(new CmdDisp("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
+				r->add_event(new CmdDisp("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
 				shelf->shallow_description = "A massive bookshelf is slid to one side of the west wall.";
 				henrik_library->directions[WEST] = "henrik_lab";
 			}
             return true;
 		};
 		henrik_library->add_child(secret_switch);
-		book->post_action = [=](World* w, Engine* e, Action* a, Object* o)
+		book->post_action = [=](World* w, Receiver* r, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->TAKE)
 			{
-			    e->push_event(new CmdDisp("Taking the book reveals a secret switch."));
+			    r->add_event(new CmdDisp("Taking the book reveals a secret switch."));
 				shelf->shallow_description += " One book is missing, leaving an empty slot.";
 				shelf->deep_description += " One book is missing, leaving an empty slot.";
 				secret_switch->properties |= Object::VISIBLE;
@@ -214,7 +205,7 @@ World* generate_world()
             " Do it for da people.",
             "The man disappears in a puff of smoke.",
             "Your objective: get to the Club and out-rap Viper." };
-        sam->post_action = [](World* w, Engine* e, Action* a, Object* o) {
+        sam->post_action = [](World* w, Receiver* r, Action* a, Object* o) {
             if(a->name.id == a->name.parent_list->TALK_TO)
                 o->properties = 0;
             return true;

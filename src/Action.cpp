@@ -1,10 +1,12 @@
 #include "Action.h"
 #include "Player.h"
 #include "Engine.h"
+#include "Event.h"
 #include "Room.h"
 #include "Word.h"
 #include "WordList.h"
 #include "World.h"
+#include "Receiver.h"
 #include "Terminal.h"
 #include "common.h"
 
@@ -27,45 +29,45 @@ void Action::add_preposition(Word preposition_in)
 	prepositions.push_back(preposition_in);
 }
 
-void Action::run(World* w, Engine* e)
+void Action::run(World* w, Receiver* r)
 {
     bool run = true;
     Room* cur_room = w->get_current_room();
     if(cur_room)
-        run = cur_room->pre_action(w, e, this, cur_room);
+        run = cur_room->pre_action(w, r, this, cur_room);
     if(run && objects.empty())
-        act(w, e, NULL);
+        act(w, r, NULL);
     else if(!objects.empty())
     {
         for(int i = 0; i < objects.size(); i++)
         {
-            if(objects[i]->pre_action(w, e, this, objects[i]))
-                act(w, e, objects[i]);
-            objects[i]->post_action(w, e, this, objects[i]);
+            if(objects[i]->pre_action(w, r, this, objects[i]))
+                act(w, r, objects[i]);
+            objects[i]->post_action(w, r, this, objects[i]);
         }
     }
     if(cur_room)
-        cur_room->post_action(w, e, this, cur_room);
+        cur_room->post_action(w, r, this, cur_room);
 
 }
 
-void Action::act(World* w, Engine* e, Object* o)
+void Action::act(World* w, Receiver* r, Object* o)
 {
 
 }
 
-void ActionGo::act(World* w, Engine* e, Object* o)
+void ActionGo::act(World* w, Receiver* r, Object* o)
 {
     if(o)
     {
         if(o->properties & Object::GOABLE)
         {
 			std::string new_room_name = o->goable_data;
-			w->set_current_room(new_room_name, e);
+			w->set_current_room(new_room_name, r);
         }
         else
         {
-			e->disp("You can't go there, baka.");
+			r->add_event(new CmdDisp("You can't go there, baka."));
         }
 
     }
@@ -82,61 +84,61 @@ void ActionGo::act(World* w, Engine* e, Object* o)
         }
         if(direction == DIRECTION_MAX)
         {
-            e->disp("Go where?");
+            r->add_event(new CmdDisp("Go where?"));
         }
         else
         {
             Room* room = w->get_current_room();
             if(room && room->directions[direction] != "") {
-                w->set_current_room(room->directions[direction], e);
+                w->set_current_room(room->directions[direction], r);
             } else {
-                e->disp("You can't go " + dir[direction].name + " from here.");
+                r->add_event(new CmdDisp("You can't go " + dir[direction].name + " from here."));
             }
         }
     }
 }
 
-void ActionLook::act(World* w, Engine* e, Object* o)
+void ActionLook::act(World* w, Receiver* r, Object* o)
 {
     if(o)
-        o->describe(e, true, true);
+        o->describe(r, true, true);
     else
     {
         Room* room = w->get_current_room();
         if(room)
-            room->describe(e, true, true);
+            room->describe(r, true, true);
     }
 }
 
-void ActionQuit::act(World* w, Engine* e, Object* o)
+void ActionQuit::act(World* w, Receiver* r, Object* o)
 {
 	w->active = false;
 }
 
-void ActionTake::act(World* w, Engine* e, Object* o)
+void ActionTake::act(World* w, Receiver* r, Object* o)
 {
 	if (o && (o->properties & Object::TAKEABLE))
 	{
-		e->disp("You take the " + o->name.word + ".");
+		r->add_event(new CmdDisp("You take the " + o->name.word + "."));
 		if (o->parent)
 			o->parent->remove_child(o);
 		w->player->add_child(o);
 	}
 	else if (o)
 	{
-		e->disp("You can't take the " + o->name.word + ", baka gaijin!");
+		r->add_event(new CmdDisp("You can't take the " + o->name.word + ", baka gaijin!"));
 	}
 	else
 	{
-		e->disp("Take what?");
+		r->add_event(new CmdDisp("Take what?"));
 	}
 }
 
-void ActionWear::act(World* w, Engine* e, Object* o)
+void ActionWear::act(World* w, Receiver* r, Object* o)
 {
 	if (o && (o->properties & Object::WEARABLE))
 	{
-		e->disp("You put on the " + o->name.word + ".");
+		r->add_event(new CmdDisp("You put on the " + o->name.word + "."));
         if(o->parent)
         {
             if(o->parent != w->player)
@@ -153,107 +155,107 @@ void ActionWear::act(World* w, Engine* e, Object* o)
 	}
 	else if (o)
 	{
-		e->disp("You can't wear a " + o->name.word + ".");
+		r->add_event(new CmdDisp("You can't wear a " + o->name.word + "."));
 	}
 	else
 	{
-		e->disp("Wear what?");
+		r->add_event(new CmdDisp("Wear what?"));
 	}
 }
 
-void ActionHit::act(World* w, Engine* e, Object* o)
+void ActionHit::act(World* w, Receiver* r, Object* o)
 {
 	if (o && (o->properties & Object::HITTABLE))
 	{
 		if (o->flipped)
-			e->disp("The " + o->name.word + " has already been hit.");
+			r->add_event(new CmdDisp("The " + o->name.word + " has already been hit."));
 		else
 		{
-			e->disp("You hit the " + o->name.word + ".");
+			r->add_event(new CmdDisp("You hit the " + o->name.word + "."));
 			o->flipped = true;
 		}
 	}
 	else if (o)
 	{
-		e->disp("You can't hit the " + o->name.word);
+		r->add_event(new CmdDisp("You can't hit the " + o->name.word));
 	}
 	else
 	{
-		e->disp("Hit what?");
+		r->add_event(new CmdDisp("Hit what?"));
 	}
 }
 
-void ActionOpenContainer::act(World* w, Engine* e, Object* o)
+void ActionOpenContainer::act(World* w, Receiver* r, Object* o)
 {
 	if (o && o->properties & Object::CONTAINER)
 	{
 		if (!o->open)
 		{
-			e->disp("You open the " + o->name.word + ".");
+			r->add_event(new CmdDisp("You open the " + o->name.word + "."));
 			o->open = true;
-			o->describe(e, true, false);
+			o->describe(r, true, false);
 		}
 		else
 		{
-			e->disp("The " + o->name.word + " is already open.");
+			r->add_event(new CmdDisp("The " + o->name.word + " is already open."));
 		}
 	}
 	else if(o)
 	{
-		e->disp("You can't open a " + o->name.word + "!");
+		r->add_event(new CmdDisp("You can't open a " + o->name.word + "!"));
 	}
 	else
 	{
-		e->disp("Open what?");
+		r->add_event(new CmdDisp("Open what?"));
 	}
 }
 
-void ActionShout::act(World* w, Engine* e, Object* o)
+void ActionShout::act(World* w, Receiver* r, Object* o)
 {
-	e->disp("SHEEEEIT!");
+	r->add_event(new CmdDisp("SHEEEEIT!"));
 }
 
-void ActionRead::act(World* w, Engine* e, Object* o)
+void ActionRead::act(World* w, Receiver* r, Object* o)
 {
     if(o && (o->properties & Object::READABLE))
     {
-        e->disp("The " + o->name.word + " reads:");
-        e->disp(o->readable_data);
+        r->add_event(new CmdDisp("The " + o->name.word + " reads:"));
+        r->add_event(new CmdDisp(o->readable_data));
     }
     else if(o)
     {
-        e->disp("There's nothing to read on the " + o->name.word + ".");
+        r->add_event(new CmdDisp("There's nothing to read on the " + o->name.word + "."));
     }
     else
     {
-        e->disp("Read what?");
+        r->add_event(new CmdDisp("Read what?"));
     }
 }
 
-void ActionTalkTo::act(World* w, Engine* e, Object* o)
+void ActionTalkTo::act(World* w, Receiver* r, Object* o)
 {
     if(o && (o->properties & Object::TALKABLE))
     {
         for(int i = 0; i < o->talkable_data.size(); i++)
         {
-            e->push_event(new CmdDisp(o->talkable_data[i]));
-            e->push_event(new CmdPause());
+            r->add_event(new CmdDisp(o->talkable_data[i]));
+            r->add_event(new CmdPause());
         }
     }
     else if(o)
     {
-        e->push_event(new CmdDisp("You can't talk to the " + o->name.word + ", baka gaijin!"));
+        r->add_event(new CmdDisp("You can't talk to the " + o->name.word + ", baka gaijin!"));
     }
     else
     {
-        e->push_event(new CmdDisp("Talk to what?"));
+        r->add_event(new CmdDisp("Talk to what?"));
     }
 }
 
-void ActionHelp::act(World* w, Engine* e, Object* o)
+void ActionHelp::act(World* w, Receiver* r, Object* o)
 {
     //e->terminal->set_color(config::colors[config::color_objective]);
-    e->disp("Your objective: " + w->player->objective);
+    //e->disp("Your objective: " + w->player->objective);
     /*e->disp("It's little Kodak, the finesse kid, boy who hot as me?\nTold the doctor I'm a healthy kid, I smoke broccoli");
     e->disp("Type sentences to do stuff. You can use the following verbs:");
     

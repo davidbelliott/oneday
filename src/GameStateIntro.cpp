@@ -1,11 +1,11 @@
 #include "GameStateIntro.h"
 #include "Event.h"
-#include "Terminal.h"
 #include "Engine.h"
 #include "Config.h"
 
 GameStateIntro::GameStateIntro(Engine* engine_in)
-    : GameState(engine_in)
+    : GameState(engine_in),
+    terminal(new Terminal())
 {
 }
 
@@ -16,29 +16,35 @@ GameStateIntro::~GameStateIntro()
 void GameStateIntro::init()
 {
     running = true;
-    engine->register_sink(this, Event::KEY_PRESSED);
-    Terminal* terminal = engine->terminal;
-    //terminal->clr();
-    for(int i = 0; i < config::N_COLORS; i++)
-    {
-        //terminal->set_color(config::colors[i]);
-        engine->push_event(new CmdDisp("One Day in the Life of Young Jamal"));
-    }
+    add_event(new CmdDisp("ONE DAY IN THE LIFE OF YOUNG JAMAL"));
+	add_event(new CmdDisp("Based God Interactive Fiction - a Dooby plot."));
+    add_event(new CmdDisp("Copyright (c) 2016 moraine"));
+    add_event(new CmdDisp("All rights reserved."));
+    add_event(new CmdPause());
+    add_event(new CmdDisp("-You wake."));
+    add_event(new CmdPause());
+    add_event(new CmdDisp("-No canine utterances grace your ears,\n and you can smell no fresh bacon cooking in the kitchen."));
+    add_event(new CmdPause());
 }
 
 void GameStateIntro::cleanup()
 {
-    engine->unregister_sink(this, Event::KEY_PRESSED);
 }
 
-void GameStateIntro::notify(Event* event)
+void GameStateIntro::handle_event(Event* event)
 {
-    if(event->type == Event::KEY_PRESSED)
-    {
+    if(event->type == Event::CMD_PAUSE)
+        paused = true;
+    terminal->handle_event(event);
+    if(mailbox.empty())
         running = false;
-    }
 }
 
-void GameStateIntro::update(sf::Time dt)
+void GameStateIntro::run(sf::Time dt)
 {
+}
+
+void GameStateIntro::draw(sf::RenderTarget* target)
+{
+    terminal->draw(target);
 }

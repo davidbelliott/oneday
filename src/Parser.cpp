@@ -4,6 +4,8 @@
 #include "Engine.h"
 #include "Word.h"
 #include "World.h"
+#include "Receiver.h"
+#include "Event.h"
 
 #include <vector>
 
@@ -45,7 +47,7 @@ bool matches_regex(std::string regex, std::string str)
 
 }
 
-Action* Parser::parse(std::string statement, World* w, Engine* e)
+Action* Parser::parse(std::string statement, World* w, Receiver* r)
 {
 	Action* action = NULL;
 	Object* object = NULL;
@@ -85,13 +87,6 @@ Action* Parser::parse(std::string statement, World* w, Engine* e)
                 action->add_object(object);
             }
 		}
-	}
-	if (!found_action)
-	{
-		if (statement.empty())
-			e->push_event(new CmdDisp("Please enter a command."));
-		else
-			e->push_event(new CmdDisp("I don't understand."));
 	}
 
 	return action;
