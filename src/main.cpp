@@ -25,11 +25,17 @@ int main()
     sf::Time dt;
     while(engine->running)
     {
+        // Collect input from the user
         engine->get_input(window);
+        // Let gamestates handle their pending events
         engine->handle_events();
+        // Update gamestates based on elapsed time
         dt = clock.restart();
         engine->run(dt);
+        // Draw gamestates
         engine->draw(window);
+        window->display();
+        // Sleep for remaining time
         while(clock.getElapsedTime().asSeconds() < 1.0f / config::update_frequency)
         {
             sf::sleep(sf::milliseconds(1.0f));

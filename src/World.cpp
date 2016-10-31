@@ -30,14 +30,15 @@ void World::set_current_room(std::string room_name, Receiver* r)
 {
 	cur_room = room_name;
 	Room* room = get_current_room();
-	//e->terminal->clr();
+    //clear screen
 	if (!room)
 	{
-	    r->add_event(new CmdDisp("Error: room " + cur_room + " does not exist."));
+        std::cerr << "Error: room " + cur_room + " does not exist." << std::endl;
 		exit(1);
 	}
-	else if(change_room_action)
-	{
-		change_room_action->run(this, r);
+    else
+    {
+        room->describe(r, true, true);
+        r->add_event(new CmdInput());
 	}
 }

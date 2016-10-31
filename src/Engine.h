@@ -1,7 +1,6 @@
 #pragma once
 
 class GameState;
-class Terminal;
 
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -9,7 +8,6 @@ class Terminal;
 class Engine
 {
 public:
-    Terminal* terminal;
     std::vector<GameState*> game_states;
 
 	Engine();

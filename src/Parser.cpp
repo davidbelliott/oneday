@@ -88,13 +88,6 @@ Action* Parser::parse(std::string statement, World* w, Receiver* r)
             }
 		}
 	}
-	if (!found_action)
-	{
-		if (statement.empty())
-			r->add_event(new CmdDisp("Please enter a command."));
-		else
-			r->add_event(new CmdDisp("I don't understand."));
-	}
 
 	return action;
 }

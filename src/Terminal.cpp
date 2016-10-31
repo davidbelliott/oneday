@@ -3,12 +3,13 @@
 #include "Engine.h"
 #include <iostream>
 
-Terminal::Terminal()
+Terminal::Terminal(Receiver* owner_in)
 :   state({ 0, config::colors[config::color_default_fg], config::colors[config::color_default_bg], OUTPUT }),
     buffer(new CharBuffer()),
     disp_cursor(false),
     dirty(true),
-    cur_user_string("")
+    cur_user_string(""),
+    owner(owner_in)
 {
 }
 
@@ -16,14 +17,6 @@ Terminal::Terminal()
 Terminal::~Terminal()
 {
     delete buffer;
-}
-
-void Terminal::pause()
-{
-}
-
-void Terminal::unpause()
-{
 }
 
 void Terminal::output(std::string str, int& index)
@@ -128,11 +121,11 @@ void Terminal::set_disp_cursor(bool disp_cursor_in)
     }
 }
 
-void Terminal::draw()
+void Terminal::draw(sf::RenderTarget* target)
 {
-    window->clear(state.background_color);
+    target->clear(state.background_color);
 
-    buffer->draw(window);
+    buffer->draw(target);
 
     if(state.mode == INPUT && buffer->get_y(state.cursor_index) < config::screen_h_chars)
     {
@@ -140,26 +133,16 @@ void Terminal::draw()
         cursor_shape.setSize(sf::Vector2f(config::char_width, config::char_height));
         cursor_shape.setFillColor(state.foreground_color);
         cursor_shape.setPosition(buffer->get_x(state.cursor_index) * config::char_width + config::padding, buffer->get_y(state.cursor_index) * config::char_height + config::padding);
-        window->draw(cursor_shape);
+        target->draw(cursor_shape);
     }
     dirty = false;
-
-    window->display();
 }
-/*
-void Terminal::notify(Event* event)
+
+void Terminal::handle_event(Event* event)
 {
     if(event->type == Event::CMD_DISP)
     {
         disp(static_cast<CmdDisp*>(event)->str);
-    }
-    else if(event->type == Event::CMD_PAUSE)
-    {
-        pause();
-    }
-    else if(event->type == Event::CMD_UNPAUSE)
-    {
-        unpause();
     }
     else if(event->type == Event::CMD_INPUT)
     {
@@ -176,10 +159,9 @@ void Terminal::notify(Event* event)
             char c = static_cast<EventTextEntered*>(event)->c;
             if(c == '\n' || c == '\r')
             {
-                set_color();
                 disp("");
-                output_mode();
-                engine->push_event(new EventUserLine(cur_user_string));
+                if(owner)
+                    owner->add_event(new EventUserLine(cur_user_string));
                 cur_user_string = "";
             }
             else if(c == '\b')
@@ -199,9 +181,9 @@ void Terminal::notify(Event* event)
             }
         }
     }
-    else if(ef_event->type == sf::Event::MouseWheelScrolled)
+    /*else if(ef_event->type == sf::Event::MouseWheelScrolled)
     {
         int scroll_delta = -sf_event->mouseWheelScroll.delta;
         buffer->scroll(scroll_delta);
-    }
-}*/
+    }*/
+}

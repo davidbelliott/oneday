@@ -2,7 +2,6 @@
 #include "GameState.h"
 #include "Room.h"
 #include "World.h"
-#include "Terminal.h"
 #include "common.h"
 #include "Event.h"
 #include <iostream>

@@ -5,6 +5,8 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
+#include "Event.h"
+#include "Receiver.h"
 
 class Terminal
 {
@@ -24,13 +26,11 @@ public:
         Mode mode;
     };
 
-	Terminal();
+	Terminal(Receiver* owner_in = nullptr);
 	virtual ~Terminal();
 
     /*Print's the terminal's buffer to the render target.*/
-    void draw();
-
-private:
+    void draw(sf::RenderTarget* target);
 
     /* Outputs the specified string at the specified index. Leaves index at the position following
      * the last modified character. */
@@ -45,12 +45,6 @@ private:
 	/*Outputs the specified string at the current cursor location. Adds a newline if newline is true.*/
 	void disp(std::string string, bool newline = true);
 
-public:
-
-    void pause();
-
-    void unpause();
-
 	/*Clears the screen.*/
 	void clr();
 
@@ -63,12 +57,13 @@ public:
     /*Sets whether or not to display the cursor rectangle at the current cursor x and y.*/
     void set_disp_cursor(bool disp_cursor_in);
 
+    void handle_event(Event* event);
+
 //private:
 
-
-    sf::RenderWindow* window;
     State state;
     CharBuffer* buffer;
+    Receiver* owner;
     bool disp_cursor;
     bool dirty;
     std::string cur_user_string;
