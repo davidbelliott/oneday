@@ -145,6 +145,10 @@ void Terminal::handle_event(Event* event)
         CmdOutput* cmd = static_cast<CmdOutput*>(event);
         output(cmd->str, cmd->x, cmd->y);
     }
+    else if(event->type == Event::CMD_CLEAR)
+    {
+        clr();
+    }
     else if(event->type == Event::CMD_INPUT)
     {
         input_mode();

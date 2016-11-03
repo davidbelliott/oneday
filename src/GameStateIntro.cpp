@@ -17,11 +17,11 @@ GameStateIntro::~GameStateIntro()
 void GameStateIntro::init()
 {
     running = true;
-    add_event(new CmdOutput(10, 10, title_string));
-	add_event(new CmdDisp("Based God Interactive Fiction - a Dooby plot."));
-    add_event(new CmdDisp("Copyright (c) 2016 moraine"));
-    add_event(new CmdDisp("All rights reserved."));
+    int center_x = (config::screen_w_chars - title_string.length()) / 2;
+    int center_y = (config::screen_h_chars - 1) / 2;
+    add_event(new CmdOutput(center_x, center_y, title_string));
     add_event(new CmdPause());
+    add_event(new CmdClear());
     add_event(new CmdDisp("-You wake."));
     add_event(new CmdPause());
     add_event(new CmdDisp("-No canine utterances grace your ears,\n and you can smell no fresh bacon cooking in the kitchen."));

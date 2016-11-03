@@ -15,6 +15,7 @@ public:
         USER_LINE,
 		CMD_DISP,
 		CMD_OUTPUT,
+        CMD_CLEAR,
         CMD_SETCOLOR,
 		CMD_INPUT,
 		CMD_PAUSE,
@@ -90,6 +91,14 @@ class CmdOutput : public Event
             y(y_in),
             str(str_in)
     {}
+};
+
+class CmdClear : public Event
+{
+    public:
+        CmdClear()
+            : Event(CMD_CLEAR)
+        {}
 };
 
 class CmdSetColor : public Event

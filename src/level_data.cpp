@@ -20,7 +20,7 @@ World* generate_world()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "main_street";
     {
         Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
         world->player = player;
@@ -174,7 +174,7 @@ World* generate_world()
 
     {
         Room* main_street = new Room("main_street", "Hoover Street", "A desolate wind blows the asphalt.");
-        main_street->directions[WEST] = "club";
+        main_street->directions[WEST] = "club_front";
         main_street->directions[SOUTH] = "bus_stop";
         world->add_child(main_street);
 
@@ -194,17 +194,15 @@ World* generate_world()
             "-What do you mean?",
             "-Favio, examining into antiquity, we find that Big L was styled Fang-xun.",
             " He was reverential, intelligent, accomplished, and thoughtful--naturally and without effort.",
-            " However, we, like kings, were led astray. We were kept down by the Man, and none but the president can deliver.",
-            "Shocked by this revelation, you stammer:",
+            " But Big L was kept down by the Man. We were kept down by the Man.",
             "-Th-that's horrible! How can I change this?",
-            "-Now listen here, young feller. You must visit the president.",
+            "-Get outta the ghetto. Go to the White House.",
             "-But how?",
-            "-Viper will host a rap contest at the Club. His offer? A trip to the White House to meet the president.",
-            "You gasp. Such great opportunity--but at such a price!",
+            "-Viper will host a rap contest at the Club. The winner's reward: a trip to the White House to meet the president.",
             " Go, Favio. Be not afraid.",
             " Do it for da people.",
-            "The man disappears in a puff of smoke.",
-            "Your objective: get to the Club and out-rap Viper." };
+            "The man vanishes in a puff of green and purple smoke.",
+            "Your objective: go to the Club." };
         sam->post_action = [](World* w, Receiver* r, Action* a, Object* o) {
             if(a->name.id == a->name.parent_list->TALK_TO)
                 o->properties = 0;
@@ -213,6 +211,67 @@ World* generate_world()
 
         main_street->add_child(sam);
     }
+
+    {
+        Room* club_front = new Room("club_front", "the front of the Club", "This is the entryway to the Club.");
+        club_front->directions[EAST] = "main_street";
+        club_front->directions[WEST] = "club_inside";
+        club_front->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
+        {
+            if(a->name.id == a->name.parent_list->GO)
+            {
+                if(!a->prepositions.empty() && a->prepositions[0].word == "west")
+                {
+                    if(w->flags["can_enter_club"])
+                    {
+                        r->add_event(new CmdDisp("The bouncers slide aside to grant you access. You hop into the Club."));
+                        return true;
+                    }
+                    else
+                    {
+                        r->add_event(new CmdDisp("The two bouncers block your path."));
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+        world->add_child(club_front);
+
+        world->flags["can_enter_club"] = false;
+
+        Object* bouncers = new Object("bouncers", "Two burly bouncers flank the door to the Club, barring your entrance.");
+        bouncers->name.aliases = {"bouncer"};
+        bouncers->properties |= Object::TALKABLE;
+        bouncers->pre_action = [](World* w, Receiver* r, Action* a, Object* o) {
+            if(a->name.id == a->name.parent_list->TALK_TO)
+            {
+                if(w->flags["bape_count"] == 0)
+                {
+                    o->talkable_data = { "-May I enter the Club?",
+                        "-Not with that miserable getup. First don some Bapes.",
+                        "Both bouncers refuse to budge an inch." };
+                }
+                else if(w->flags["bape_count"] == 1)
+                {
+                    o->talkable_data = { "-May I enter the Club?",
+                        "-You only have one (1) bape. You need two (2) bapes to enter here.",
+                        "Neither bouncer moves a centimeter." };
+                }
+                else
+                {
+                    o->talkable_data = { "-May I enter the Club?",
+                        "-Once I came out\n I felt like a mayor\n I could breathe fresh air,\n And eat like a bear.",
+                        "-Please enter the Club, good fellow." };
+                    w->flags["can_enter_club"] = 1;
+                }
+            }
+            return true;
+        };
+        club_front->add_child(bouncers);
+    }
+
+
 
 	return world;
 }
