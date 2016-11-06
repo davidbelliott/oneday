@@ -11,6 +11,14 @@ struct Fist
     bool dead;
 };
 
+struct Abs
+{
+    sf::Time remaining_time;
+    double power;
+    int health;
+    bool tense;
+};
+
 struct Fragment
 {
     double x, y;
@@ -25,10 +33,13 @@ class GameStateThugFight: public GameState
 {
     public:
         Terminal* terminal;
+        Abs abs;
         std::vector<Fist> fists;
         std::vector<Fragment> fragments;
         std::string thug_fist;
-        std::string your_fist;
+        std::string abs_str;
+        std::string abs_tense_str;
+        sf::Time ab_cooldown;
         sf::Time time_alive;
         sf::Time total_time;
         double spawn_countdown;

@@ -54,6 +54,9 @@ public:
     /*Sets the color of all text outputted after this command.*/
     void set_color(sf::Color color = config::colors[config::color_default_fg]);
 
+    /*Sets the color of the background for the entire terminal.*/
+    void set_bg_color(sf::Color color = config::colors[config::color_default_bg]);
+
     /*Sets whether or not to display the cursor rectangle at the current cursor x and y.*/
     void set_disp_cursor(bool disp_cursor_in);
 

@@ -277,11 +277,11 @@ World* generate_world()
     {
         Room* temp_lane = new Room("temp_lane", "Temporary Lane", "A temporary lane.");
         temp_lane->directions[NORTH] = "hood_avenue";
-        temp_lane->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
+        temp_lane->post_action = [](World* w, Receiver* r, Action* a, Object* o)
         {
             if(a->name.id == a->name.parent_list->LOOK)
             {
-                r->add_event(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you! Quick, deflect their blows."));
+                r->add_event(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!\nPress any key to tense your abs and deflect their blows."));
                 r->add_event(std::make_shared<CmdPause>());
                 r->add_event(std::make_shared<CmdAddGameState>(new GameStateThugFight()));
             }

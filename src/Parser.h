@@ -15,7 +15,7 @@ public:
 	Parser();
 	virtual ~Parser();
 
-    std::vector<std::string> tokenize(std::string input, char delim = ' ');
+    static std::vector<std::string> tokenize(std::string input, char delim = ' ');
 	Action* parse(std::string statement, World* w, Receiver* r);
 };
 

@@ -129,6 +129,11 @@ void Terminal::set_color(sf::Color color)
     state.foreground_color = color;
 }
 
+void Terminal::set_bg_color(sf::Color color)
+{
+    state.background_color = color;
+}
+
 void Terminal::set_disp_cursor(bool disp_cursor_in)
 {
     if(disp_cursor != disp_cursor_in)

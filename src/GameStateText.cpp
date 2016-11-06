@@ -65,6 +65,8 @@ void GameStateText::handle_event(std::shared_ptr<Event> event)
         GameState* state_to_add = std::static_pointer_cast<CmdAddGameState>(event)->state_to_add;
         engine->push_state(state_to_add);
     }
+    else if(event->type == Event::CMD_PAUSE)
+        paused = true;
     terminal->handle_event(event);
 }
 
