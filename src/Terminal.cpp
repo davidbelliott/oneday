@@ -19,45 +19,26 @@ Terminal::~Terminal()
     delete buffer;
 }
 
-void Terminal::output(std::string str, int& x, int& y, bool wrap)
+void Terminal::output(std::string str, int start_x, int start_y)
 {
+    int x = start_x;
+    int y = start_y;
 	for (int i = 0; i < str.size(); i++)
 	{
-        if (x >= config::screen_w_chars && wrap)
+        if (x >= 0 && x < config::screen_w_chars && y >= 0 && y < config::screen_h_chars && str[i] != '\0')
         {
-            x = 0;
-            y++;
-        }
-		while (y >= config::screen_h_chars && wrap)
-		{
-			buffer->add_line();
-			y--;
-		}
-		int index = buffer->get_index(x, y);
-        if (index < buffer->contents.size())
-        {
+            int index = buffer->get_index(x, y);
             buffer->setChar(index, str[i], state.foreground_color, state.background_color);
         }
 		if (str[i] == '\n')
 		{
-			x = 0;
+			x = start_x;
 			y++;
 		}
 		else
 		{
 			x++;
 		}
-        if (x == config::screen_w_chars && disp_cursor && wrap)
-        {
-            x = 0;
-            y++;
-        }
-        while (y >= config::screen_h_chars && disp_cursor && wrap)
-        {
-            buffer->add_line();
-            y--;
-        }
-        dirty = true;
 	}
 }
 
@@ -74,13 +55,52 @@ void Terminal::output_mode()
     state.mode = OUTPUT;
 }
 
-void Terminal::disp(std::string string, bool newline)
+void Terminal::disp(std::string str, bool newline)
 {
 	//std::cout << string << std::endl;
     buffer->scroll_value = buffer->scroll_value_max;
     int x = buffer->get_x(state.cursor_index);
     int y = buffer->get_y(state.cursor_index);
-    output(string + (newline ? "\n" : ""), x, y, true);
+    if(newline)
+        str += "\n";
+    state.cursor_index = buffer->get_index(x, y);
+	for (int i = 0; i < str.size(); i++)
+	{
+        if (x >= config::screen_w_chars)
+        {
+            x = 0;
+            y++;
+        }
+		while (y >= config::screen_h_chars)
+		{
+			buffer->add_line();
+			y--;
+		}
+		int index = buffer->get_index(x, y);
+        if (index < buffer->contents.size() && str[i] != '\0')
+        {
+            buffer->setChar(index, str[i], state.foreground_color, state.background_color);
+        }
+		if (str[i] == '\n')
+		{
+			x = 0;
+			y++;
+		}
+		else
+		{
+			x++;
+		}
+        if (x == config::screen_w_chars && disp_cursor)
+        {
+            x = 0;
+            y++;
+        }
+        while (y >= config::screen_h_chars && disp_cursor)
+        {
+            buffer->add_line();
+            y--;
+        }
+	}
     state.cursor_index = buffer->get_index(x, y);
 }
 
