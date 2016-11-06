@@ -48,7 +48,7 @@ void GameStateThugFight::handle_event(Event* event)
 {
     if(event->type == Event::KEY_PRESSED)
     {
-        fists.push_back({ config::screen_w_chars - 14,
+        fists.push_back({ config::screen_w_chars - 1,
                           rand() % (config::screen_h_chars - 6), false,
                           sf::seconds(2),
                           rand() % (config::N_COLORS - config::RED) + config::RED,
@@ -77,10 +77,16 @@ void GameStateThugFight::run(sf::Time dt)
                 }
                 fists[i].dead = true;
             }
-            fists[i].x -= 1;
+            fists[i].x -= 10;
+        }
+        else
+        {
+            fists[i].x -= (dt.asSeconds() / 2.0 * 13.0);
         }
 
         fists[i].remaining_time -= dt;
+        if(fists[i].remaining_time.asSeconds() <= 0.25f && fists[i].color_index == config::BASE_6)
+              fists[i].color_index = rand() % (config::N_COLORS - config::RED) + config::RED;
         if(fists[i].remaining_time.asSeconds() <= 0.0)
             fists[i].punching = true;
         if(fists[i].dead)
