@@ -19,16 +19,16 @@ Terminal::~Terminal()
     delete buffer;
 }
 
-void Terminal::output(std::string str, int& x, int& y)
+void Terminal::output(std::string str, int& x, int& y, bool wrap)
 {
 	for (int i = 0; i < str.size(); i++)
 	{
-        if (x >= config::screen_w_chars)
+        if (x >= config::screen_w_chars && wrap)
         {
             x = 0;
             y++;
         }
-		while (y >= config::screen_h_chars)
+		while (y >= config::screen_h_chars && wrap)
 		{
 			buffer->add_line();
 			y--;
@@ -47,12 +47,12 @@ void Terminal::output(std::string str, int& x, int& y)
 		{
 			x++;
 		}
-        if (x == config::screen_w_chars && disp_cursor)
+        if (x == config::screen_w_chars && disp_cursor && wrap)
         {
             x = 0;
             y++;
         }
-        while (y >= config::screen_h_chars && disp_cursor)
+        while (y >= config::screen_h_chars && disp_cursor && wrap)
         {
             buffer->add_line();
             y--;
@@ -80,7 +80,7 @@ void Terminal::disp(std::string string, bool newline)
     buffer->scroll_value = buffer->scroll_value_max;
     int x = buffer->get_x(state.cursor_index);
     int y = buffer->get_y(state.cursor_index);
-    output(string + (newline ? "\n" : ""), x, y);
+    output(string + (newline ? "\n" : ""), x, y, true);
     state.cursor_index = buffer->get_index(x, y);
 }
 

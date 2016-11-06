@@ -8,6 +8,7 @@
 #include "level_data.h"
 #include "Receiver.h"
 #include "Event.h"
+#include "GameStateThugFight.h"
 #include <SFML/Audio.hpp>
 #include <iostream>
 
@@ -20,7 +21,7 @@ World* generate_world()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "main_street";
+	world->cur_room = "temp_lane";
     {
         Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
         world->player = player;
@@ -250,13 +251,15 @@ World* generate_world()
                 {
                     o->talkable_data = { "-May I enter the Club?",
                         "-Not with that miserable getup. First don some Bapes.",
-                        "Both bouncers refuse to budge an inch." };
+                        "Both bouncers refuse to budge an inch.",
+                        "You shout:\n-These people, Adam!" };
                 }
                 else if(w->flags["bape_count"] == 1)
                 {
                     o->talkable_data = { "-May I enter the Club?",
                         "-You only have one (1) bape. You need two (2) bapes to enter here.",
-                        "Neither bouncer moves a centimeter." };
+                        "Neither bouncer moves a centimeter.",
+                        "You shout:\n-These people, Adam!" };
                 }
                 else
                 {
@@ -269,6 +272,22 @@ World* generate_world()
             return true;
         };
         club_front->add_child(bouncers);
+    }
+
+    {
+        Room* temp_lane = new Room("temp_lane", "Temporary Lane", "A temporary lane.");
+        temp_lane->directions[NORTH] = "hood_avenue";
+        temp_lane->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
+        {
+            if(a->name.id == a->name.parent_list->LOOK)
+            {
+                r->add_event(new CmdDisp("Suddenly, a group of thugs rounds the corner. They raise fists to attack you! Quick, deflect their blows."));
+                r->add_event(new CmdPause());
+                r->add_event(new CmdAddGameState(new GameStateThugFight()));
+            }
+            return true;
+        };
+        world->add_child(temp_lane);
     }
 
 

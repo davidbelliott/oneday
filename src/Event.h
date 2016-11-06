@@ -1,5 +1,6 @@
 #pragma once
 
+class GameState;
 class GameStateTerminal;
 #include "Config.h"
 #include <SFML/Graphics.hpp>
@@ -21,7 +22,8 @@ public:
 		CMD_PAUSE,
         CMD_UNPAUSE,
 		CMD_CHANGE_ROOM,
-        CMD_SET_OBJECTIVE
+        CMD_SET_OBJECTIVE,
+        CMD_ADD_GAMESTATE
 	};
 
 	EventType type;
@@ -143,4 +145,14 @@ class CmdSetObjective : public Event
             : Event(CMD_SET_OBJECTIVE),
               objective(objective_in)
     {}
+};
+
+class CmdAddGameState : public Event
+{
+    public:
+        GameState* state_to_add;
+        CmdAddGameState(GameState* state_to_add_in)
+            : Event(CMD_ADD_GAMESTATE),
+              state_to_add(state_to_add_in)
+        {}
 };

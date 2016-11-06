@@ -60,6 +60,11 @@ void GameStateText::handle_event(Event* event)
         }
         add_event(new CmdInput());
     }
+    else if(event->type == Event::CMD_ADD_GAMESTATE)
+    {
+        GameState* state_to_add = static_cast<CmdAddGameState*>(event)->state_to_add;
+        engine->push_state(state_to_add);
+    }
     terminal->handle_event(event);
 }
 
