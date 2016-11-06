@@ -15,7 +15,7 @@ GameState::~GameState()
 {
 }
 
-void GameState::add_event(Event* event)
+void GameState::add_event(std::shared_ptr<Event> event)
 {
     if(paused)
     {
@@ -36,7 +36,7 @@ void GameState::cleanup()
 {
 }
 
-void GameState::handle_event(Event* event)
+void GameState::handle_event(std::shared_ptr<Event> event)
 {
 }
 
@@ -44,7 +44,7 @@ void GameState::handle_events()
 {
     while(!mailbox.empty() && !paused)
     {
-        Event* event = mailbox.front();
+        std::shared_ptr<Event> event = mailbox.front();
         mailbox.pop();
         handle_event(event);
     }

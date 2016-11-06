@@ -18,7 +18,7 @@ class GameStateText: public GameState
 
         virtual void init();
         virtual void cleanup();
-        virtual void handle_event(Event* event);
+        virtual void handle_event(std::shared_ptr<Event> event);
         virtual void run(sf::Time dt);
         virtual void draw(sf::RenderTarget* target);
 };

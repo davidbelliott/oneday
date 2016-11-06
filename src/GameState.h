@@ -15,7 +15,7 @@ public:
 	GameState(Engine* engine_in);
 	virtual ~GameState();
 
-    virtual void add_event(Event* event);
+    virtual void add_event(std::shared_ptr<Event> event);
 
 	/*Called when the gamestate is placed in the engine.*/
 	virtual void init();
@@ -24,7 +24,7 @@ public:
 	virtual void cleanup();
 
     /* Handles an event from the mailbox. */
-    virtual void handle_event(Event* event);
+    virtual void handle_event(std::shared_ptr<Event> event);
 
     /* Handles all events from the mailbox by popping from the queue and calling handle_event on each. */
     virtual void handle_events();

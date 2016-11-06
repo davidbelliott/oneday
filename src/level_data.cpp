@@ -64,13 +64,13 @@ World* generate_world()
 			{
 				if (w->player->clothing == "hazmat")
 				{
-					r->add_event(new CmdDisp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage."));
-                    r->add_event(new CmdPause());
+					r->add_event(std::make_shared<CmdDisp>("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage."));
+                    r->add_event(std::make_shared<CmdPause>());
                     return true;
 				}
 				else
 				{
-					r->add_event(new CmdDisp("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~"));
+					r->add_event(std::make_shared<CmdDisp>("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~"));
                     return false;
 				}
 			}
@@ -92,7 +92,7 @@ World* generate_world()
             {
                 if(!a->prepositions.empty() && a->prepositions[0].word == "north")
                 {
-                    r->add_event(new CmdDisp("You hear the intense rustling of thugs lying in wait outside your door. Best not go out this way."));
+                    r->add_event(std::make_shared<CmdDisp>("You hear the intense rustling of thugs lying in wait outside your door. Best not go out this way."));
                     return false;
                 }
             }
@@ -133,7 +133,7 @@ World* generate_world()
 		{
 			if (a->name.id == a->name.parent_list->HIT)
 			{
-				r->add_event(new CmdDisp("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
+				r->add_event(std::make_shared<CmdDisp>("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
 				shelf->shallow_description = "A massive bookshelf is slid to one side of the west wall.";
 				henrik_library->directions[WEST] = "henrik_lab";
 			}
@@ -144,7 +144,7 @@ World* generate_world()
 		{
 			if (a->name.id == a->name.parent_list->TAKE)
 			{
-			    r->add_event(new CmdDisp("Taking the book reveals a secret switch."));
+			    r->add_event(std::make_shared<CmdDisp>("Taking the book reveals a secret switch."));
 				shelf->shallow_description += " One book is missing, leaving an empty slot.";
 				shelf->deep_description += " One book is missing, leaving an empty slot.";
 				secret_switch->properties |= Object::VISIBLE;
@@ -225,12 +225,12 @@ World* generate_world()
                 {
                     if(w->flags["can_enter_club"])
                     {
-                        r->add_event(new CmdDisp("The bouncers slide aside to grant you access. You hop into the Club."));
+                        r->add_event(std::make_shared<CmdDisp>("The bouncers slide aside to grant you access. You hop into the Club."));
                         return true;
                     }
                     else
                     {
-                        r->add_event(new CmdDisp("The two bouncers block your path."));
+                        r->add_event(std::make_shared<CmdDisp>("The two bouncers block your path."));
                         return false;
                     }
                 }
@@ -281,9 +281,9 @@ World* generate_world()
         {
             if(a->name.id == a->name.parent_list->LOOK)
             {
-                r->add_event(new CmdDisp("Suddenly, a group of thugs rounds the corner. They raise fists to attack you! Quick, deflect their blows."));
-                r->add_event(new CmdPause());
-                r->add_event(new CmdAddGameState(new GameStateThugFight()));
+                r->add_event(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you! Quick, deflect their blows."));
+                r->add_event(std::make_shared<CmdPause>());
+                r->add_event(std::make_shared<CmdAddGameState>(new GameStateThugFight()));
             }
             return true;
         };

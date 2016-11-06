@@ -67,7 +67,7 @@ void ActionGo::act(World* w, Receiver* r, Object* o)
         }
         else
         {
-			r->add_event(new CmdDisp("You can't go there, baka."));
+			r->add_event(std::make_shared<CmdDisp>("You can't go there, baka."));
         }
 
     }
@@ -84,7 +84,7 @@ void ActionGo::act(World* w, Receiver* r, Object* o)
         }
         if(direction == DIRECTION_MAX)
         {
-            r->add_event(new CmdDisp("Go where?"));
+            r->add_event(std::make_shared<CmdDisp>("Go where?"));
         }
         else
         {
@@ -92,7 +92,7 @@ void ActionGo::act(World* w, Receiver* r, Object* o)
             if(room && room->directions[direction] != "") {
                 w->set_current_room(room->directions[direction], r);
             } else {
-                r->add_event(new CmdDisp("You can't go " + dir[direction].name + " from here."));
+                r->add_event(std::make_shared<CmdDisp>("You can't go " + dir[direction].name + " from here."));
             }
         }
     }
@@ -119,18 +119,18 @@ void ActionTake::act(World* w, Receiver* r, Object* o)
 {
 	if (o && (o->properties & Object::TAKEABLE))
 	{
-		r->add_event(new CmdDisp("You take the " + o->name.word + "."));
+		r->add_event(std::make_shared<CmdDisp>("You take the " + o->name.word + "."));
 		if (o->parent)
 			o->parent->remove_child(o);
 		w->player->add_child(o);
 	}
 	else if (o)
 	{
-		r->add_event(new CmdDisp("You can't take the " + o->name.word + ", baka gaijin!"));
+		r->add_event(std::make_shared<CmdDisp>("You can't take the " + o->name.word + ", baka gaijin!"));
 	}
 	else
 	{
-		r->add_event(new CmdDisp("Take what?"));
+		r->add_event(std::make_shared<CmdDisp>("Take what?"));
 	}
 }
 
@@ -138,7 +138,7 @@ void ActionWear::act(World* w, Receiver* r, Object* o)
 {
 	if (o && (o->properties & Object::WEARABLE))
 	{
-		r->add_event(new CmdDisp("You put on the " + o->name.word + "."));
+		r->add_event(std::make_shared<CmdDisp>("You put on the " + o->name.word + "."));
         if(o->parent)
         {
             if(o->parent != w->player)
@@ -155,11 +155,11 @@ void ActionWear::act(World* w, Receiver* r, Object* o)
 	}
 	else if (o)
 	{
-		r->add_event(new CmdDisp("You can't wear a " + o->name.word + "."));
+		r->add_event(std::make_shared<CmdDisp>("You can't wear a " + o->name.word + "."));
 	}
 	else
 	{
-		r->add_event(new CmdDisp("Wear what?"));
+		r->add_event(std::make_shared<CmdDisp>("Wear what?"));
 	}
 }
 
@@ -168,20 +168,20 @@ void ActionHit::act(World* w, Receiver* r, Object* o)
 	if (o && (o->properties & Object::HITTABLE))
 	{
 		if (o->flipped)
-			r->add_event(new CmdDisp("The " + o->name.word + " has already been hit."));
+			r->add_event(std::make_shared<CmdDisp>("The " + o->name.word + " has already been hit."));
 		else
 		{
-			r->add_event(new CmdDisp("You hit the " + o->name.word + "."));
+			r->add_event(std::make_shared<CmdDisp>("You hit the " + o->name.word + "."));
 			o->flipped = true;
 		}
 	}
 	else if (o)
 	{
-		r->add_event(new CmdDisp("You can't hit the " + o->name.word));
+		r->add_event(std::make_shared<CmdDisp>("You can't hit the " + o->name.word));
 	}
 	else
 	{
-		r->add_event(new CmdDisp("Hit what?"));
+		r->add_event(std::make_shared<CmdDisp>("Hit what?"));
 	}
 }
 
@@ -191,44 +191,44 @@ void ActionOpenContainer::act(World* w, Receiver* r, Object* o)
 	{
 		if (!o->open)
 		{
-			r->add_event(new CmdDisp("You open the " + o->name.word + "."));
+			r->add_event(std::make_shared<CmdDisp>("You open the " + o->name.word + "."));
 			o->open = true;
 			o->describe(r, true, false);
 		}
 		else
 		{
-			r->add_event(new CmdDisp("The " + o->name.word + " is already open."));
+			r->add_event(std::make_shared<CmdDisp>("The " + o->name.word + " is already open."));
 		}
 	}
 	else if(o)
 	{
-		r->add_event(new CmdDisp("You can't open a " + o->name.word + "!"));
+		r->add_event(std::make_shared<CmdDisp>("You can't open a " + o->name.word + "!"));
 	}
 	else
 	{
-		r->add_event(new CmdDisp("Open what?"));
+		r->add_event(std::make_shared<CmdDisp>("Open what?"));
 	}
 }
 
 void ActionShout::act(World* w, Receiver* r, Object* o)
 {
-	r->add_event(new CmdDisp("SHEEEEIT!"));
+	r->add_event(std::make_shared<CmdDisp>("SHEEEEIT!"));
 }
 
 void ActionRead::act(World* w, Receiver* r, Object* o)
 {
     if(o && (o->properties & Object::READABLE))
     {
-        r->add_event(new CmdDisp("The " + o->name.word + " reads:"));
-        r->add_event(new CmdDisp(o->readable_data));
+        r->add_event(std::make_shared<CmdDisp>("The " + o->name.word + " reads:"));
+        r->add_event(std::make_shared<CmdDisp>(o->readable_data));
     }
     else if(o)
     {
-        r->add_event(new CmdDisp("There's nothing to read on the " + o->name.word + "."));
+        r->add_event(std::make_shared<CmdDisp>("There's nothing to read on the " + o->name.word + "."));
     }
     else
     {
-        r->add_event(new CmdDisp("Read what?"));
+        r->add_event(std::make_shared<CmdDisp>("Read what?"));
     }
 }
 
@@ -238,17 +238,17 @@ void ActionTalkTo::act(World* w, Receiver* r, Object* o)
     {
         for(int i = 0; i < o->talkable_data.size(); i++)
         {
-            r->add_event(new CmdDisp(o->talkable_data[i]));
-            r->add_event(new CmdPause());
+            r->add_event(std::make_shared<CmdDisp>(o->talkable_data[i]));
+            r->add_event(std::make_shared<CmdPause>());
         }
     }
     else if(o)
     {
-        r->add_event(new CmdDisp("You can't talk to the " + o->name.word + ", baka gaijin!"));
+        r->add_event(std::make_shared<CmdDisp>("You can't talk to the " + o->name.word + ", baka gaijin!"));
     }
     else
     {
-        r->add_event(new CmdDisp("Talk to what?"));
+        r->add_event(std::make_shared<CmdDisp>("Talk to what?"));
     }
 }
 

@@ -26,9 +26,9 @@ void Object::describe(Receiver* r, bool deep, bool describe_this)
 	if (describe_this && (properties & VISIBLE))
 	{
 		if (deep && !deep_description.empty())
-			r->add_event(new CmdDisp(deep_description));
+			r->add_event(std::make_shared<CmdDisp>(deep_description));
 		else
-			r->add_event(new CmdDisp(shallow_description));
+			r->add_event(std::make_shared<CmdDisp>(shallow_description));
 	}
     // If this isn't a container and show_children is true, show the children;
     // If this is a container and it's open, show the children.

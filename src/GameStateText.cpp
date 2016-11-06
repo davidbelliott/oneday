@@ -27,7 +27,7 @@ void GameStateText::init()
     world = generate_world();
     parser = new Parser();
 	world->set_current_room(world->get_current_room()->name.word, this);
-    add_event(new CmdInput());
+    add_event(std::make_shared<CmdInput>());
 }
 
 void GameStateText::cleanup()
@@ -37,13 +37,13 @@ void GameStateText::cleanup()
     terminal->clr();
 }
 
-void GameStateText::handle_event(Event* event)
+void GameStateText::handle_event(std::shared_ptr<Event> event)
 {
     if(event->type == Event::USER_LINE)
     {
-        std::string line = static_cast<EventUserLine*>(event)->line;
+        std::string line = std::static_pointer_cast<EventUserLine>(event)->line;
         if(line == "")
-            add_event(new CmdDisp("Please enter a command."));
+            add_event(std::make_shared<CmdDisp>("Please enter a command."));
         else
         {
             Action* action = parser->parse(line, world, this);
@@ -53,16 +53,16 @@ void GameStateText::handle_event(Event* event)
             }
             else
             {
-                add_event(new CmdDisp("I don't understand."));
+                add_event(std::make_shared<CmdDisp>("I don't understand."));
             }
             if(!world->active)
                 running = false;
         }
-        add_event(new CmdInput());
+        add_event(std::make_shared<CmdInput>());
     }
     else if(event->type == Event::CMD_ADD_GAMESTATE)
     {
-        GameState* state_to_add = static_cast<CmdAddGameState*>(event)->state_to_add;
+        GameState* state_to_add = std::static_pointer_cast<CmdAddGameState>(event)->state_to_add;
         engine->push_state(state_to_add);
     }
     terminal->handle_event(event);

@@ -23,7 +23,13 @@ std::string get_file_contents(const char *filename)
 GameStateThugFight::GameStateThugFight()
     : GameState(nullptr),
     terminal(new Terminal()),
-    fists()
+    fists(),
+    fragments(),
+    thug_fist(""),
+    your_fist(""),
+    time_alive(sf::seconds(0)),
+    total_time(sf::seconds(180)),
+    spawn_countdown(0)
 {
     terminal->owner = this;
     std::ifstream thug_fist_file;
@@ -44,15 +50,10 @@ void GameStateThugFight::cleanup()
 {
 }
 
-void GameStateThugFight::handle_event(Event* event)
+void GameStateThugFight::handle_event(std::shared_ptr<Event> event)
 {
     if(event->type == Event::KEY_PRESSED)
     {
-        fists.push_back({ config::screen_w_chars - 1,
-                          rand() % (config::screen_h_chars - 6), false,
-                          sf::seconds(2),
-                          rand() % (config::N_COLORS - config::RED) + config::RED,
-                          false});
     }
     terminal->handle_event(event);
 }
@@ -69,8 +70,8 @@ void GameStateThugFight::run(sf::Time dt)
                 {
                     fragments.push_back({ 0,
                                           rand() % 6 + fists[i].y,
-                                          (double)rand() / (double)RAND_MAX * 50.0,
-                                          (double)rand() / (double)RAND_MAX * 100.0 - 50.0,
+                                          static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 50.0,
+                                          static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
                                           sf::seconds(0.5),
                                           fists[i].color_index,
                                           false});
@@ -84,21 +85,43 @@ void GameStateThugFight::run(sf::Time dt)
             fists[i].x -= (dt.asSeconds() / 2.0 * 13.0);
         }
 
-        fists[i].remaining_time -= dt;
+
         if(fists[i].remaining_time.asSeconds() <= 0.25f && fists[i].color_index == config::BASE_6)
               fists[i].color_index = rand() % (config::N_COLORS - config::RED) + config::RED;
         if(fists[i].remaining_time.asSeconds() <= 0.0)
             fists[i].punching = true;
+
+        fists[i].remaining_time -= dt;
+
         if(fists[i].dead)
             fists.erase(fists.begin() + i);
         else
             i++;
     }
-    for(int i = 0; i < fragments.size(); i++)
+    for(int i = 0; i < fragments.size(); )
     {
+        if(fragments[i].x < 0 || fragments[i].x > config::screen_w_chars
+           || fragments[i].y < 0 || fragments[i].y > config::screen_h_chars)
+            fragments[i].dead = true;
         fragments[i].x += fragments[i].vx * dt.asSeconds();
         fragments[i].y += fragments[i].vy * dt.asSeconds();
+        fragments[i].remaining_time -= dt;
+        if(fragments[i].dead)
+            fragments.erase(fragments.begin() + i);
+        else
+            i++;
     }
+    if(static_cast<double>(rand()) / static_cast<double>(RAND_MAX) >= (1.0 - time_alive.asSeconds() / total_time.asSeconds()))
+    {
+        fists.push_back({ static_cast<double>(config::screen_w_chars - 1),
+                          static_cast<double>(rand() % (config::screen_h_chars - 6)),
+                          false,
+                          sf::seconds(2),
+                          rand() % (config::N_COLORS - config::RED) + config::RED,
+                          false});
+        spawn_countdown = (total_time.asSeconds() - time_alive.asSeconds()) / 180.0 + 0.1;
+    }
+    time_alive += dt;
 }
 
 void GameStateThugFight::draw(sf::RenderTarget* target)

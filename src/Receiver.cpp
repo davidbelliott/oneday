@@ -8,7 +8,7 @@ Receiver::~Receiver()
 {
 }
 
-void Receiver::add_event(Event* event)
+void Receiver::add_event(std::shared_ptr<Event> event)
 {
     mailbox.push(event);
 }

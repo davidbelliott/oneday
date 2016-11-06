@@ -154,15 +154,16 @@ void Terminal::draw(sf::RenderTarget* target)
     dirty = false;
 }
 
-void Terminal::handle_event(Event* event)
+void Terminal::handle_event(std::shared_ptr<Event> event)
 {
     if(event->type == Event::CMD_DISP)
     {
-        disp(static_cast<CmdDisp*>(event)->str);
+        std::shared_ptr<CmdDisp> cmd_disp = std::static_pointer_cast<CmdDisp>(event);
+        disp(cmd_disp->str);
     }
     else if(event->type == Event::CMD_OUTPUT)
     {
-        CmdOutput* cmd = static_cast<CmdOutput*>(event);
+        std::shared_ptr<CmdOutput> cmd = std::static_pointer_cast<CmdOutput>(event);
         output(cmd->str, cmd->x, cmd->y);
     }
     else if(event->type == Event::CMD_CLEAR)
@@ -175,18 +176,18 @@ void Terminal::handle_event(Event* event)
     }
     else if(event->type == Event::CMD_SETCOLOR)
     {
-        set_color(static_cast<CmdSetColor*>(event)->color);
+        set_color(std::static_pointer_cast<CmdSetColor>(event)->color);
     }
     else if(event->type == Event::TEXT_ENTERED)
     {
         if(state.mode == INPUT)
         {
-            char c = static_cast<EventTextEntered*>(event)->c;
+            char c = std::static_pointer_cast<EventTextEntered>(event)->c;
             if(c == '\n' || c == '\r')
             {
                 disp("");
                 if(owner)
-                    owner->add_event(new EventUserLine(cur_user_string));
+                    owner->add_event(std::make_shared<EventUserLine>(cur_user_string));
                 cur_user_string = "";
                 output_mode();
             }

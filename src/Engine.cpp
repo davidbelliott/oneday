@@ -37,11 +37,11 @@ void Engine::get_input(sf::Window* window)
     sf::Event sf_event;
     while(window->pollEvent(sf_event))
     {
-        Event* output_event = nullptr;
+        std::shared_ptr<Event> output_event = nullptr;
         if(sf_event.type == sf::Event::KeyPressed)
-            output_event = new EventKeyPressed(sf_event.key.code);
+            output_event = std::make_shared<EventKeyPressed>(sf_event.key.code);
         else if(sf_event.type == sf::Event::TextEntered)
-            output_event = new EventTextEntered(static_cast<char>(sf_event.text.unicode));
+            output_event = std::make_shared<EventTextEntered>(static_cast<char>(sf_event.text.unicode));
 
         if(output_event)
             game_states.back()->add_event(output_event);

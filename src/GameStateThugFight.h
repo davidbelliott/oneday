@@ -29,13 +29,16 @@ class GameStateThugFight: public GameState
         std::vector<Fragment> fragments;
         std::string thug_fist;
         std::string your_fist;
+        sf::Time time_alive;
+        sf::Time total_time;
+        double spawn_countdown;
 
         GameStateThugFight();
         virtual ~GameStateThugFight();
 
         virtual void init();
         virtual void cleanup();
-        virtual void handle_event(Event* event);
+        virtual void handle_event(std::shared_ptr<Event> event);
         virtual void run(sf::Time dt);
         virtual void draw(sf::RenderTarget* target);
 };
