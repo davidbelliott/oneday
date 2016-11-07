@@ -279,11 +279,24 @@ World* generate_world()
         temp_lane->directions[NORTH] = "hood_avenue";
         temp_lane->post_action = [](World* w, Receiver* r, Action* a, Object* o)
         {
-            if(a->name.id == a->name.parent_list->LOOK)
+            if(a->name.id == a->name.parent_list->LOOK && w->get_flag["thugfight_outcome"] == 0)
             {
                 r->add_event(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!\nPress any key to tense your abs and deflect their blows."));
                 r->add_event(std::make_shared<CmdPause>());
                 r->add_event(std::make_shared<CmdAddGameState>(new GameStateThugFight()));
+                r->add_event(std::make_shared<CmdCustom>( [](GameState* g)
+                            {
+                                if(g->get_world()->get_flag("thugfight_outcome") == 1)  // Won the fight
+                                {
+                                    g->get_terminal()->disp("Cowed by your abdominal prowess, the thugs slink off.");
+                                }
+                                else
+                                {
+                                    g->get_terminal()->disp("Your abdomen is hard and tender from the repeated blows. You die.");
+                                    g->get_world()->set_flag("active", 0);
+                                }
+                            } );
+               r->add_event(std::make_shared<CmdPause>());
             }
             return true;
         };

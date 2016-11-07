@@ -5,9 +5,11 @@
 GameState::GameState(Engine* engine_in)
 :   Receiver(),
     engine(engine_in),
+    terminal(),
     paused(false),
     running(true)
 {
+    terminal.owner = this;
 }
 
 
@@ -38,6 +40,7 @@ void GameState::cleanup()
 
 void GameState::handle_event(std::shared_ptr<Event> event)
 {
+    terminal.handle_event(event);
 }
 
 void GameState::handle_events()
@@ -56,4 +59,5 @@ void GameState::run(sf::Time dt)
 
 void GameState::draw(sf::RenderTarget* target)
 {
+    terminal.draw(target);
 }

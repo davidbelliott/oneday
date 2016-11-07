@@ -4,17 +4,20 @@
 #include "World.h"
 #include "common.h"
 #include "Event.h"
+#include "level_data.cpp"
 #include <iostream>
 
 Engine::Engine()
 :   paused(false),
-    running(true)
+    running(true),
+    world(generate_world())
 {
 }
 
 
 Engine::~Engine()
 {
+    delete world;
 }
 
 void Engine::push_state(GameState* state)

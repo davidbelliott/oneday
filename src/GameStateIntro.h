@@ -7,7 +7,6 @@ class GameStateIntro: public GameState
 {
     private:
         //GameState* state_to_push;
-        Terminal* terminal;
         float x;
         float y;
         std::string title_string;

@@ -5,7 +5,7 @@
 
 GameStateIntro::GameStateIntro(Engine* engine_in)
     : GameState(engine_in),
-    terminal(new Terminal()),
+    terminal(),
     title_string("ONE DAY IN THE LIFE OF YOUNG JAMAL")
 {
 }
@@ -36,7 +36,7 @@ void GameStateIntro::handle_event(std::shared_ptr<Event> event)
 {
     if(event->type == Event::CMD_PAUSE)
         paused = true;
-    terminal->handle_event(event);
+    terminal.handle_event(event);
     if(mailbox.empty())
         running = false;
 }
@@ -48,5 +48,5 @@ void GameStateIntro::run(sf::Time dt)
 
 void GameStateIntro::draw(sf::RenderTarget* target)
 {
-    terminal->draw(target);
+    terminal.draw(target);
 }

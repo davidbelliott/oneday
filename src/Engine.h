@@ -1,5 +1,6 @@
 #pragma once
 
+class World;
 class GameState;
 
 #include <SFML/Graphics.hpp>
@@ -8,6 +9,7 @@ class GameState;
 class Engine
 {
 public:
+    World* world;
     std::vector<GameState*> game_states;
 
 	Engine();

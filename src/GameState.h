@@ -2,6 +2,7 @@
 
 class Engine;
 #include "Receiver.h"
+#include "Terminal.h"
 #include <SFML/Graphics.hpp>
 #include <queue>
 
@@ -9,6 +10,7 @@ class GameState : public Receiver
 {
 public:
 	Engine* engine;
+    Terminal terminal;
 	bool paused;		//Is this game state paused?
     bool running;       //Is this game state running?
 

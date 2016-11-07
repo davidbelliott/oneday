@@ -1,6 +1,5 @@
 #pragma once
 class World;
-class Terminal;
 class Parser;
 class Config;
 #include "GameState.h"
@@ -11,7 +10,6 @@ class GameStateText: public GameState
     public:
         World* world;
         Parser* parser;
-        Terminal* terminal;
 
         GameStateText(Engine* engine_in);
         virtual ~GameStateText();

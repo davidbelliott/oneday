@@ -3,30 +3,26 @@
 #include "Event.h"
 #include "Parser.h"
 #include "Room.h"
-#include "Terminal.h"
 #include "World.h"
 #include "Config.h"
 #include "level_data.h"
 #include "Engine.h"
 
 GameStateText::GameStateText(Engine* engine_in)
-    : GameState(engine_in),
-    terminal(new Terminal())
+    : GameState(engine_in)
 {
-    terminal->owner = this;
+    terminal.owner = this;
 }
 
 GameStateText::~GameStateText()
 {
-    delete terminal;
 }
 
 void GameStateText::init()
 {
     running = true;
-    world = generate_world();
     parser = new Parser();
-	world->set_current_room(world->get_current_room()->name.word, this);
+	engine->get_world()->set_current_room(world->get_current_room()->name.word, this);
     add_event(std::make_shared<CmdInput>());
 }
 
@@ -34,7 +30,6 @@ void GameStateText::cleanup()
 {
     delete world;
     delete parser;
-    terminal->clr();
 }
 
 void GameStateText::handle_event(std::shared_ptr<Event> event)
