@@ -29,11 +29,16 @@ public:
 
     Command(CommandType type_in)
     : type(type_in)
-    {}
+    {
+    }
+
     virtual ~Command()
-    {}
+    {
+    }
+
     virtual void run(Receiver* r)
-    {}
+    {
+    }
 };
 
 typedef std::shared_ptr<Command> cmd_ptr;

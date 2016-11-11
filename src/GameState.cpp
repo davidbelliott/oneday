@@ -55,3 +55,33 @@ void GameState::draw(sf::RenderTarget* target)
 {
     terminal.draw(target);
 }
+
+void GameState::send(cmd_ptr cmd)
+{
+    mailbox.push(cmd);
+}
+
+void GameState::execute(Command* cmd)
+{
+    cmd->run(this);
+}
+
+void GameState::execute_commands()
+{
+    while(!mailbox.empty() && !paused)
+    {
+        cmd_ptr cmd = mailbox.front();
+        mailbox.pop();
+        execute(cmd);
+    }
+}
+
+void GameState::pause()
+{
+    paused = true;
+}
+
+void GameState::unpause()
+{
+    paused = false;
+}

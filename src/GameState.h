@@ -31,5 +31,20 @@ public:
 
 	/*Draw the gamestate.*/
 	virtual void draw(sf::RenderTarget* target);
+
+    /* Sends a command to the gamestate's queue. */
+    virtual void send(cmd_ptr command);
+
+    /* Executes a given command. */
+    virtual void execute(cmd_ptr command);
+
+    /* Executes commands in the queue one at a time. */
+    virtual void execute_commands();
+
+    /* Pause the gamestate. */
+    virtual void pause();
+
+    /* Unpause the gamestate. */
+    virtual void unpause();
 };
 
