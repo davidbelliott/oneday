@@ -2,7 +2,6 @@
 
 class Engine;
 #include "Receiver.h"
-#include "Terminal.h"
 #include <SFML/Graphics.hpp>
 #include <queue>
 
@@ -10,7 +9,6 @@ class GameState : public Receiver
 {
 public:
 	Engine* engine;
-    Terminal terminal;
 	bool paused;		//Is this game state paused?
     bool running;       //Is this game state running?
 
@@ -25,11 +23,8 @@ public:
 	/*Called when the gamestate is removed from the engine.*/
 	virtual void cleanup();
 
-    /* Handles an event from the mailbox. */
-    virtual void handle_event(std::shared_ptr<Event> event);
-
-    /* Handles all events from the mailbox by popping from the queue and calling handle_event on each. */
-    virtual void handle_events();
+    /* Inherited from Receiver. */
+    virtual void notify(event_ptr event);
 
 	/*Run one cycle of the gamestate. dt is time elapsed in last engine cycle.*/
 	virtual void run(sf::Time dt);

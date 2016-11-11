@@ -18,19 +18,18 @@ public:
     void push_state(GameState* state);
     void pop_state();
 
-    /* Gets input events from the terminal and puts them in the top of the queue. */
+    /* Gets input events from the terminal and notifies gamestates. */
     void get_input(sf::Window* window);
-    void handle_events();
-    void run(sf::Time dt);
-    void draw(sf::RenderTarget* target);
 
-    void pause();
-    void unpause();
+    /* Tells gamestates to pop and run the commands on their queues. */
+    void run_commands();
+
+    void update(sf::Time dt);
+    void draw(sf::RenderTarget* target);
 
     /* Event-creation functions */
     void disp(std::string s);
 
-	bool paused;
 	bool running;
     bool ignore_next_event;
 };

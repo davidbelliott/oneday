@@ -8,8 +8,7 @@
 #include <iostream>
 
 Engine::Engine()
-:   paused(false),
-    running(true),
+:   running(true),
     world(generate_world())
 {
 }
@@ -40,51 +39,66 @@ void Engine::get_input(sf::Window* window)
     sf::Event sf_event;
     while(window->pollEvent(sf_event))
     {
-        std::shared_ptr<Event> output_event = nullptr;
+        event_ptr output_event = nullptr;
         if(sf_event.type == sf::Event::KeyPressed)
             output_event = std::make_shared<EventKeyPressed>(sf_event.key.code);
         else if(sf_event.type == sf::Event::TextEntered)
             output_event = std::make_shared<EventTextEntered>(static_cast<char>(sf_event.text.unicode));
 
         if(output_event)
-            game_states.back()->add_event(output_event);
+            game_states.back()->notify(output_event);
     }
 }
 
-void Engine::handle_events()
+void Engine::run_commands()
 {
-    while(game_states.size() > 0 && !game_states.back()->running)
-        pop_state();
     if(!game_states.empty())
-        game_states.back()->handle_events();
-    else
-        running = false;
+    {
+        game_states.back()->run_commands();
+    }
 }
 
-void Engine::run(sf::Time dt)
+void Engine::update(sf::Time dt)
 {
     if(!game_states.empty())
-        game_states.back()->run(dt);
+    {
+        event_ptr update_event = std::make_shared<EventUpdate>(dt);
+        game_states.back()->notify(update_event);
+    }
 }
 
 void Engine::draw(sf::RenderTarget* target)
 {
-    /*for(int i = 0; i < game_states.size(); i++)
-    {
-        game_states[i]->draw(target);
-    }*/
     if(!game_states.empty())
-        game_states.back()->draw(target);
+    {
+        event_ptr draw_event = std::make_shared<EventDraw>(target);
+        game_states.back()->notify(draw_event);
 }
 
-void Engine::pause()
+void Engine::run()
 {
-    if(!paused)
-        paused = true;
-}
+    sf::Clock clock;
+    sf::Time dt;
+    while(engine->running)
+    {
+        // Collect input from the user
+        engine->get_input(window);
 
-void Engine::unpause()
-{
-    if(paused)
-        paused = false;
+        // Let gamestates handle their pending events
+        engine->handle_events();
+
+        // Update gamestates based on elapsed time
+        dt = clock.restart();
+        update(dt);
+
+        // Draw gamestates
+        draw(window);
+        window->display();
+
+        // Sleep for remaining time
+        while(clock.getElapsedTime().asSeconds() < 1.0f / config::update_frequency)
+        {
+            sf::sleep(sf::milliseconds(1.0f));
+        }
+    }
 }

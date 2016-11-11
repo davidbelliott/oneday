@@ -1,29 +1,18 @@
 #pragma once
 
-class GameState;
-class GameStateTerminal;
-#include "Config.h"
 #include <SFML/Graphics.hpp>
-#include <functional>
+#include <memory>
 
 class Event
 {
 public:
 	enum EventType
 	{
+        UPDATE,         // The engine is updating
+        DRAW,           // The engine is drawing
         KEY_PRESSED,
         TEXT_ENTERED,
-        USER_LINE,
-		CMD_DISP,
-		CMD_OUTPUT,
-        CMD_CLEAR,
-        CMD_SETCOLOR,
-		CMD_INPUT,
-		CMD_PAUSE,
-        CMD_UNPAUSE,
-		CMD_CHANGE_ROOM,
-        CMD_SET_OBJECTIVE,
-        CMD_ADD_GAMESTATE
+        USER_LINE
 	};
 
 	EventType type;
@@ -33,6 +22,30 @@ public:
     {}
 	virtual ~Event()
 	{}
+};
+
+typedef std::shared_ptr<Event> event_ptr;
+
+class EventUpdate : public Event
+{
+    public:
+        sf::Time dt;
+        
+        EventUpdate(sf::Time dt_in)
+            : Event(UPDATE),
+              dt(dt_in)
+    {}
+};
+
+class EventDraw : public Event
+{
+    public:
+        sf::RenderTarget* target;
+
+        EventUpdate(sf::RenderTarget* target_in)
+            : Event(DRAW),
+              target(target_in)
+    {}
 };
 
 class EventKeyPressed : public Event
@@ -65,94 +78,5 @@ class EventUserLine : public Event
         EventUserLine(std::string line_in)
             : Event(USER_LINE),
               line(line_in)
-        {}
-};
-
-class CmdDisp : public Event
-{
-    public:
-        std::string str;
-
-        CmdDisp(std::string str_in)
-        :   Event(CMD_DISP),
-            str(str_in)
-        {
-        }
-};
-
-class CmdOutput : public Event
-{
-    public:
-        int x;
-        int y;
-        std::string str;
-
-        CmdOutput(int x_in, int y_in, std::string str_in)
-            : Event(CMD_OUTPUT),
-            x(x_in),
-            y(y_in),
-            str(str_in)
-    {}
-};
-
-class CmdClear : public Event
-{
-    public:
-        CmdClear()
-            : Event(CMD_CLEAR)
-        {}
-};
-
-class CmdSetColor : public Event
-{
-    public:
-        sf::Color color;
-        CmdSetColor(sf::Color color_in = config::colors[config::color_default_fg])
-            : Event(CMD_SETCOLOR),
-              color(color_in)
-        {}
-};
-
-class CmdInput : public Event
-{
-    public:
-        CmdInput()
-            : Event(CMD_INPUT)
-        {}
-};
-
-class CmdPause : public Event
-{
-    public:
-        CmdPause()
-            : Event(CMD_PAUSE)
-        {}
-};
-
-class CmdUnpause : public Event
-{
-    public:
-        CmdUnpause()
-            : Event(CMD_UNPAUSE)
-        {}
-};
-
-class CmdSetObjective : public Event
-{
-    public:
-        std::string objective;
-        CmdSetObjective(std::string objective_in)
-            : Event(CMD_SET_OBJECTIVE),
-              objective(objective_in)
-    {}
-};
-
-class CmdAddGameState : public Event
-{
-    public:
-        GameState* state_to_add;
-        CmdAddGameState(GameState* state_to_add_in)
-            : Event(CMD_ADD_GAMESTATE),
-              state_to_add(state_to_add_in)
         {}
 };

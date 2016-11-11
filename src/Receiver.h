@@ -1,17 +1,25 @@
 #pragma once
 
+#include "Command.h"
 #include "Event.h"
 #include <queue>
-#include <memory>
 
 class Receiver
 {
 protected:
-    std::queue<std::shared_ptr<Event>> mailbox;
+    std::queue<cmd_ptr> mailbox;
+    bool paused;
 
 public:
 	Receiver();
 	virtual ~Receiver();
 
-    virtual void add_event(std::shared_ptr<Event> event);
+    virtual void send(cmd_ptr command);
+    virtual void notify(event_ptr event);
+
+    virtual void execute(cmd_ptr command);
+    virtual void execute_commands();
+
+    virtual void pause();
+    virtual void unpause();
 };

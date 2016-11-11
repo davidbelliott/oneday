@@ -5,11 +5,9 @@
 GameState::GameState(Engine* engine_in)
 :   Receiver(),
     engine(engine_in),
-    terminal(),
     paused(false),
     running(true)
 {
-    terminal.owner = this;
 }
 
 
@@ -17,16 +15,12 @@ GameState::~GameState()
 {
 }
 
-void GameState::add_event(std::shared_ptr<Event> event)
+void GameState::notify(event_ptr event)
 {
     if(paused)
     {
         if(event->type == Event::KEY_PRESSED)
             paused = false;
-    }
-    else
-    {
-        Receiver::add_event(event);
     }
 }
 
