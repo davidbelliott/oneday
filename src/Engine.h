@@ -3,6 +3,9 @@
 class World;
 class GameState;
 
+#include "Event.h"
+#include "Command.h"
+
 #include <SFML/Graphics.hpp>
 #include <vector>
 
@@ -19,8 +22,8 @@ public:
     void push_state(GameState* state);
     void pop_state();
 
-    /* Gets input events from the terminal and notifies gamestates. */
-    void get_input(sf::Window* window);
+    void notify_gamestates(event_ptr event);
+    void command_gamestates(cmd_ptr command);
 
     /* Tells gamestates to pop and run the commands on their queues. */
     void run_commands();

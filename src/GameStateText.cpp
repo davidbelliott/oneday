@@ -1,75 +1,45 @@
 #include "GameStateText.h"
-#include "Action.h"
-#include "Event.h"
-#include "Parser.h"
-#include "Room.h"
-#include "World.h"
-#include "Config.h"
-#include "level_data.h"
-#include "Engine.h"
 
 GameStateText::GameStateText(Engine* engine_in)
-    : GameState(engine_in)
+    : GameState(engine_in),
+      parser(new Parser())
 {
-    terminal.owner = this;
 }
 
 GameStateText::~GameStateText()
 {
+    delete parser;
 }
-
+/*
 void GameStateText::init()
 {
     running = true;
     parser = new Parser();
 	engine->get_world()->set_current_room(world->get_current_room()->name.word, this);
     add_event(std::make_shared<CmdInput>());
-}
+}*/
 
-void GameStateText::cleanup()
-{
-    delete world;
-    delete parser;
-}
-
-void GameStateText::handle_event(std::shared_ptr<Event> event)
+void GameStateText::notify(event_ptr event)
 {
     if(event->type == Event::USER_LINE)
     {
         std::string line = std::static_pointer_cast<EventUserLine>(event)->line;
         if(line == "")
-            add_event(std::make_shared<CmdDisp>("Please enter a command."));
+            send(std::make_shared<CmdDisp>("Please enter a command."));
         else
         {
-            Action* action = parser->parse(line, world, this);
-            if(action)
-            {
-                action->run(world, this);
-            }
+            Command* cmd = parser->parse(line, world, this);
+            if(cmd)
+                send(cmd);
             else
-            {
-                add_event(std::make_shared<CmdDisp>("I don't understand."));
-            }
+                send(std::make_shared<CmdDisp>("I don't understand."));
             if(!world->active)
                 running = false;
         }
-        add_event(std::make_shared<CmdInput>());
+        send(std::make_shared<CmdInput>());
     }
-    else if(event->type == Event::CMD_ADD_GAMESTATE)
+    else if(event->type == Event::DRAW)
     {
-        GameState* state_to_add = std::static_pointer_cast<CmdAddGameState>(event)->state_to_add;
-        engine->push_state(state_to_add);
+        terminal->draw(pointer_cast<EventDraw>(event)->target);
     }
-    else if(event->type == Event::CMD_PAUSE)
-        paused = true;
-    terminal->handle_event(event);
-}
-
-void GameStateText::run(sf::Time dt)
-{
-}
-
-void GameStateText::draw(sf::RenderTarget* target)
-{
-    terminal->draw(target);
 }

@@ -35,6 +35,11 @@ void GameState::send(cmd_ptr cmd)
     mailbox.push(cmd);
 }
 
+void GameState::send_front(cmd_ptr cmd)
+{
+    //mailbox.push_front(cmd); FIXME!
+}
+
 void GameState::execute(Command* cmd)
 {
     cmd->run(this);

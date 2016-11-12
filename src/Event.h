@@ -42,7 +42,7 @@ class EventDraw : public Event
     public:
         sf::RenderTarget* target;
 
-        EventUpdate(sf::RenderTarget* target_in)
+        EventDraw(sf::RenderTarget* target_in)
             : Event(DRAW),
               target(target_in)
     {}

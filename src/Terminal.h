@@ -60,8 +60,6 @@ public:
     /*Sets whether or not to display the cursor rectangle at the current cursor x and y.*/
     void set_disp_cursor(bool disp_cursor_in);
 
-    void handle_event(std::shared_ptr<Event> event);
-
 //private:
 
     State state;

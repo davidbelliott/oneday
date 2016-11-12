@@ -1,8 +1,8 @@
 #pragma once
 
 class Engine;
+class Terminal;
 #include "Observer.h"
-#include "Command.h"
 #include <queue>
 
 class GameState : public Observer
@@ -22,6 +22,9 @@ public:
 
     /* Sends a command to the gamestate's queue. */
     virtual void send(cmd_ptr command);
+
+    /* Sends a command to the front of the gamestate's queue. */
+    virtual void send_front(cmd_ptr command);
 
     /* Executes a given command. */
     virtual void execute(cmd_ptr command);

@@ -31,6 +31,31 @@ std::vector<std::string> Parser::tokenize(std::string input, char delim)
 	return tokens;
 }
 
+cmd_ptr Parser::get_cmd(Word word)
+{
+		/*if (word.id == l->GO) return new ActionGo(word);
+		else if (word.id == l->LOOK) return new ActionLook(word);
+		else if (word.id == l->QUIT) return new ActionQuit(word);
+		else if (word.id == l->TAKE) return new ActionTake(word);
+		else if (word.id == l->WEAR) return new ActionWear(word);
+		else if (word.id == l->HIT) return new ActionHit(word);
+		else if (word.id == l->OPEN_CONTAINER) return new ActionOpenContainer(word);
+		else if (word.id == l->READ) return new ActionRead(word);
+		else if (action_type == Action::PUT_IN_CONTAINER) return new ActionPutInContainer();
+		else if (action_type == Action::TURN_ON) return new ActionTurnOn();
+		else if (action_type == Action::TURN_OFF) return new ActionTurnOff();
+		else if (action_type == Action::MOVE) return new ActionMove();
+		else if (action_type == Action::EXAMINE) return new ActionExamine();
+		else if (action_type == Action::INVENTORY) return new ActionInventory();
+		else if (action_type == Action::EAT) return new ActionEat();
+		else if (action_type == Action::DRINK) return new ActionDrink();
+		else if (word.id == l->SHOUT) return new ActionShout(word);
+		else if (action_type == Action::BREAK) return new ActionBreak();
+		else if (action_type == Action::BLESSUP) return new ActionBlessup();
+        else if (word.id == l->TALK_TO) return new ActionTalkTo(word);
+        else if (word.id == l->HELP) return new ActionHelp(word);*/
+}
+
 Parser::Parser()
  : action_factory(), word_list()
 {
@@ -49,8 +74,8 @@ bool matches_regex(std::string regex, std::string str)
 
 Action* Parser::parse(std::string statement, World* w, Receiver* r)
 {
-	Action* action = NULL;
-	Object* object = NULL;
+    cmd_ptr command = nullptr;
+	Object* object = nullptr;
 	Room* room = w->get_current_room();
 	std::vector<std::string> token_strings = tokenize(statement, ' ');
 	std::vector<Word> tokens;
@@ -60,34 +85,30 @@ Action* Parser::parse(std::string statement, World* w, Receiver* r)
 		tokens.push_back(word_list.get_word(token_strings[i]));
 	}
 
-	bool found_action = false;
+	bool found_command = false;
 	bool found_object = false;
 	for (size_t i = 0; i < tokens.size(); i++)
 	{
-		if (tokens[i].get_part_of_speech() == Word::ACTION && !found_action)
+		if (tokens[i].get_part_of_speech() == Word::ACTION && !found_command)
 		{
-			action = action_factory.create_action(tokens[i]);
-            if(action)
-                found_action = true;
+			command = get_cmd(tokens[i]);
+            if(command)
+                found_command = true;
 		}
-		else if (tokens[i].get_part_of_speech() == Word::ACTION_MODIFIER && found_action)
-		{
-			action->add_preposition(tokens[i]);
-		}
-		else if (!found_object && found_action)
+		else if (!found_object && found_command)
 		{
 			if (object = room->get_indirect_child(tokens[i].word, Object::DISCOVERED))
 			{
 				found_object = true;
-				action->add_object(object);
+				command->add_object(object);
 			}
             else if (object = w->player->get_indirect_child(tokens[i].word, Object::DISCOVERED))
             {
                 found_object = true;
-                action->add_object(object);
+                command->add_object(object);
             }
 		}
 	}
 
-	return action;
+	return command;
 }

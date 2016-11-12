@@ -34,19 +34,19 @@ void Engine::pop_state()
     }
 }
 
-void Engine::get_input(sf::Window* window)
+void Engine::notify_gamestates(event_ptr event)
 {
-    sf::Event sf_event;
-    while(window->pollEvent(sf_event))
+    if(!game_states.empty())
     {
-        event_ptr output_event = nullptr;
-        if(sf_event.type == sf::Event::KeyPressed)
-            output_event = std::make_shared<EventKeyPressed>(sf_event.key.code);
-        else if(sf_event.type == sf::Event::TextEntered)
-            output_event = std::make_shared<EventTextEntered>(static_cast<char>(sf_event.text.unicode));
+        game_states.back()->notify(event);
+    }
+}
 
-        if(output_event)
-            game_states.back()->notify(output_event);
+void Engine::command_gamestates(cmd_ptr command)
+{
+    if(!game_states.empty())
+    {
+        game_states.back()->send(command);
     }
 }
 
