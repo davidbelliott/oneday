@@ -11,6 +11,7 @@ class Engine
 public:
     World* world;
     std::vector<GameState*> game_states;
+	bool running;
 
 	Engine();
 	virtual ~Engine();
@@ -26,11 +27,5 @@ public:
 
     void update(sf::Time dt);
     void draw(sf::RenderTarget* target);
-
-    /* Event-creation functions */
-    void disp(std::string s);
-
-	bool running;
-    bool ignore_next_event;
 };
 

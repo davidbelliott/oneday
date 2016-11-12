@@ -13,15 +13,28 @@ class Command
 public:
     enum CommandType
     {
+        // View commands
         DISP,
         OUTPUT,
         CLEAR,
         SETCOLOR,
+        // Controller commands
         INPUT,
         PAUSE,
         UNPAUSE,
-        CHANGE_ROOM,
+        QUIT,
+        // Model commands
+        SET_ROOM,
         SET_OBJECTIVE,
+        DESCRIBE,
+        TAKE,
+        WEAR,
+        OPEN,
+        HIT,
+        READ,
+        SHOUT,
+        TALK_TO,
+        HELP,
         ADD_GAMESTATE
     };
 

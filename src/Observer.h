@@ -2,11 +2,11 @@
 
 #include "Event.h"
 
-class Listener
+class Observer
 {
 public:
-	Listener();
-	virtual ~Listener();
+	Observer();
+	virtual ~Observer();
 
     virtual void notify(event_ptr event);
 };

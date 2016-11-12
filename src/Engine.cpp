@@ -74,31 +74,3 @@ void Engine::draw(sf::RenderTarget* target)
         event_ptr draw_event = std::make_shared<EventDraw>(target);
         game_states.back()->notify(draw_event);
 }
-
-void Engine::run()
-{
-    sf::Clock clock;
-    sf::Time dt;
-    while(engine->running)
-    {
-        // Collect input from the user
-        engine->get_input(window);
-
-        // Let gamestates handle their pending events
-        engine->handle_events();
-
-        // Update gamestates based on elapsed time
-        dt = clock.restart();
-        update(dt);
-
-        // Draw gamestates
-        draw(window);
-        window->display();
-
-        // Sleep for remaining time
-        while(clock.getElapsedTime().asSeconds() < 1.0f / config::update_frequency)
-        {
-            sf::sleep(sf::milliseconds(1.0f));
-        }
-    }
-}
