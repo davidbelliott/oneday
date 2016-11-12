@@ -2,8 +2,8 @@
 #include "Terminal.h"
 #include "Config.h"
 #include "Engine.h"
-#include "Receiver.h"
 #include "Event.h"
+#include "GameState.h"
 
 Room::Room(std::string name_in, std::string pretty_name_in, std::string description_in)
 	: Object(name_in, description_in)
@@ -24,12 +24,12 @@ Room::~Room()
 		//delete objects[i];
 }
 
-void Room::describe(Receiver* r, bool deep, bool describe_this)
+void Room::describe(GameState* g, bool deep, bool describe_this)
 {
-    r->add_event(std::make_shared<CmdSetColor>(config::colors[config::color_room_title]));
-    r->add_event(std::make_shared<CmdDisp>("You in " + pretty_name + "."));
-    r->add_event(std::make_shared<CmdSetColor>());
-    Object::describe(r, deep, describe_this);
+    g->send(std::make_shared<CmdSetColor>(config::colors[config::color_room_title]));
+    g->send(std::make_shared<CmdDisp>("You in " + pretty_name + "."));
+    g->send(std::make_shared<CmdSetColor>());
+    Object::describe(g, deep, describe_this);
     for(int i = 0; i < DIRECTION_MAX; i++)
     {
         if(directions[i] != "")
@@ -39,7 +39,7 @@ void Room::describe(Receiver* r, bool deep, bool describe_this)
             if(dir_room && dir_room->pretty_name != "")
             {
                 std::string dir_reference = dir[dir_id].dir_reference;
-                r->add_event(std::make_shared<CmdDisp>(dir_reference + " is " + dir_room->pretty_name + "."));
+                g->send(std::make_shared<CmdDisp>(dir_reference + " is " + dir_room->pretty_name + "."));
             }
         }
     }

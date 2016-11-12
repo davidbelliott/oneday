@@ -1,14 +1,12 @@
-#include "Action.h"
 #include "Terminal.h"
 #include "Room.h"
 #include "World.h"
-#include "Receiver.h"
 #include "Event.h"
 #include <iostream>
 
 
 World::World()
-	: Object(), active(true), change_room_action(NULL), player(NULL)
+	: Object(), active(true), player(NULL)
 {
     if(!good_day.openFromFile("good_day.ogg"))
         std::cerr << "Error: unable to load good_day.ogg" << std::endl;
@@ -26,7 +24,7 @@ Room* World::get_current_room()
 		return NULL;
 }
 
-void World::set_current_room(std::string room_name, Receiver* r)
+void World::set_current_room(std::string room_name)
 {
 	cur_room = room_name;
 	Room* room = get_current_room();
@@ -35,9 +33,5 @@ void World::set_current_room(std::string room_name, Receiver* r)
 	{
         std::cerr << "Error: room " + cur_room + " does not exist." << std::endl;
 		exit(1);
-	}
-    else
-    {
-        room->describe(r, true, true);
 	}
 }

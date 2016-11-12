@@ -26,9 +26,12 @@ public:
     void command_gamestates(cmd_ptr command);
 
     /* Tells gamestates to pop and run the commands on their queues. */
-    void run_commands();
+    void execute_commands();
 
     void update(sf::Time dt);
     void draw(sf::RenderTarget* target);
+
+    /* Remove all non-running gamestates and quit if empty. */
+    void prune();
 };
 

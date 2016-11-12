@@ -1,4 +1,5 @@
 #include "GameState.h"
+#include "Terminal.h"
 
 GameState::GameState(Engine* engine_in)
 :   Observer(),
@@ -21,18 +22,13 @@ void GameState::notify(event_ptr event)
     if(paused)
     {
         if(event->type == Event::KEY_PRESSED)
-            paused = false;
+            unpause();
     }
-}
-
-void GameState::notify(event_ptr event)
-{
-    terminal.handle_event(event);
 }
 
 void GameState::send(cmd_ptr cmd)
 {
-    mailbox.push(cmd);
+    commands.push(cmd);
 }
 
 void GameState::send_front(cmd_ptr cmd)
@@ -40,17 +36,17 @@ void GameState::send_front(cmd_ptr cmd)
     //mailbox.push_front(cmd); FIXME!
 }
 
-void GameState::execute(Command* cmd)
+void GameState::execute(cmd_ptr cmd)
 {
     cmd->run(this);
 }
 
 void GameState::execute_commands()
 {
-    while(!mailbox.empty() && !paused)
+    while(!commands.empty() && !paused)
     {
-        cmd_ptr cmd = mailbox.front();
-        mailbox.pop();
+        cmd_ptr cmd = commands.front();
+        commands.pop();
         execute(cmd);
     }
 }

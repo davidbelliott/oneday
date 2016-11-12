@@ -1,8 +1,11 @@
 #include "Console.h"
+#include "GameState.h"
+#include "Terminal.h"
 #include "Engine.h"
 
 Console::Console(Engine* engine_in)
-    : engine(engine_in)
+    : engine(engine_in),
+      input(false)
 {
 }
 
@@ -51,7 +54,7 @@ void Console::handle_input(event_ptr event)
                 cur_user_string += c;
                 std::string str = "";
                 str += c;
-                engine->game_states.back()->terminal->disp(str, false);
+                engine->command_gamestates(std::make_shared<CmdDisp>(str));
             }
         }
     }

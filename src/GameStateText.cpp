@@ -1,4 +1,6 @@
 #include "GameStateText.h"
+#include "Engine.h"
+#include "Terminal.h"
 
 GameStateText::GameStateText(Engine* engine_in)
     : GameState(engine_in),
@@ -28,18 +30,16 @@ void GameStateText::notify(event_ptr event)
             send(std::make_shared<CmdDisp>("Please enter a command."));
         else
         {
-            Command* cmd = parser->parse(line, world, this);
+            cmd_ptr cmd = parser->parse(line, engine->world);
             if(cmd)
                 send(cmd);
             else
                 send(std::make_shared<CmdDisp>("I don't understand."));
-            if(!world->active)
-                running = false;
         }
         send(std::make_shared<CmdInput>());
     }
     else if(event->type == Event::DRAW)
     {
-        terminal->draw(pointer_cast<EventDraw>(event)->target);
+        terminal->draw(std::static_pointer_cast<EventDraw>(event)->target);
     }
 }

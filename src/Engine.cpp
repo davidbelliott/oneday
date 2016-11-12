@@ -4,7 +4,7 @@
 #include "World.h"
 #include "common.h"
 #include "Event.h"
-#include "level_data.cpp"
+#include "level_data.h"
 #include <iostream>
 
 Engine::Engine()
@@ -22,14 +22,12 @@ Engine::~Engine()
 void Engine::push_state(GameState* state)
 {
     game_states.push_back(state);
-    state->init();
 }
 
 void Engine::pop_state()
 {
     if(!game_states.empty())
     {
-        game_states.back()->cleanup();
         game_states.pop_back();
     }
 }
@@ -50,11 +48,11 @@ void Engine::command_gamestates(cmd_ptr command)
     }
 }
 
-void Engine::run_commands()
+void Engine::execute_commands()
 {
     if(!game_states.empty())
     {
-        game_states.back()->run_commands();
+        game_states.back()->execute_commands();
     }
 }
 
@@ -73,4 +71,15 @@ void Engine::draw(sf::RenderTarget* target)
     {
         event_ptr draw_event = std::make_shared<EventDraw>(target);
         game_states.back()->notify(draw_event);
+    }
+}
+
+void Engine::prune()
+{
+    while(!game_states.empty() && !game_states.back()->running)
+    {
+        game_states.pop_back();
+    }
+    if(game_states.empty())
+        running = false;
 }

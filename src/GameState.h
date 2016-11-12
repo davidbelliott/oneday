@@ -3,6 +3,7 @@
 class Engine;
 class Terminal;
 #include "Observer.h"
+#include "Command.h"
 #include <queue>
 
 class GameState : public Observer

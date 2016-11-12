@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include "Event.h"
-#include "Receiver.h"
 
 class Terminal
 {
@@ -26,7 +25,7 @@ public:
         Mode mode;
     };
 
-	Terminal(Receiver* owner_in = nullptr);
+	Terminal();
 	virtual ~Terminal();
 
     /*Print's the terminal's buffer to the render target.*/
@@ -34,7 +33,7 @@ public:
 
     /* Outputs the specified string at the specified x and y values. Leaves x and y at the position following
      * the last modified character. */
-    void output(std::string string, int x, int y);
+    void output(int x, int y, std::string string);
 
     /* Puts the terminal into input mode, displaying the carat and changing the color accordingly. */
     void input_mode();
@@ -64,8 +63,6 @@ public:
 
     State state;
     CharBuffer* buffer;
-    Receiver* owner;
     bool disp_cursor;
     bool dirty;
-    std::string cur_user_string;
 };

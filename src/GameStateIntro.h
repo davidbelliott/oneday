@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GameState.h"
-#include "Terminal.h"
 
 class GameStateIntro: public GameState
 {
@@ -15,9 +14,5 @@ class GameStateIntro: public GameState
         GameStateIntro(Engine* engine_in);
         virtual ~GameStateIntro();
 
-        virtual void init();
-        virtual void cleanup();
-        virtual void handle_event(std::shared_ptr<Event> event);
-        virtual void run(sf::Time dt);
-        virtual void draw(sf::RenderTarget* target);
+        virtual void notify(event_ptr event);
 };

@@ -3,13 +3,10 @@
 #include "Engine.h"
 #include <iostream>
 
-Terminal::Terminal(Receiver* owner_in)
+Terminal::Terminal()
 :   state({ 0, config::colors[config::color_default_fg], config::colors[config::color_default_bg], OUTPUT }),
     buffer(new CharBuffer()),
-    disp_cursor(false),
-    dirty(true),
-    cur_user_string(""),
-    owner(owner_in)
+    disp_cursor(false)
 {
 }
 
@@ -19,7 +16,7 @@ Terminal::~Terminal()
     delete buffer;
 }
 
-void Terminal::output(std::string str, int start_x, int start_y)
+void Terminal::output(int start_x, int start_y, std::string str)
 {
     int x = start_x;
     int y = start_y;
@@ -108,7 +105,6 @@ void Terminal::clr()
 {
     buffer->clear();
     state.cursor_index = 0;
-    dirty = true;
 }
 
 void Terminal::backspace()
@@ -121,7 +117,6 @@ void Terminal::backspace()
         buffer->setChar(stop_index, '\0', sf::Color::Transparent, sf::Color::Transparent);
     }
     state.cursor_index = stop_index;
-    dirty = true;
 }
 
 void Terminal::set_color(sf::Color color)
@@ -156,5 +151,4 @@ void Terminal::draw(sf::RenderTarget* target)
         cursor_shape.setPosition(buffer->get_x(state.cursor_index) * config::char_width + config::padding, buffer->get_y(state.cursor_index) * config::char_height + config::padding);
         target->draw(cursor_shape);
     }
-    dirty = false;
 }

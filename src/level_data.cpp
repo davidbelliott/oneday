@@ -1,4 +1,7 @@
 #include "level_data.h"
+#include "Player.h"
+#include "Room.h"
+#include "World.h"
 
 World* generate_world()
 {
@@ -46,7 +49,7 @@ World* generate_world()
 		Object* hole = new Object("hole", "A dark hole gapes in the floor, presumably where a toilet used to be.");
 		hole->properties |= Object::GOABLE;
 		hole->goable_data = "sewer";
-		hole->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
+		/*hole->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
 		{
 			if (a->name.id == a->name.parent_list->GO)
 			{
@@ -62,7 +65,7 @@ World* generate_world()
                     return false;
 				}
 			}
-		};
+		};*/
 		jamal_bathroom->add_child(hole);
 
 		world->add_child(jamal_bathroom);
@@ -71,7 +74,7 @@ World* generate_world()
     {
         Room* temp_lane = new Room("temp_lane", "Temporary Lane", "A temporary lane.");
         temp_lane->directions[NORTH] = "hood_avenue";
-        temp_lane->post_action = [](World* w, Receiver* r, Action* a, Object* o)
+        /*temp_lane->post_action = [](World* w, Receiver* r, Action* a, Object* o)
         {
             if(a->name.id == a->name.parent_list->LOOK && w->get_flag["thugfight_outcome"] == 0)
             {
@@ -93,7 +96,7 @@ World* generate_world()
                r->add_event(std::make_shared<CmdPause>());
             }
             return true;
-        };
+        };*/
         world->add_child(temp_lane);
     }
 

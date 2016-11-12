@@ -2,7 +2,6 @@
 
 class Room;
 class Player;
-class Receiver;
 #include "Object.h"
 #include <SFML/Audio.hpp>
 #include <map>
@@ -24,6 +23,6 @@ public:
 	virtual ~World();
 
 	Room* get_current_room();
-	void set_current_room(std::string room_name, Receiver* r);
+	void set_current_room(std::string room_name);
 };
 

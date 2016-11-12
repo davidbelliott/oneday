@@ -1,18 +1,15 @@
 #pragma once
 
 class World;
-class Receiver;
 class Action;
 class Object;
+class GameState;
 #include "Word.h"
 #include "common.h"
 #include <functional>
 #include <vector>
 #include <string>
 #include <map>
-
-typedef std::function<void(World*, Receiver*)> run_func;
-typedef std::function<bool(World*, Receiver*, Action*, Object*)> ActionFunc;
 
 class Object
 {
@@ -45,7 +42,7 @@ public:
 	std::string shallow_description;
 	std::string deep_description;
 	bool show_children;
-	virtual void describe(Receiver* r, bool deep, bool describe_this);
+	virtual void describe(GameState* g, bool deep, bool describe_this);
 
     //If READABLE
     std::string readable_data;  //The text that can be read
@@ -63,9 +60,6 @@ public:
     std::vector<std::string> talkable_data; //Vector of strings that will be displayed one after another when you talk to the object
 
 	uint16_t properties;
-	ActionFunc pre_action;
-    ActionFunc post_action;
-
 
 	Object(std::string name_in, std::string description_in);
 	Object();

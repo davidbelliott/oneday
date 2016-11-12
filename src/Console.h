@@ -1,5 +1,9 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
+#include <string>
+
+#include "Event.h"
 class Engine;
 
 class Console
@@ -13,5 +17,5 @@ class Console
         virtual ~Console();
 
         void get_input(sf::Window* window);
-        void handle_input(Event* event);
-}
+        void handle_input(event_ptr event);
+};

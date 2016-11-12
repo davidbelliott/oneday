@@ -1,5 +1,7 @@
 #pragma once
 
+class GameState;
+
 #include "Directions.h"
 #include "Object.h"
 #include "common.h"
@@ -14,5 +16,5 @@ public:
 	Room();
 	virtual ~Room();
 
-    virtual void describe(Receiver* r, bool deep, bool describe_this);
+    virtual void describe(GameState* g, bool deep, bool describe_this);
 };

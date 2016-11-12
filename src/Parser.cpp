@@ -1,13 +1,7 @@
 #include "Parser.h"
-#include "Player.h"
 #include "Room.h"
-#include "Engine.h"
-#include "Word.h"
 #include "World.h"
-#include "Receiver.h"
-#include "Event.h"
-
-#include <vector>
+#include "Player.h"
 
 std::vector<std::string> Parser::tokenize(std::string input, char delim)
 {
@@ -57,7 +51,7 @@ cmd_ptr Parser::get_cmd(Word word)
 }
 
 Parser::Parser()
- : action_factory(), word_list()
+ : word_list()
 {
 }
 
@@ -72,7 +66,7 @@ bool matches_regex(std::string regex, std::string str)
 
 }
 
-Action* Parser::parse(std::string statement, World* w, Receiver* r)
+cmd_ptr Parser::parse(std::string statement, World* w)
 {
     cmd_ptr command = nullptr;
 	Object* object = nullptr;
