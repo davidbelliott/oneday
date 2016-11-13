@@ -9,7 +9,7 @@
 
 Engine::Engine()
 :   running(true),
-    world(generate_world())
+    world(new World())
 {
 }
 

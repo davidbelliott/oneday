@@ -5,7 +5,14 @@
 #include "Command.h"
 
 Object::Object(std::string name_in, std::string description_in)
-	: name(name_in, {""}, Word::OBJECT), pretty_name(""), parent(NULL), shallow_description(description_in), properties(VISIBLE), show_children(true)
+	: name(name_in, {""}, Word::OBJECT),
+      pretty_name(""),
+      parent(nullptr),
+      shallow_description(description_in),
+      properties(VISIBLE),
+      show_children(true),
+      pre_command(nullptr),
+      post_command(nullptr)
 {
 }
 

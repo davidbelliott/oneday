@@ -42,7 +42,7 @@ void GameState::send_front(cmd_ptr cmd)
 
 void GameState::execute(cmd_ptr cmd)
 {
-    cmd->run(this);
+    cmd->run_with_callbacks(this);
 }
 
 void GameState::execute_commands()

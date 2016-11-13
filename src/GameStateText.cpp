@@ -7,10 +7,6 @@ GameStateText::GameStateText(Engine* engine_in)
     : GameState(engine_in),
       parser(new Parser())
 {
-    cmd_ptr describe = std::make_shared<CmdDescribe>();
-    describe->add_object((Object*)engine->world->get_current_room());
-    send(describe);
-    send(std::make_shared<CmdInput>());
 }
 
 GameStateText::~GameStateText()

@@ -2,8 +2,8 @@
 
 class GameState;
 class Terminal;
+class Object;
 
-#include "Object.h"
 #include "Config.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
@@ -46,6 +46,7 @@ public:
 
     virtual bool parse(std::vector<std::string> tokens);
 
+    virtual void run_with_callbacks(GameState* g);
     virtual void run(GameState* g);
     virtual void add_object(Object* o);
 };

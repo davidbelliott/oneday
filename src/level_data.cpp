@@ -1,11 +1,24 @@
 #include "level_data.h"
+#include "Engine.h"
+#include "Console.h"
+#include "GameStateIntro.h"
+#include "GameStateText.h"
+#include "GameStateThugFight.h"
 #include "Player.h"
 #include "Room.h"
 #include "World.h"
 
-World* generate_world()
+void execute()
 {
-	World* world = new World();
+    Engine* engine = new Engine();
+    Console* console = new Console(engine);
+    sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal");
+    GameStateIntro* intro = new GameStateIntro(engine);
+    GameStateText* text = new GameStateText(engine);
+
+    // Generate the world
+	World* world = engine->world;
+
 	world->flags =
 	{
 		{ "alive", 1 },
@@ -23,7 +36,7 @@ World* generate_world()
         jamal_bedroom->pretty_name = "Jamal's bedroom";
 		jamal_bedroom->shallow_description = "The walls of this cluttered hovel are plastered with layers of grime and old posters.";
 		jamal_bedroom->directions[EAST] = "jamal_corridor";
-		jamal_bedroom->directions[SOUTH] = "jamal_bathroom";
+		jamal_bedroom->directions[SOUTH] = "temp_lane";
 
 		Object* window = new Object("window", "A single smeared window to the north suffuses the room in dim light.");
 		window->deep_description = "Looking through the window, you notice a gang of thugs gathered in front of your house.";
@@ -74,14 +87,14 @@ World* generate_world()
     {
         Room* temp_lane = new Room("temp_lane", "Temporary Lane", "A temporary lane.");
         temp_lane->directions[NORTH] = "hood_avenue";
-        /*temp_lane->post_action = [](World* w, Receiver* r, Action* a, Object* o)
+        temp_lane->pre_command = [=](Command* cmd)
         {
-            if(a->name.id == a->name.parent_list->LOOK && w->get_flag["thugfight_outcome"] == 0)
+            if(cmd->type == Command::DESCRIBE && world->get_flag("thugfight_outcome") == 0)
             {
-                r->add_event(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!\nPress any key to tense your abs and deflect their blows."));
-                r->add_event(std::make_shared<CmdPause>());
-                r->add_event(std::make_shared<CmdAddGameState>(new GameStateThugFight()));
-                r->add_event(std::make_shared<CmdCustom>( [](GameState* g)
+                text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight()));
+                text->send_front(std::make_shared<CmdPause>());
+                text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!\nPress any key to tense your abs and deflect their blows."));
+                /*r->add_event(std::make_shared<CmdCustom>( [](GameState* g)
                             {
                                 if(g->get_world()->get_flag("thugfight_outcome") == 1)  // Won the fight
                                 {
@@ -93,12 +106,50 @@ World* generate_world()
                                     g->get_world()->set_flag("active", 0);
                                 }
                             } );
-               r->add_event(std::make_shared<CmdPause>());
+               r->add_event(std::make_shared<CmdPause>());*/
             }
             return true;
-        };*/
+        };
         world->add_child(temp_lane);
     }
+    
+    cmd_ptr describe = std::make_shared<CmdDescribe>();
+    describe->add_object((Object*)engine->world->get_current_room());
+    text->send(describe);
+    text->send(std::make_shared<CmdInput>());
+    engine->push_state(text);
+    engine->push_state(intro);
 
-	return world;
+    sf::Clock clock;
+    sf::Time dt;
+    while(engine->running)
+    {
+        // Collect input from the user
+        console->get_input(window);
+
+        // Let gamestates handle their pending events
+        engine->execute_commands();
+
+        // Update gamestates based on elapsed time
+        dt = clock.restart();
+        engine->update(dt);
+
+        // Draw gamestates
+        engine->draw(window);
+        window->display();
+
+        engine->prune();
+
+        // Sleep for remaining time
+        while(clock.getElapsedTime().asSeconds() < 1.0f / config::update_frequency)
+        {
+            sf::sleep(sf::milliseconds(1.0f));
+        }
+    }
+
+    delete text;
+    delete intro;
+	delete engine;
+    delete console;
+    delete window;
 }

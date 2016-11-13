@@ -19,6 +19,31 @@ bool Command::parse(std::vector<std::string> tokens)
     return true;
 }
 
+void Command::run_with_callbacks(GameState* g)
+{
+    for(int i = 0; i < objects.size(); )
+    {
+        auto pre_command = objects[i]->pre_command;
+        bool remove_this_object = false;
+        if(pre_command)
+        {
+            if(!pre_command(this))
+                remove_this_object = true;
+        }
+        if(remove_this_object)
+            objects.erase(objects.begin() + i);
+        else
+            i++;
+    }
+    run(g);
+    for(int i = 0; i < objects.size(); i++)
+    {
+        auto post_command = objects[i]->post_command;
+        if(post_command)
+            post_command(this);
+    }
+}
+
 void Command::run(GameState* g)
 {
 }
@@ -155,7 +180,7 @@ void CmdDescribe::run(GameState* g)
             g->terminal->disp("You in " + o->pretty_name + ".");
             g->terminal->set_color();
         }
-        if (describe_this && (o->properties & Object::VISIBLE))
+        if(describe_this && (o->properties & Object::VISIBLE))
         {
             if (deep && !o->deep_description.empty())
                 g->terminal->disp(o->deep_description);
@@ -180,16 +205,19 @@ void CmdDescribe::run(GameState* g)
         }
         // If this isn't a container and show_children is true, show the children;
         // If this is a container and it's open, show the children.
-        /*if ((!(o->properties & CONTAINER) && show_children) || ((o->properties & CONTAINER) && open))
+        if ((!(o->properties & Object::CONTAINER) && o->show_children) || ((o->properties & Object::CONTAINER) && o->open))
         {
-            for (int j = 0; j < children.size(); j++)
+            for (int j = 0; j < o->children.size(); j++)
             {
                 // If it's a deep description, show all children.
                 // Otherwise, don't show the undiscovered children.
-                if(deep || (children[j]->properties & DISCOVERED))
-                    children[j]->describe(g, false, true);
+                if(deep || (o->children[j]->properties & Object::DISCOVERED))
+                {
+                    g->terminal->disp(o->children[j]->shallow_description);
+                    o->children[j]->properties |= Object::DISCOVERED;
+                }
             }
-        }*/
+        }
         o->properties |= Object::DISCOVERED;
     }
 }

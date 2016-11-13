@@ -15,6 +15,7 @@ public:
 
     static std::vector<std::string> tokenize(std::string input, char delim = ' ');
     static cmd_ptr get_cmd(std::string word, World* w);
+    Object* get_object(std::string name, World* w);
     cmd_ptr parse(std::string statement, World* w);
 };
 

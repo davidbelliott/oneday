@@ -32,6 +32,7 @@ cmd_ptr Parser::get_cmd(std::string word, World* world)
     {
     }
     else if (word == "quit" || word == "q") cmd = std::make_shared<CmdQuit>();
+
     
 		/*if (word.id == l->GO) return new ActionGo(word);
 		else if (word.id == l->LOOK) return new ActionLook(word);
@@ -74,6 +75,21 @@ bool matches_regex(std::string regex, std::string str)
 
 }
 
+Object* Parser::get_object(std::string name, World* w)
+{
+    Object* object = nullptr;
+    Room* room = w->get_current_room();
+    if (object = room->get_indirect_child(name, Object::DISCOVERED))
+    {
+        return object;
+    }
+    else if (object = w->player->get_indirect_child(name, Object::DISCOVERED))
+    {
+        return object;
+    }
+    return object;
+}
+
 cmd_ptr Parser::parse(std::string statement, World* w)
 {
 	Object* object = nullptr;
@@ -89,9 +105,29 @@ cmd_ptr Parser::parse(std::string statement, World* w)
 	{
         if(tokens[i] == "look")
         {
-            cmd_ptr cmd = std::make_shared<CmdDescribe>();
-            cmd->add_object(w->get_current_room());
-            return cmd;
+            if(tokens.size() > i + 1)
+            {
+                if(tokens[i + 1] == "around")
+                {
+                    cmd_ptr cmd = std::make_shared<CmdDescribe>();
+                    cmd->add_object(w->get_current_room());
+                    return cmd;
+                }
+                else if(tokens[i + 1] == "at")
+                {
+                    if(tokens.size() > i + 2)
+                    {
+                        Object* object = get_object(tokens[i + 2], w);
+                        if(object)
+                        {
+                            cmd_ptr cmd = std::make_shared<CmdDescribe>();
+                            cmd->add_object(object);
+                            return cmd;
+                        }
+                    }
+                }
+            }
+            return std::make_shared<CmdDisp>("Look at what?");
         }
         else if(tokens[i] == "go")
         {
@@ -123,6 +159,7 @@ cmd_ptr Parser::parse(std::string statement, World* w)
         {
             return std::make_shared<CmdQuit>();
         }
+
         /*
 		if (tokens[i].get_part_of_speech() == Word::ACTION && !found_command)
 		{

@@ -1,16 +1,7 @@
 #pragma once
-
-class World;
-class Action;
-class Object;
-class GameState;
 #include "Directions.h"
+#include "Command.h"
 #include "Word.h"
-#include "common.h"
-#include <functional>
-#include <vector>
-#include <string>
-#include <map>
 
 class Object
 {
@@ -63,6 +54,9 @@ public:
     //If ROOM
     std::string directions[DIRECTION_MAX];
 
+    std::function<bool(Command*)> pre_command;
+    std::function<void(Command*)> post_command;
+
 	uint16_t properties;
 
 	Object(std::string name_in, std::string description_in);
@@ -74,7 +68,6 @@ public:
 	bool has_direct_child(std::string name);
 	Object* get_direct_child(std::string name, int filter);
 	Object* get_indirect_child(std::string name, int filter);
-
 	int get_flag(std::string name);
 	void set_flag(std::string name, int value);
     void set_name(std::string name_in);

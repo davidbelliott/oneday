@@ -16,7 +16,6 @@ public:
 
 	std::string cur_room;
 	bool active;
-	Action* change_room_action;
     sf::Music good_day;
 
 	World();

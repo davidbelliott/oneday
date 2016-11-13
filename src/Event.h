@@ -12,7 +12,9 @@ public:
         DRAW,           // The engine is drawing
         KEY_PRESSED,
         TEXT_ENTERED,
-        USER_LINE
+        USER_LINE,
+        PRE_COMMAND,   // A command will be executed on this object
+        POST_COMMAND
 	};
 
 	EventType type;
