@@ -4,12 +4,15 @@
 #include "World.h"
 #include "common.h"
 #include "Event.h"
-#include "level_data.h"
+#include "Console.h"
 #include <iostream>
 
 Engine::Engine()
 :   running(true),
-    world(new World())
+    world(new World()),
+    console(new Console(this)),
+    window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal")),
+    game_states()
 {
 }
 
@@ -48,6 +51,11 @@ void Engine::command_gamestates(cmd_ptr command)
     }
 }
 
+void Engine::get_input()
+{
+    console->get_input(window);
+}
+
 void Engine::execute_commands()
 {
     if(!game_states.empty())
@@ -60,18 +68,17 @@ void Engine::update(sf::Time dt)
 {
     if(!game_states.empty())
     {
-        event_ptr update_event = std::make_shared<EventUpdate>(dt);
-        game_states.back()->notify(update_event);
+        game_states.back()->update(dt);
     }
 }
 
-void Engine::draw(sf::RenderTarget* target)
+void Engine::draw()
 {
     if(!game_states.empty())
     {
-        event_ptr draw_event = std::make_shared<EventDraw>(target);
-        game_states.back()->notify(draw_event);
+        game_states.back()->draw(window);
     }
+    window->display();
 }
 
 void Engine::prune()

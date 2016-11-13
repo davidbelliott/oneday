@@ -142,7 +142,7 @@ CmdAddGameState::CmdAddGameState(GameState* state_to_add_in)
 
 void CmdAddGameState::run(GameState* g)
 {
-
+    g->engine->push_state(state_to_add);
 }
 
 CmdSetRoom::CmdSetRoom(std::string new_room_in)
@@ -336,4 +336,15 @@ CmdHelp::CmdHelp()
 void CmdHelp::run(GameState* g)
 {
 
+}
+
+CmdCustom::CmdCustom(std::function<void(GameState*)> fn_in)
+    : Command(CUSTOM),
+      fn(fn_in)
+{
+}
+
+void CmdCustom::run(GameState* g)
+{
+    fn(g);
 }

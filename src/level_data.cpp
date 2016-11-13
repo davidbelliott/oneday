@@ -11,8 +11,6 @@
 void execute()
 {
     Engine* engine = new Engine();
-    Console* console = new Console(engine);
-    sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal");
     GameStateIntro* intro = new GameStateIntro(engine);
     GameStateText* text = new GameStateText(engine);
 
@@ -89,22 +87,30 @@ void execute()
         temp_lane->directions[NORTH] = "hood_avenue";
         temp_lane->pre_command = [=](Command* cmd)
         {
-            if(cmd->type == Command::DESCRIBE && world->get_flag("thugfight_outcome") == 0)
+            if(cmd->type == Command::DESCRIBE && world->get_flag("thug_fight_outcome") == 0)
             {
-                text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight()));
+                text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!"));
                 text->send_front(std::make_shared<CmdPause>());
-                text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!\nPress any key to tense your abs and deflect their blows."));
+                text->send_front(std::make_shared<CmdDisp>("Press any key to tense your abs and deflect their blows."));
+                text->send_front(std::make_shared<CmdPause>());
+                text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
+                auto fn = [=](GameState* g)
+                {
+                    g->send_front(std::make_shared<CmdClear>());
+                    if(world->get_flag("thugfight_outcome") == 1)  // Won the fight
+                    {
+                        g->send_front(std::make_shared<CmdDisp>("Cowed by your abdominal prowess, the thugs slink off."));
+                    }
+                    else
+                    {
+                        g->send_front(std::make_shared<CmdDisp>("Your abdomen is hard and tender from the repeated blows. You give up the ghost."));
+                        g->send_front(std::make_shared<CmdPause>());
+                        g->send_front(std::make_shared<CmdQuit>());
+                    }
+                };
+                text->send_front(std::make_shared<CmdCustom>(fn));
                 /*r->add_event(std::make_shared<CmdCustom>( [](GameState* g)
                             {
-                                if(g->get_world()->get_flag("thugfight_outcome") == 1)  // Won the fight
-                                {
-                                    g->get_terminal()->disp("Cowed by your abdominal prowess, the thugs slink off.");
-                                }
-                                else
-                                {
-                                    g->get_terminal()->disp("Your abdomen is hard and tender from the repeated blows. You die.");
-                                    g->get_world()->set_flag("active", 0);
-                                }
                             } );
                r->add_event(std::make_shared<CmdPause>());*/
             }
@@ -125,7 +131,7 @@ void execute()
     while(engine->running)
     {
         // Collect input from the user
-        console->get_input(window);
+        engine->get_input();
 
         // Let gamestates handle their pending events
         engine->execute_commands();
@@ -135,11 +141,9 @@ void execute()
         engine->update(dt);
 
         // Draw gamestates
-        engine->draw(window);
-        window->display();
+        engine->draw();
 
         engine->prune();
-
         // Sleep for remaining time
         while(clock.getElapsedTime().asSeconds() < 1.0f / config::update_frequency)
         {
@@ -150,6 +154,4 @@ void execute()
     delete text;
     delete intro;
 	delete engine;
-    delete console;
-    delete window;
 }

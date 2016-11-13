@@ -42,12 +42,10 @@ class GameStateThugFight: public GameState
         sf::Time total_time;
         double spawn_countdown;
 
-        GameStateThugFight();
+        GameStateThugFight(Engine* engine_in);
         virtual ~GameStateThugFight();
 
-        virtual void init();
-        virtual void cleanup();
-        virtual void handle_event(std::shared_ptr<Event> event);
-        virtual void run(sf::Time dt);
+        virtual void notify(event_ptr event);
+        virtual void update(sf::Time dt);
         virtual void draw(sf::RenderTarget* target);
 };

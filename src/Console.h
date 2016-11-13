@@ -17,5 +17,4 @@ class Console
         virtual ~Console();
 
         void get_input(sf::Window* window);
-        void handle_input(event_ptr event);
 };

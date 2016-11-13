@@ -1,5 +1,7 @@
 #include "GameStateThugFight.h"
 #include "Event.h"
+#include "Engine.h"
+#include "World.h"
 #include "Terminal.h"
 #include "Parser.h"
 #include <fstream>
@@ -21,8 +23,8 @@ std::string get_file_contents(const char *filename)
     return(contents);
 }
 
-GameStateThugFight::GameStateThugFight()
-    : GameState(nullptr),
+GameStateThugFight::GameStateThugFight(Engine* engine_in)
+    : GameState(engine_in),
     abs({ sf::seconds(0.0), 5, 5, false }),
     fists(),
     fragments(),
@@ -43,16 +45,7 @@ GameStateThugFight::~GameStateThugFight()
 {
 }
 
-void GameStateThugFight::init()
-{
-    running = true;
-}
-
-void GameStateThugFight::cleanup()
-{
-}
-
-void GameStateThugFight::handle_event(std::shared_ptr<Event> event)
+void GameStateThugFight::notify(event_ptr event)
 {
     if(event->type == Event::KEY_PRESSED && abs.power > 0)
     {
@@ -62,7 +55,7 @@ void GameStateThugFight::handle_event(std::shared_ptr<Event> event)
     }
 }
 
-void GameStateThugFight::run(sf::Time dt)
+void GameStateThugFight::update(sf::Time dt)
 {
     for(int i = 0; i < fists.size(); )
     {
@@ -98,7 +91,10 @@ void GameStateThugFight::run(sf::Time dt)
                     }
                     abs.health--;
                     if(abs.health == 0)
+                    {
+                        engine->world->set_flag("thug_fight_outcome", -1);
                         running = false;
+                    }
                 }
                 fists[i].dead = true;
             }

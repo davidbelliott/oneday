@@ -35,7 +35,8 @@ public:
         SHOUT,
         TALK_TO,
         HELP,
-        ADD_GAMESTATE
+        ADD_GAMESTATE,
+        CUSTOM
     };
 
     CommandType type;
@@ -198,5 +199,13 @@ class CmdHelp : public Command
 {
     public:
         CmdHelp();
+        void run(GameState* g);
+};
+
+class CmdCustom : public Command
+{
+    public:
+        std::function<void(GameState*)> fn;
+        CmdCustom(std::function<void(GameState*)> fn_in);
         void run(GameState* g);
 };

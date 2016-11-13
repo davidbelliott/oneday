@@ -2,6 +2,7 @@
 
 class World;
 class GameState;
+class Console;
 
 #include "Event.h"
 #include "Command.h"
@@ -13,6 +14,8 @@ class Engine
 {
 public:
     World* world;
+    Console* console;
+    sf::RenderWindow* window;
     std::vector<GameState*> game_states;
 	bool running;
 
@@ -25,13 +28,19 @@ public:
     void notify_gamestates(event_ptr event);
     void command_gamestates(cmd_ptr command);
 
+    /* Gets input from the SFML window. */
+    void get_input();
+
     /* Tells gamestates to pop and run the commands on their queues. */
     void execute_commands();
 
+    /* Updates for the given time interval. */
     void update(sf::Time dt);
-    void draw(sf::RenderTarget* target);
 
-    /* Remove all non-running gamestates and quit if empty. */
+    /* Draws the current gamestate and displays the window. */
+    void draw();
+
+    /* Removes all non-running gamestates and quits if empty. */
     void prune();
 };
 

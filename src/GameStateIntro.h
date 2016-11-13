@@ -14,5 +14,5 @@ class GameStateIntro: public GameState
         GameStateIntro(Engine* engine_in);
         virtual ~GameStateIntro();
 
-        virtual void notify(event_ptr event);
+        virtual void update(sf::Time dt);
 };

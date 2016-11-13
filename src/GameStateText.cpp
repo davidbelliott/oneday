@@ -24,7 +24,12 @@ void GameStateText::init()
 
 void GameStateText::notify(event_ptr event)
 {
-    if(event->type == Event::USER_LINE)
+    if(paused)
+    {
+        if(event->type == Event::KEY_PRESSED)
+            unpause();
+    }
+    else if(event->type == Event::USER_LINE)
     {
         std::string line = std::static_pointer_cast<EventUserLine>(event)->line;
         if(line == "")
@@ -38,10 +43,6 @@ void GameStateText::notify(event_ptr event)
                 send(std::make_shared<CmdDisp>("I don't understand."));
         }
         send(std::make_shared<CmdInput>());
-    }
-    else if(event->type == Event::DRAW)
-    {
-        terminal->draw(std::static_pointer_cast<EventDraw>(event)->target);
     }
     terminal->notify(event);
 }

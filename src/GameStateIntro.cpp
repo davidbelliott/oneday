@@ -24,11 +24,8 @@ GameStateIntro::~GameStateIntro()
 {
 }
 
-void GameStateIntro::notify(event_ptr event)
+void GameStateIntro::update(sf::Time dt)
 {
-    GameState::notify(event);
-    if(event->type == Event::DRAW)
-        terminal->draw(std::static_pointer_cast<EventDraw>(event)->target);
     if(!paused && commands.empty())
         running = false;
 }
