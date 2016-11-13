@@ -1,12 +1,14 @@
 #include "Config.h"
+#include "GameState.h"
 #include "Terminal.h"
 #include "Engine.h"
 #include <iostream>
 
-Terminal::Terminal()
+Terminal::Terminal(GameState* owner_state_in)
 :   state({ 0, config::colors[config::color_default_fg], config::colors[config::color_default_bg], OUTPUT }),
     buffer(new CharBuffer()),
-    disp_cursor(false)
+    owner_state(owner_state_in),
+    cur_user_string("")
 {
 }
 
@@ -87,12 +89,12 @@ void Terminal::disp(std::string str, bool newline)
 		{
 			x++;
 		}
-        if (x == config::screen_w_chars && disp_cursor)
+        if (x == config::screen_w_chars && state.mode == INPUT)
         {
             x = 0;
             y++;
         }
-        while (y >= config::screen_h_chars && disp_cursor)
+        while (y >= config::screen_h_chars && state.mode == INPUT)
         {
             buffer->add_line();
             y--;
@@ -129,14 +131,6 @@ void Terminal::set_bg_color(sf::Color color)
     state.background_color = color;
 }
 
-void Terminal::set_disp_cursor(bool disp_cursor_in)
-{
-    if(disp_cursor != disp_cursor_in)
-    {
-        disp_cursor = disp_cursor_in;
-    }
-}
-
 void Terminal::draw(sf::RenderTarget* target)
 {
     target->clear(state.background_color);
@@ -150,5 +144,38 @@ void Terminal::draw(sf::RenderTarget* target)
         cursor_shape.setFillColor(state.foreground_color);
         cursor_shape.setPosition(buffer->get_x(state.cursor_index) * config::char_width + config::padding, buffer->get_y(state.cursor_index) * config::char_height + config::padding);
         target->draw(cursor_shape);
+    }
+}
+
+void Terminal::notify(event_ptr event)
+{
+    if(event->type == Event::TEXT_ENTERED)
+    {
+        if(state.mode == INPUT)
+        {
+            char c = std::static_pointer_cast<EventTextEntered>(event)->c;
+            if(c == '\n' || c == '\r')
+            {
+                disp("");
+                owner_state->notify(std::make_shared<EventUserLine>(cur_user_string));
+                cur_user_string = "";
+                output_mode();
+            }
+            else if(c == '\b')
+            {
+                if(cur_user_string.length() > 0)
+                {
+                    backspace();
+                    cur_user_string.pop_back();
+                }
+            }
+            else
+            {
+                cur_user_string += c;
+                std::string str = "";
+                str += c;
+                disp(str, false);
+            }
+        }
     }
 }

@@ -4,14 +4,14 @@ class Engine;
 class Terminal;
 #include "Observer.h"
 #include "Command.h"
-#include <queue>
+#include <deque>
 
 class GameState : public Observer
 {
 public:
 	Engine* engine;
     Terminal* terminal;
-    std::queue<cmd_ptr> commands;
+    std::deque<cmd_ptr> commands;
 	bool paused;		//Is this game state paused?
     bool running;       //Is this game state running?
 

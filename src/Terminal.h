@@ -1,13 +1,14 @@
 #pragma once
 
+class GameState;
 #include "CharBuffer.h"
 #include "Config.h"
+#include "Observer.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
-#include "Event.h"
 
-class Terminal
+class Terminal : public Observer
 {
 public:
 
@@ -25,7 +26,7 @@ public:
         Mode mode;
     };
 
-	Terminal();
+	Terminal(GameState* owner_state_in);
 	virtual ~Terminal();
 
     /*Print's the terminal's buffer to the render target.*/
@@ -59,10 +60,13 @@ public:
     /*Sets whether or not to display the cursor rectangle at the current cursor x and y.*/
     void set_disp_cursor(bool disp_cursor_in);
 
+    /* Inherited from Observer. */
+    void notify(event_ptr event);
+
 //private:
 
+    GameState* owner_state;
     State state;
     CharBuffer* buffer;
-    bool disp_cursor;
-    bool dirty;
+    std::string cur_user_string;
 };

@@ -12,7 +12,7 @@ World* generate_world()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "temp_lane";
+	world->cur_room = "jamal_bedroom";
     {
         Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
         world->player = player;

@@ -3,7 +3,7 @@
 
 
 WordList::WordList()
-	: N_WORDS(0),
+/*	: N_WORDS(0),
 	GO(add_word({"go", {}, Word::ACTION })),
 	LOOK(add_word({"look", {"examine"}, Word::ACTION})),
 	QUIT(add_word({ "quit", {"q"}, Word::ACTION })),
@@ -36,7 +36,7 @@ WordList::WordList()
 	SOUTH(add_word({ "south", { "s" }, Word::ACTION_MODIFIER })),
 	WEST(add_word({ "west", { "w" }, Word::ACTION_MODIFIER })),
 	UP(add_word({ "up", { }, Word::ACTION_MODIFIER })),
-	DOWN(add_word({ "down", { }, Word::ACTION_MODIFIER }))
+	DOWN(add_word({ "down", { }, Word::ACTION_MODIFIER }))*/
 {
 }
 
@@ -47,7 +47,7 @@ WordList::~WordList()
 
 int WordList::add_word(Word word)
 {
-	word.id = N_WORDS;
+	/*word.id = N_WORDS;
 	word.parent_list = this;
 	words_by_name[word.word] = word;
 	std::vector<std::string> aliases = word.aliases;
@@ -56,13 +56,14 @@ int WordList::add_word(Word word)
 		words_by_name[*it] = word;
 	}
 	words_by_id[N_WORDS] = word;
-	return N_WORDS++;
+	return N_WORDS++;*/
 }
 
 Word WordList::get_word(std::string name)
 {
-	if (words_by_name.count(name) > 0)
+	/*if (words_by_name.count(name) > 0)
 		return words_by_name[name];
 	else
-		return Word(name, {}, Word::UNRECOGNIZED);
+		return Word(name, {}, Word::UNRECOGNIZED);*/
+
 }

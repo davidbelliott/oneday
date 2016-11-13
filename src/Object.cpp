@@ -19,30 +19,6 @@ Object::~Object()
 {
 }
 
-void Object::describe(GameState* g, bool deep, bool describe_this)
-{
-	if (describe_this && (properties & VISIBLE))
-	{
-		if (deep && !deep_description.empty())
-			g->send(std::make_shared<CmdDisp>(deep_description));
-		else
-			g->send(std::make_shared<CmdDisp>(shallow_description));
-	}
-    // If this isn't a container and show_children is true, show the children;
-    // If this is a container and it's open, show the children.
-	if ((!(properties & CONTAINER) && show_children) || ((properties & CONTAINER) && open))
-	{
-		for (size_t i = 0; i < children.size(); i++)
-		{
-            // If it's a deep description, show all children.
-            // Otherwise, don't show the undiscovered children.
-			if(deep || (children[i]->properties & DISCOVERED))
-				children[i]->describe(g, false, true);
-		}
-	}
-    properties |= DISCOVERED;
-}
-
 void Object::add_child(Object* child)
 {
 	child->parent = this;

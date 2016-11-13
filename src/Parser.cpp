@@ -25,8 +25,14 @@ std::vector<std::string> Parser::tokenize(std::string input, char delim)
 	return tokens;
 }
 
-cmd_ptr Parser::get_cmd(Word word)
+cmd_ptr Parser::get_cmd(std::string word, World* world)
 {
+    cmd_ptr cmd = nullptr;
+    if(word == "look")
+    {
+    }
+    else if (word == "quit" || word == "q") cmd = std::make_shared<CmdQuit>();
+    
 		/*if (word.id == l->GO) return new ActionGo(word);
 		else if (word.id == l->LOOK) return new ActionLook(word);
 		else if (word.id == l->QUIT) return new ActionQuit(word);
@@ -48,6 +54,8 @@ cmd_ptr Parser::get_cmd(Word word)
 		else if (action_type == Action::BLESSUP) return new ActionBlessup();
         else if (word.id == l->TALK_TO) return new ActionTalkTo(word);
         else if (word.id == l->HELP) return new ActionHelp(word);*/
+
+    return cmd;
 }
 
 Parser::Parser()
@@ -68,21 +76,54 @@ bool matches_regex(std::string regex, std::string str)
 
 cmd_ptr Parser::parse(std::string statement, World* w)
 {
-    cmd_ptr command = nullptr;
 	Object* object = nullptr;
 	Room* room = w->get_current_room();
-	std::vector<std::string> token_strings = tokenize(statement, ' ');
-	std::vector<Word> tokens;
+	std::vector<std::string> tokens = tokenize(statement, ' ');
 
-	for (size_t i = 0; i < token_strings.size(); i++)
+	/*for (size_t i = 0; i < token_strings.size(); i++)
 	{
 		tokens.push_back(word_list.get_word(token_strings[i]));
-	}
+	}*/
 
-	bool found_command = false;
-	bool found_object = false;
 	for (size_t i = 0; i < tokens.size(); i++)
 	{
+        if(tokens[i] == "look")
+        {
+            cmd_ptr cmd = std::make_shared<CmdDescribe>();
+            cmd->add_object(w->get_current_room());
+            return cmd;
+        }
+        else if(tokens[i] == "go")
+        {
+            DirectionId direction = DIRECTION_MAX;
+            if(tokens.size() > i + 1)
+            {
+                for(int j = 0; j < DIRECTION_MAX && direction == DIRECTION_MAX; j++)
+                {
+                    if(tokens[i + 1] == dir[(DirectionId)j].name)
+                        direction = (DirectionId)j;
+                }
+            }
+
+            if(direction == DIRECTION_MAX)
+            {
+                return std::make_shared<CmdDisp>("Go where?");
+            }
+            else
+            {
+                Room* room = w->get_current_room();
+                if(room && room->directions[direction] != "") {
+                    return std::make_shared<CmdSetRoom>(room->directions[direction]);
+                } else {
+                    return std::make_shared<CmdDisp>("You can't go " + dir[direction].name + " from here.");
+                }
+            }
+        }
+        else if(tokens[i] == "quit" || tokens[i] == "q")
+        {
+            return std::make_shared<CmdQuit>();
+        }
+        /*
 		if (tokens[i].get_part_of_speech() == Word::ACTION && !found_command)
 		{
 			command = get_cmd(tokens[i]);
@@ -101,8 +142,7 @@ cmd_ptr Parser::parse(std::string statement, World* w)
                 found_object = true;
                 command->add_object(object);
             }
-		}
+		}*/
 	}
-
-	return command;
+    return nullptr;
 }

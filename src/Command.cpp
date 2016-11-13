@@ -14,6 +14,11 @@ Command::~Command()
 {
 }
 
+bool Command::parse(std::vector<std::string> tokens)
+{
+    return true;
+}
+
 void Command::run(GameState* g)
 {
 }
@@ -23,15 +28,16 @@ void Command::add_object(Object* o)
     objects.push_back(o);
 }
 
-CmdDisp::CmdDisp(std::string str_in)
+CmdDisp::CmdDisp(std::string str_in, bool append_newline_in)
 :   Command(DISP),
-    str(str_in)
+    str(str_in),
+    append_newline(append_newline_in)
 {
 }
 
 void CmdDisp::run(GameState* g)
 {
-    g->terminal->disp(str);
+    g->terminal->disp(str, append_newline);
 }
 
 CmdOutput::CmdOutput(int x_in, int y_in, std::string str_in)
@@ -73,6 +79,7 @@ CmdInput::CmdInput()
 
 void CmdInput::run(GameState* g)
 {
+    g->terminal->input_mode();
 }
 
 CmdPause::CmdPause()
@@ -113,28 +120,78 @@ void CmdAddGameState::run(GameState* g)
 
 }
 
-CmdSetRoom::CmdSetRoom(World* world_in, std::string new_room_in)
+CmdSetRoom::CmdSetRoom(std::string new_room_in)
     : Command(SET_ROOM),
-      world(world_in),
       new_room(new_room_in)
 {
 }
 
 void CmdSetRoom::run(GameState* g)
 {
-    world->set_current_room(new_room);
-    world->get_current_room()->describe(g, true, true);
+    g->engine->world->set_current_room(new_room);
+    cmd_ptr describe = std::make_shared<CmdDescribe>();
+    describe->add_object(g->engine->world->get_current_room());
+    g->send_front(describe);
 }
 
-CmdDescribe::CmdDescribe()
-    : Command(DESCRIBE)
+CmdDescribe::CmdDescribe(bool describe_this_in, bool deep_in)
+    : Command(DESCRIBE),
+    describe_this(describe_this_in), deep(deep_in)
+{
+}
+
+bool CmdDescribe::parse(std::vector<std::string> tokens)
 {
 }
 
 void CmdDescribe::run(GameState* g)
 {
     for(int i = 0; i < objects.size(); i++)
-        objects[i]->describe(g, true, true);
+    {
+        Object* o = objects[i];
+        if(o->properties & Object::ROOM)
+        {
+            g->terminal->set_color(config::colors[config::color_room_title]);
+            g->terminal->disp("You in " + o->pretty_name + ".");
+            g->terminal->set_color();
+        }
+        if (describe_this && (o->properties & Object::VISIBLE))
+        {
+            if (deep && !o->deep_description.empty())
+                g->terminal->disp(o->deep_description);
+            else
+                g->terminal->disp(o->shallow_description);
+        }
+        if(o->properties & Object::ROOM)
+        {
+            for(int i = 0; i < DIRECTION_MAX; i++)
+            {
+                if(o->directions[i] != "")
+                {
+                    DirectionId dir_id = (DirectionId)i;
+                    Object* dir_room = o->parent->get_direct_child(o->directions[i], 0);
+                    if(dir_room && dir_room->pretty_name != "")
+                    {
+                        std::string dir_reference = dir[dir_id].dir_reference;
+                        g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                    }
+                }
+            }
+        }
+        // If this isn't a container and show_children is true, show the children;
+        // If this is a container and it's open, show the children.
+        /*if ((!(o->properties & CONTAINER) && show_children) || ((o->properties & CONTAINER) && open))
+        {
+            for (int j = 0; j < children.size(); j++)
+            {
+                // If it's a deep description, show all children.
+                // Otherwise, don't show the undiscovered children.
+                if(deep || (children[j]->properties & DISCOVERED))
+                    children[j]->describe(g, false, true);
+            }
+        }*/
+        o->properties |= Object::DISCOVERED;
+    }
 }
 
 CmdQuit::CmdQuit()

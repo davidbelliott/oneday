@@ -4,6 +4,7 @@ class World;
 class Action;
 class Object;
 class GameState;
+#include "Directions.h"
 #include "Word.h"
 #include "common.h"
 #include <functional>
@@ -32,7 +33,8 @@ public:
 		HITTABLE = 0x80,
 		WEARABLE = 0x100,
         TALKABLE = 0x200,
-        DISCOVERED = 0x400
+        DISCOVERED = 0x400,
+        ROOM = 0x800
 	};
 
     Word name;
@@ -42,7 +44,6 @@ public:
 	std::string shallow_description;
 	std::string deep_description;
 	bool show_children;
-	virtual void describe(GameState* g, bool deep, bool describe_this);
 
     //If READABLE
     std::string readable_data;  //The text that can be read
@@ -58,6 +59,9 @@ public:
 
     //If TALKABLE
     std::vector<std::string> talkable_data; //Vector of strings that will be displayed one after another when you talk to the object
+
+    //If ROOM
+    std::string directions[DIRECTION_MAX];
 
 	uint16_t properties;
 

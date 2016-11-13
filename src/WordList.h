@@ -10,7 +10,7 @@ public:
 	std::map<std::string, Word> words_by_name;
 	std::map<int, Word> words_by_id;
 
-	const int //Actions
+	/*const int //Actions
         GO,
 		LOOK,
 		QUIT,
@@ -46,7 +46,7 @@ public:
 		UP,
 		DOWN;
 		
-	int N_WORDS;
+	int N_WORDS;*/
 
 	WordList();
 	~WordList();

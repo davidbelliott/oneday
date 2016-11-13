@@ -10,11 +10,7 @@ class Room : public Object
 {
 public:
 
-    std::string directions[DIRECTION_MAX];
-
 	Room(std::string name_in, std::string pretty_name_in, std::string description_in);
 	Room();
 	virtual ~Room();
-
-    virtual void describe(GameState* g, bool deep, bool describe_this);
 };

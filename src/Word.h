@@ -20,6 +20,11 @@ public:
 		UNRECOGNIZED
 	};
 
+    enum WordId
+    {
+        LOOK
+    };
+
 	Word(std::string word_in, std::vector<std::string> aliases_in, PartOfSpeech part_of_speech_in);
 	Word();
 	virtual ~Word();

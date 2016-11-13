@@ -42,8 +42,10 @@ public:
     std::vector<Object*> objects;
 
     Command(CommandType type_in);
-
     virtual ~Command();
+
+    virtual bool parse(std::vector<std::string> tokens);
+
     virtual void run(GameState* g);
     virtual void add_object(Object* o);
 };
@@ -54,9 +56,10 @@ class CmdDisp : public Command
 {
     public:
         std::string str;
+        bool append_newline;
         Terminal* terminal;
 
-        CmdDisp(std::string str_in);
+        CmdDisp(std::string str_in, bool append_newline_in = true);
         void run(GameState* g);
 };
 
@@ -126,16 +129,18 @@ class CmdAddGameState : public Command
 class CmdSetRoom : public Command
 {
     public:
-        World* world;
         std::string new_room;
-        CmdSetRoom(World* world_in, std::string new_room_in);
+        CmdSetRoom(std::string new_room_in);
         void run(GameState* g);
 };
 
 class CmdDescribe : public Command
 {
     public:
-        CmdDescribe();
+        bool describe_this;
+        bool deep;
+        CmdDescribe(bool describe_this_in = true, bool deep_in = true);
+        bool parse(std::vector<std::string> tokens);
         void run(GameState* g);
 };
 
