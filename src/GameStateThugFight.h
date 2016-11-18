@@ -12,10 +12,8 @@ struct Fist
 
 struct Abs
 {
-    sf::Time remaining_time;
-    double power;
     int health;
-    bool tense;
+    int tense_ab;
 };
 
 struct Fragment
@@ -31,16 +29,28 @@ struct Fragment
 class GameStateThugFight: public GameState
 {
     public:
+
+        // Entities
         Abs abs;
         std::vector<Fist> fists;
         std::vector<Fragment> fragments;
+        
+        // Sprites
         std::string thug_fist;
         std::string abs_str;
         std::string abs_tense_str;
-        sf::Time ab_cooldown;
+
+        // Time counters
         sf::Time time_alive;
         sf::Time total_time;
-        double spawn_countdown;
+
+        // Difficulty
+        sf::Time time_since_spawn;
+        int spawn_beats;
+
+        // Constants
+        int ab_height;
+        sf::Time beat;
 
         GameStateThugFight(Engine* engine_in);
         virtual ~GameStateThugFight();

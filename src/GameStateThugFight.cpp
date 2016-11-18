@@ -25,7 +25,7 @@ std::string get_file_contents(const char *filename)
 
 GameStateThugFight::GameStateThugFight(Engine* engine_in)
     : GameState(engine_in),
-    abs({ sf::seconds(0.0), 5, 5, false }),
+    abs({ 5, 0}),
     fists(),
     fragments(),
     thug_fist(""),
@@ -33,7 +33,10 @@ GameStateThugFight::GameStateThugFight(Engine* engine_in)
     abs_tense_str(),
     time_alive(sf::seconds(0)),
     total_time(sf::seconds(180)),
-    spawn_countdown(0)
+    time_since_spawn(sf::seconds(0)),
+    spawn_beats(8),
+    ab_height(6),
+    beat(sf::seconds(60.0 / 150.0 / 2))
 {
     std::ifstream thug_fist_file;
     thug_fist = get_file_contents("fist.txt");
@@ -47,11 +50,17 @@ GameStateThugFight::~GameStateThugFight()
 
 void GameStateThugFight::notify(event_ptr event)
 {
-    if(event->type == Event::KEY_PRESSED && abs.power > 0)
+    if(event->type == Event::KEY_PRESSED)
     {
-        abs.tense = true;
-        abs.remaining_time = sf::seconds(0.2);
-        abs.power -= 1;
+        sf::Keyboard::Key keycode = std::static_pointer_cast<EventKeyPressed>(event)->code;
+        if(keycode == sf::Keyboard::A)
+            abs.tense_ab = 0;
+        else if(keycode == sf::Keyboard::S)
+            abs.tense_ab = 1;
+        else if(keycode == sf::Keyboard::D)
+            abs.tense_ab = 2;
+        else if(keycode == sf::Keyboard::F)
+            abs.tense_ab = 3;
     }
 }
 
@@ -63,12 +72,12 @@ void GameStateThugFight::update(sf::Time dt)
         {
             if(fists[i].x < abs.health)
             {
-                if(abs.tense)
+                if(abs.tense_ab == fists[i].y)
                 {
                     for(int j = 0; j < 25; j++)
                     {
                         fragments.push_back({ static_cast<double>(abs.health),
-                                              static_cast<double>(rand() % 6) + fists[i].y,
+                                              static_cast<double>(rand() % 6) + fists[i].y * ab_height,
                                               static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 50.0,
                                               static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
                                               sf::seconds(0.5),
@@ -82,7 +91,7 @@ void GameStateThugFight::update(sf::Time dt)
                     for(int j = 0; j < 50; j++)
                     {
                         fragments.push_back({ static_cast<double>(abs.health),
-                                              static_cast<double>(rand() % 6) + fists[i].y,
+                                              static_cast<double>(rand() % 6) + fists[i].y * ab_height,
                                               static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
                                               static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
                                               sf::seconds(0.5),
@@ -107,7 +116,7 @@ void GameStateThugFight::update(sf::Time dt)
 
 
         if(fists[i].remaining_time.asSeconds() <= 0.25f && fists[i].color_index == config::BASE_6)
-              fists[i].color_index = rand() % (config::N_COLORS - config::RED) + config::RED;
+          fists[i].color_index = rand() % (config::N_COLORS - config::RED) + config::RED;
         if(fists[i].remaining_time.asSeconds() <= 0.0)
             fists[i].punching = true;
 
@@ -131,43 +140,42 @@ void GameStateThugFight::update(sf::Time dt)
         else
             i++;
     }
-    if(static_cast<double>(rand()) / static_cast<double>(RAND_MAX) >= 1.0 - 0.02 * (total_time - time_alive).asSeconds() / 180.0)
+    if(time_since_spawn.asSeconds() >= spawn_beats * beat.asSeconds())
     {
+        int rand_offset = rand() % 3;
+        if(!fists.empty() && rand_offset >= fists.back().y)
+            rand_offset++;
         fists.push_back({ static_cast<double>(config::screen_w_chars - 1),
-                          static_cast<double>(rand() % (config::screen_h_chars - 6)),
+                          static_cast<double>(rand_offset % 4),
                           false,
                           sf::seconds(2),
                           rand() % (config::N_COLORS - config::RED) + config::RED,
                           false});
-        spawn_countdown = (total_time.asSeconds() - time_alive.asSeconds()) / 180.0 + 0.1;
+        time_since_spawn = sf::seconds(0);
+        spawn_beats = static_cast<int>((total_time - time_alive) / (total_time) * 7.0) + 1;
     }
-    if(abs.tense && abs.remaining_time.asSeconds() <= 0.0)
-        abs.tense = false;
     time_alive += dt;
-    abs.power = std::min(5.0, abs.power + dt.asSeconds());
-    abs.remaining_time -= dt;
+    
+    time_since_spawn += dt;
 }
 
 void GameStateThugFight::draw(sf::RenderTarget* target)
 {
     terminal->clr();
-    std::vector<std::string> ab_strings = Parser::tokenize(abs.tense ? abs_tense_str : abs_str, '\n');
-    for(int i = 0; i < ab_strings.size(); i++)
+    for(int i = 0; i < 4; i++)
     {
-        if(abs.tense)
+        std::string ab_str_to_display = abs.tense_ab == i ? abs_tense_str : abs_str;
+        if(abs.tense_ab == i)
             terminal->set_color(config::colors[config::ORANGE]);
-        else if(static_cast<double>(config::screen_h_chars - i) / static_cast<double>(config::screen_h_chars)
-                    <= abs.power / 5.0)
-            terminal->set_color(config::colors[config::GREEN]);
         else
             terminal->set_color();
-        terminal->output(abs.health - 5, i, ab_strings[i]);
+        terminal->output(abs.health - 5, i * ab_height, ab_str_to_display);
     }
     terminal->set_color();
     for(int i = 0; i < fists.size(); i++)
     {
         terminal->set_color(config::colors[fists[i].color_index]);
-        terminal->output((int)fists[i].x, (int)fists[i].y, thug_fist);
+        terminal->output((int)fists[i].x, (int)fists[i].y * ab_height, thug_fist);
         terminal->set_color();
     }
     for(int i = 0; i < fragments.size(); i++)
