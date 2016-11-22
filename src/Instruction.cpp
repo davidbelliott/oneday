@@ -1,6 +1,5 @@
 #include "Instruction.h"
 #include "Directions.h"
-#include "Room.h"
 #include "GameState.h"
 #include "Engine.h"
 #include "World.h"
@@ -49,13 +48,22 @@ std::vector<cmd_ptr> InstructionGo::compile(GameState* g)
         else if(args[0][0] == "west")
             desired_direction = WEST;
 
-        Room* room = g->engine->world->get_current_room();
-        if(desired_direction == DIRECTION_MAX)
-            commands.push_back(std::make_shared<CmdDisp>("I don't know where " + args[0][0] + " is, m8."));
-        else if(room && room->directions[desired_direction] != "")
-            commands.push_back(std::make_shared<CmdSetRoom>(room->directions[desired_direction]));
-        else if(room)
-            commands.push_back(std::make_shared<CmdDisp>("You can't go " + args[0][0] + " from here, baka!"));
+        Object* room = g->engine->world->get_current_room();
+        if(room)
+        {
+            auto room_component = std::static_pointer_cast<ComponentRoom>(room->get_component(Component::ROOM));
+            if(desired_direction == DIRECTION_MAX)
+                commands.push_back(std::make_shared<CmdDisp>("I don't know where " + args[0][0] + " is, m8."));
+            else if(room && room_component->directions[desired_direction] != "")
+            {
+                commands.push_back(std::make_shared<CmdSetRoom>(room_component->directions[desired_direction]));
+                std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
+                describe->add_object(g->engine->world->get_direct_child(room_component->directions[desired_direction], 0));
+                commands.push_back(describe);
+            }
+            else
+                commands.push_back(std::make_shared<CmdDisp>("You can't go " + args[0][0] + " from here, baka!"));
+        }
     }
     return commands;
 }

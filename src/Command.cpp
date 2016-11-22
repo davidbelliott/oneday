@@ -1,7 +1,6 @@
 #include "Command.h"
 #include "GameState.h"
 #include "Engine.h"
-#include "Room.h"
 #include "Terminal.h"
 #include "World.h"
 #include "Directions.h"
@@ -14,31 +13,6 @@ Command::Command(CommandType type_in)
 
 Command::~Command()
 {
-}
-
-void Command::run_with_callbacks(GameState* g)
-{
-    for(int i = 0; i < objects.size(); )
-    {
-        auto pre_command = objects[i]->pre_command;
-        bool remove_this_object = false;
-        if(pre_command)
-        {
-            if(!pre_command(this))
-                remove_this_object = true;
-        }
-        if(remove_this_object)
-            objects.erase(objects.begin() + i);
-        else
-            i++;
-    }
-    run(g);
-    for(int i = 0; i < objects.size(); i++)
-    {
-        auto post_command = objects[i]->post_command;
-        if(post_command)
-            post_command(this);
-    }
 }
 
 void Command::run(GameState* g)
@@ -151,7 +125,7 @@ CmdSetRoom::CmdSetRoom(std::string new_room_in)
 void CmdSetRoom::run(GameState* g)
 {
     g->engine->world->set_current_room(new_room);
-    g->engine->world->get_current_room()->describe(g);
+    //g->engine->world->get_current_room()->describe(g);
 }
 
 CmdQuit::CmdQuit()
@@ -173,4 +147,71 @@ CmdCustom::CmdCustom(std::function<void(GameState*)> fn_in)
 void CmdCustom::run(GameState* g)
 {
     fn(g);
+}
+
+CmdDescribe::CmdDescribe()
+    : Command(DESCRIBE)
+{
+}
+
+void CmdDescribe::describe(GameState* g, Object* o)
+{
+    if(o->has_component(Component::DESCRIPTION))
+    {
+        std::shared_ptr<ComponentDescription> cd = std::static_pointer_cast<ComponentDescription>(o->get_component(Component::DESCRIPTION));
+        if(o->has_component(Component::ROOM))
+        {
+            g->terminal->set_color(config::colors[config::color_room_title]);
+            g->terminal->disp("You in " + o->pretty_name + ".");
+            g->terminal->set_color();
+        }
+        //if(describe_this)
+        {
+            if (/*deep && */!cd->deep_description.empty())
+                g->terminal->disp(cd->deep_description);
+            else
+                g->terminal->disp(cd->shallow_description);
+        }
+        if(o->has_component(Component::ROOM))
+        {
+            std::shared_ptr<ComponentRoom> cr = std::static_pointer_cast<ComponentRoom>(o->get_component(Component::ROOM));
+            for(int i = 0; i < DIRECTION_MAX; i++)
+            {
+                if(cr->directions[i] != "")
+                {
+                    DirectionId dir_id = (DirectionId)i;
+                    Object* dir_room = g->engine->world->get_direct_child(cr->directions[i], 0);
+                    if(dir_room && dir_room->pretty_name != "")
+                    {
+                        std::string dir_reference = dir[dir_id].dir_reference;
+                        g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                    }
+                }
+            }
+        }
+    }
+        // If this isn't a container and show_children is true, show the children;
+        // If this is a container and it's open, show the children.
+        /*if ((!(properties & Object::CONTAINER) && show_children) || ((properties & Object::CONTAINER) && open))
+        {*/
+            for (int j = 0; j < o->children.size(); j++)
+            {
+                // If it's a deep description, show all children.
+                // Otherwise, don't show the undiscovered children.
+                //if(deep)// || (o->children[j]->properties & Object::DISCOVERED))
+                {
+                    describe(g, o->children[j]);
+                }
+            }
+        //}
+        //properties |= Object::DISCOVERED;
+
+}
+
+void CmdDescribe::run(GameState* g)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        describe(g, objects[i]);
+    }
 }

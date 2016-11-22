@@ -36,6 +36,7 @@ public:
         INV_RM_OBJECT,
         CLOTHES_ADD_OBJECT,
         CLOTHES_REMOVE_OBJECT,
+        DESCRIBE,
         CUSTOM
     };
 
@@ -48,10 +49,6 @@ public:
 
     // Adds an object to the list of objects that will be acted on
     virtual void add_object(Object* o);
-
-    // Runs the command by calling run(), making the relevant callbacks
-    // before and after.
-    virtual void run_with_callbacks(GameState* g);
 
     // === Methods subclasses should overload ===
 
@@ -189,5 +186,13 @@ class CmdCustom : public Command
     public:
         std::function<void(GameState*)> fn;
         CmdCustom(std::function<void(GameState*)> fn_in);
+        void run(GameState* g);
+};
+
+class CmdDescribe : public Command
+{
+    public:
+        CmdDescribe();
+        void describe(GameState* g, Object* o);
         void run(GameState* g);
 };

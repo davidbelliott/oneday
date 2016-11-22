@@ -5,7 +5,6 @@
 #include "GameStateText.h"
 #include "GameStateThugFight.h"
 #include "Player.h"
-#include "Room.h"
 #include "World.h"
 
 void execute()
@@ -29,35 +28,40 @@ void execute()
         world->player = player;
     }
 	{
-		Room* jamal_bedroom = new Room();
-		jamal_bedroom->set_name("jamal_bedroom");
+		Object* jamal_bedroom = new Object("jamal_bedroom");
         jamal_bedroom->pretty_name = "Jamal's bedroom";
-		jamal_bedroom->shallow_description = "The walls of this cluttered hovel are plastered with layers of grime and old posters.";
-		jamal_bedroom->directions[EAST] = "jamal_corridor";
-		jamal_bedroom->directions[SOUTH] = "temp_lane";
 
-		Object* window = new Object("window", "A single smeared window to the north suffuses the room in dim light.");
-		window->deep_description = "Looking through the window, you notice a gang of thugs gathered in front of your house.";
+        std::shared_ptr<ComponentDescription> c_description = std::make_shared<ComponentDescription>(
+		    "The walls of this cluttered hovel are plastered with layers of grime and old posters.");
+        jamal_bedroom->add_component(c_description);
+
+        std::shared_ptr<ComponentRoom> c_room = std::make_shared<ComponentRoom>();
+		c_room->directions[EAST] = "jamal_corridor";
+		c_room->directions[SOUTH] = "temp_lane";
+        jamal_bedroom->add_component(c_room);
+
+		Object* window = new Object("window");
+        window->add_component(std::make_shared<ComponentDescription>("A single smeared window to the north suffuses the room in dim light."));
+		//window->deep_description = "Looking through the window, you notice a gang of thugs gathered in front of your house.";
 		jamal_bedroom->add_child(window);
 
-        Object* paper = new Object("paper", "A crumpled sheeit of paper lies on the floor.");
+        /*Object* paper = new Object("paper", "A crumpled sheeit of paper lies on the floor.");
         paper->name.aliases = { "sheet", "sheeit" };
         paper->properties |= Object::READABLE | Object::TAKEABLE;
         paper->readable_data = "Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog.";
         paper->readable_data += "\nY'all cowards type help, pls.";
-        jamal_bedroom->add_child(paper);
+        jamal_bedroom->add_child(paper);*/
 
 		world->add_child(jamal_bedroom);
 	}
 
 	{
-		Room* jamal_bathroom = new Room();
-		jamal_bathroom->set_name("jamal_bathroom");
+		Object* jamal_bathroom = new Object("jamal_bathroom");
         jamal_bathroom->pretty_name = "Jamal's bathroom";
-		jamal_bathroom->shallow_description = "This is where you defecate daily. This cesuo is a reeking pigsty.\nOne door leads to the north.";
-		jamal_bathroom->directions[NORTH] = "jamal_bedroom";
+		//jamal_bathroom->shallow_description = "This is where you defecate daily. This cesuo is a reeking pigsty.\nOne door leads to the north.";
+		//jamal_bathroom->directions[NORTH] = "jamal_bedroom";
 
-		Object* hole = new Object("hole", "A dark hole gapes in the floor, presumably where a toilet used to be.");
+		/*Object* hole = new Object("hole", "A dark hole gapes in the floor, presumably where a toilet used to be.");
 		hole->properties |= Object::GOABLE;
 		hole->goable_data = "sewer";
 		/*hole->pre_action = [](World* w, Receiver* r, Action* a, Object* o)
@@ -77,15 +81,15 @@ void execute()
 				}
 			}
 		};*/
-		jamal_bathroom->add_child(hole);
+		//jamal_bathroom->add_child(hole);
 
 		world->add_child(jamal_bathroom);
 	}
 
     {
-        Room* temp_lane = new Room("temp_lane", "Temporary Lane", "A temporary lane.");
-        temp_lane->directions[NORTH] = "hood_avenue";
-        temp_lane->pre_command = [=](Command* cmd)
+        Object* temp_lane = new Object("temp_lane");
+        //temp_lane->directions[NORTH] = "hood_avenue";
+        /*temp_lane->pre_command = [=](Command* cmd)
         {
             /*if(cmd->type == Command::DESCRIBE && world->get_flag("thug_fight_outcome") == 0)
             {
@@ -114,15 +118,15 @@ void execute()
                             } );
                r->add_event(std::make_shared<CmdPause>());*/
             //}
-            return true;
-        };
+        /*    return true;
+        };*/
         world->add_child(temp_lane);
     }
     
-    /*cmd_ptr describe = std::make_shared<CmdDescribe>();
+    cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());
-    text->send(describe);*/
-    world->get_current_room()->describe(text);
+    text->send(describe);
+    //world->get_current_room()->describe(text);
     text->send(std::make_shared<CmdInput>());
     engine->push_state(text);
     engine->push_state(intro);

@@ -24,11 +24,11 @@ Object* Parser::get_object(std::string name, World* w)
 {
     Object* object = nullptr;
     Room* room = w->get_current_room();
-    if ((object = room->get_indirect_child(name, Object::DISCOVERED)))
+    if ((object = room->get_indirect_child(name, 0)))
     {
         return object;
     }
-    else if ((object = w->player->get_indirect_child(name, Object::DISCOVERED)))
+    else if ((object = w->player->get_indirect_child(name, 0)))
     {
         return object;
     }

@@ -5,20 +5,16 @@
 #include "Command.h"
 #include "Terminal.h"
 
-Object::Object(std::string name_in, std::string description_in)
+Object::Object(std::string name_in)
 	: name(name_in, {""}, Word::OBJECT),
       pretty_name(""),
       parent(nullptr),
-      shallow_description(description_in),
-      properties(VISIBLE),
-      show_children(true),
-      pre_command(nullptr),
-      post_command(nullptr)
+      components()
 {
 }
 
 Object::Object()
-	: Object("", "")
+	: Object("")
 {
 
 }
@@ -57,7 +53,7 @@ bool Object::has_direct_child(std::string name)
 Object* Object::get_direct_child(std::string name, int filter)
 {
 	Object* child = NULL;
-	if (has_direct_child(name) && (children_hash[name][0]->properties & filter) == filter)
+	if (has_direct_child(name))
 		return children_hash[name][0];
 	else
 		return NULL;
@@ -93,7 +89,30 @@ void Object::set_name(std::string name_in)
     name.word = name_in;
 }
 
-void Object::describe(GameState* g, bool deep, bool describe_this)
+void Object::add_component(ComponentPtr component)
+{
+    components[component->type] = component;
+}
+
+void Object::rm_component(Component::Type type)
+{
+    components.erase(type);
+}
+
+bool Object::has_component(Component::Type type)
+{
+    return (components.count(type) >= 1);
+}
+
+ComponentPtr Object::get_component(Component::Type type)
+{
+    if(has_component(type))
+        return components[type];
+    else
+        return nullptr;
+}
+
+/*void Object::describe(GameState* g, bool deep, bool describe_this)
 {
     if(properties & Object::ROOM)
     {
@@ -140,4 +159,4 @@ void Object::describe(GameState* g, bool deep, bool describe_this)
         }
     }
     properties |= Object::DISCOVERED;
-}
+}*/

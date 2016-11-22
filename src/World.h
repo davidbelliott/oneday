@@ -1,6 +1,5 @@
 #pragma once
 
-class Room;
 class Player;
 #include "Object.h"
 #include <SFML/Audio.hpp>
@@ -21,7 +20,7 @@ public:
 	World();
 	virtual ~World();
 
-	Room* get_current_room();
+	Object* get_current_room();
 	void set_current_room(std::string room_name);
 };
 
