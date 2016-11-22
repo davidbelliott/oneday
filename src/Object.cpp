@@ -3,6 +3,7 @@
 #include "Object.h"
 #include "GameState.h"
 #include "Command.h"
+#include "Terminal.h"
 
 Object::Object(std::string name_in, std::string description_in)
 	: name(name_in, {""}, Word::OBJECT),
@@ -90,4 +91,53 @@ void Object::set_flag(std::string name, int value)
 void Object::set_name(std::string name_in)
 {
     name.word = name_in;
+}
+
+void Object::describe(GameState* g, bool deep, bool describe_this)
+{
+    if(properties & Object::ROOM)
+    {
+        g->terminal->set_color(config::colors[config::color_room_title]);
+        g->terminal->disp("You in " + pretty_name + ".");
+        g->terminal->set_color();
+    }
+    if(describe_this && (properties & Object::VISIBLE))
+    {
+        if (deep && !deep_description.empty())
+            g->terminal->disp(deep_description);
+        else
+            g->terminal->disp(shallow_description);
+    }
+    if(properties & Object::ROOM)
+    {
+        for(int i = 0; i < DIRECTION_MAX; i++)
+        {
+            if(directions[i] != "")
+            {
+                DirectionId dir_id = (DirectionId)i;
+                Object* dir_room = parent->get_direct_child(directions[i], 0);
+                if(dir_room && dir_room->pretty_name != "")
+                {
+                    std::string dir_reference = dir[dir_id].dir_reference;
+                    g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                }
+            }
+        }
+    }
+    // If this isn't a container and show_children is true, show the children;
+    // If this is a container and it's open, show the children.
+    if ((!(properties & Object::CONTAINER) && show_children) || ((properties & Object::CONTAINER) && open))
+    {
+        for (int j = 0; j < children.size(); j++)
+        {
+            // If it's a deep description, show all children.
+            // Otherwise, don't show the undiscovered children.
+            if(deep || (children[j]->properties & Object::DISCOVERED))
+            {
+                g->terminal->disp(children[j]->shallow_description);
+                children[j]->properties |= Object::DISCOVERED;
+            }
+        }
+    }
+    properties |= Object::DISCOVERED;
 }

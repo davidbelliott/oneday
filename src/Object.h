@@ -63,6 +63,8 @@ public:
 	Object();
 	virtual ~Object();
 
+    void describe(GameState* g, bool deep = true, bool describe_this = true);
+
 	void add_child(Object* child);
 	void remove_child(Object* child);
 	bool has_direct_child(std::string name);

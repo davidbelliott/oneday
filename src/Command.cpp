@@ -4,19 +4,16 @@
 #include "Room.h"
 #include "Terminal.h"
 #include "World.h"
+#include "Directions.h"
 
 Command::Command(CommandType type_in)
-    : type(type_in)
+    : type(type_in),
+      patterns({})
 {
 }
 
 Command::~Command()
 {
-}
-
-bool Command::parse(std::vector<std::string> tokens)
-{
-    return true;
 }
 
 void Command::run_with_callbacks(GameState* g)
@@ -154,72 +151,7 @@ CmdSetRoom::CmdSetRoom(std::string new_room_in)
 void CmdSetRoom::run(GameState* g)
 {
     g->engine->world->set_current_room(new_room);
-    cmd_ptr describe = std::make_shared<CmdDescribe>();
-    describe->add_object(g->engine->world->get_current_room());
-    g->send_front(describe);
-}
-
-CmdDescribe::CmdDescribe(bool describe_this_in, bool deep_in)
-    : Command(DESCRIBE),
-    describe_this(describe_this_in), deep(deep_in)
-{
-}
-
-bool CmdDescribe::parse(std::vector<std::string> tokens)
-{
-}
-
-void CmdDescribe::run(GameState* g)
-{
-    for(int i = 0; i < objects.size(); i++)
-    {
-        Object* o = objects[i];
-        if(o->properties & Object::ROOM)
-        {
-            g->terminal->set_color(config::colors[config::color_room_title]);
-            g->terminal->disp("You in " + o->pretty_name + ".");
-            g->terminal->set_color();
-        }
-        if(describe_this && (o->properties & Object::VISIBLE))
-        {
-            if (deep && !o->deep_description.empty())
-                g->terminal->disp(o->deep_description);
-            else
-                g->terminal->disp(o->shallow_description);
-        }
-        if(o->properties & Object::ROOM)
-        {
-            for(int i = 0; i < DIRECTION_MAX; i++)
-            {
-                if(o->directions[i] != "")
-                {
-                    DirectionId dir_id = (DirectionId)i;
-                    Object* dir_room = o->parent->get_direct_child(o->directions[i], 0);
-                    if(dir_room && dir_room->pretty_name != "")
-                    {
-                        std::string dir_reference = dir[dir_id].dir_reference;
-                        g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
-                    }
-                }
-            }
-        }
-        // If this isn't a container and show_children is true, show the children;
-        // If this is a container and it's open, show the children.
-        if ((!(o->properties & Object::CONTAINER) && o->show_children) || ((o->properties & Object::CONTAINER) && o->open))
-        {
-            for (int j = 0; j < o->children.size(); j++)
-            {
-                // If it's a deep description, show all children.
-                // Otherwise, don't show the undiscovered children.
-                if(deep || (o->children[j]->properties & Object::DISCOVERED))
-                {
-                    g->terminal->disp(o->children[j]->shallow_description);
-                    o->children[j]->properties |= Object::DISCOVERED;
-                }
-            }
-        }
-        o->properties |= Object::DISCOVERED;
-    }
+    g->engine->world->get_current_room()->describe(g);
 }
 
 CmdQuit::CmdQuit()
@@ -230,112 +162,6 @@ CmdQuit::CmdQuit()
 void CmdQuit::run(GameState* g)
 {
     g->engine->running = false;
-}
-
-CmdTake::CmdTake()
-    : Command(TAKE)
-{
-}
-
-void CmdTake::run(GameState* g)
-{
-    
-}
-
-CmdWear::CmdWear()
-    : Command(WEAR)
-{
-}
-
-void CmdWear::run(GameState* g)
-{
-
-}
-
-CmdHit::CmdHit()
-    : Command(HIT)
-{
-}
-
-void CmdHit::run(GameState* g)
-{
-    for(int i = 0; i < objects.size(); i++)
-    {
-        Object* o = objects[i];
-
-        if (o->properties & Object::HITTABLE)
-        {
-            if (o->flipped)
-                g->send(std::make_shared<CmdDisp>("The " + o->name.word + " has already been hit."));
-            else
-            {
-                g->send(std::make_shared<CmdDisp>("You hit the " + o->name.word + "."));
-                o->flipped = true;
-            }
-        }
-        else if (o)
-        {
-            g->send(std::make_shared<CmdDisp>("You can't hit the " + o->name.word));
-        }
-    }
-}
-
-CmdShout::CmdShout()
-    : Command(SHOUT)
-{
-}
-
-void CmdShout::run(GameState* g)
-{
-    g->terminal->disp("-SHEEEEIT!");
-}
-
-CmdRead::CmdRead()
-    : Command(READ)
-{
-}
-
-void CmdRead::run(GameState* g)
-{
-    for(int i = 0; i < objects.size(); i++)
-    {
-        if(objects[i]->properties & Object::READABLE)
-        {
-            g->terminal->disp("The " + objects[i]->name.word + " reads:");
-            g->terminal->disp(objects[i]->readable_data);
-        }
-    }
-}
-
-CmdTalkTo::CmdTalkTo()
-    : Command(TALK_TO)
-{
-}
-
-void CmdTalkTo::run(GameState* g)
-{
-    for(int i = 0; i < objects.size(); i++)
-    {
-        Object* o = objects[i];
-        if(o->properties & Object::TALKABLE)
-        {
-            for(int j = 0; j < o->talkable_data.size(); j++)
-            {
-                g->send(std::make_shared<CmdDisp>(o->talkable_data[i]));
-                g->send(std::make_shared<CmdPause>());
-            }
-        }
-    }
-}
-
-CmdHelp::CmdHelp()
-    : Command(HELP)
-{
-}
-
-void CmdHelp::run(GameState* g)
-{
-
 }
 
 CmdCustom::CmdCustom(std::function<void(GameState*)> fn_in)

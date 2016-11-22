@@ -1,13 +1,16 @@
 #pragma once
 
-class GameState;
-class Terminal;
 class Object;
+class GameState;
 
 #include "Config.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 
+// Commands are the functional backbone of the engine.
+// They are generated within gamestates in response to events, and the
+// gamestates store them on queues before running them.
+// A command can operate on zero or more objects.
 class Command
 {
 public:
@@ -26,30 +29,34 @@ public:
         // Model commands
         SET_ROOM,
         SET_OBJECTIVE,
-        DESCRIBE,
-        TAKE,
-        WEAR,
-        OPEN,
-        HIT,
-        READ,
-        SHOUT,
-        TALK_TO,
-        HELP,
         ADD_GAMESTATE,
+        ADD_OBJECT,
+        RM_OBJECT,
+        INV_ADD_OBJECT,
+        INV_RM_OBJECT,
+        CLOTHES_ADD_OBJECT,
+        CLOTHES_REMOVE_OBJECT,
         CUSTOM
     };
 
     CommandType type;
     std::vector<Object*> objects;
+    std::vector<std::string> patterns;
 
     Command(CommandType type_in);
     virtual ~Command();
 
-    virtual bool parse(std::vector<std::string> tokens);
-
-    virtual void run_with_callbacks(GameState* g);
-    virtual void run(GameState* g);
+    // Adds an object to the list of objects that will be acted on
     virtual void add_object(Object* o);
+
+    // Runs the command by calling run(), making the relevant callbacks
+    // before and after.
+    virtual void run_with_callbacks(GameState* g);
+
+    // === Methods subclasses should overload ===
+
+    // Runs the command.
+    virtual void run(GameState* g);
 };
 
 typedef std::shared_ptr<Command> cmd_ptr;
@@ -59,7 +66,6 @@ class CmdDisp : public Command
     public:
         std::string str;
         bool append_newline;
-        Terminal* terminal;
 
         CmdDisp(std::string str_in, bool append_newline_in = true);
         void run(GameState* g);
@@ -136,34 +142,10 @@ class CmdSetRoom : public Command
         void run(GameState* g);
 };
 
-class CmdDescribe : public Command
-{
-    public:
-        bool describe_this;
-        bool deep;
-        CmdDescribe(bool describe_this_in = true, bool deep_in = true);
-        bool parse(std::vector<std::string> tokens);
-        void run(GameState* g);
-};
-
 class CmdQuit : public Command
 {
     public:
         CmdQuit();
-        void run(GameState* g);
-};
-
-class CmdTake : public Command
-{
-    public:
-        CmdTake();
-        void run(GameState* g);
-};
-
-class CmdWear : public Command
-{
-    public:
-        CmdWear();
         void run(GameState* g);
 };
 

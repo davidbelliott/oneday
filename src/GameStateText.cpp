@@ -36,11 +36,19 @@ void GameStateText::notify(event_ptr event)
             send(std::make_shared<CmdDisp>("Please enter a command."));
         else
         {
-            cmd_ptr cmd = parser->parse(line, engine->world);
-            if(cmd)
-                send(cmd);
+            InstructionPtr instruction = parser->parse(line, this);
+            if(instruction)
+            {
+                std::vector<cmd_ptr> commands = instruction->compile(this);
+                for(int i = 0; i < commands.size(); i++)
+                {
+                    send(commands[i]);
+                }
+            }
             else
-                send(std::make_shared<CmdDisp>("I don't understand."));
+            {
+                send(std::make_shared<CmdDisp>("What R U talking about, boy?"));
+            }
         }
         send(std::make_shared<CmdInput>());
     }

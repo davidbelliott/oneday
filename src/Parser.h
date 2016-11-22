@@ -1,21 +1,26 @@
 #pragma once
 class World;
-#include "Command.h"
-#include "Word.h"
-#include "WordList.h"
+#include "Instruction.h"
+#include "Token.h"
 #include <string>
+#include <vector>
+
+token_list tokenize(std::string str, char delim);
+token_list slice(token_list list, int start);
+
+bool match_tokens(token s_token, token p_token, arg_list* args);
+bool match_token_lists(token_list statement, token_list pattern, arg_list* args);
 
 class Parser
 {
 public:
-	WordList word_list;
+    std::vector<InstructionPtr> instruction_lookup_table;
+
 public:
 	Parser();
 	virtual ~Parser();
 
-    static std::vector<std::string> tokenize(std::string input, char delim = ' ');
-    static cmd_ptr get_cmd(std::string word, World* w);
     Object* get_object(std::string name, World* w);
-    cmd_ptr parse(std::string statement, World* w);
+    InstructionPtr parse(std::string statement, GameState* g);
 };
 

@@ -87,7 +87,7 @@ void execute()
         temp_lane->directions[NORTH] = "hood_avenue";
         temp_lane->pre_command = [=](Command* cmd)
         {
-            if(cmd->type == Command::DESCRIBE && world->get_flag("thug_fight_outcome") == 0)
+            /*if(cmd->type == Command::DESCRIBE && world->get_flag("thug_fight_outcome") == 0)
             {
                 text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!"));
                 text->send_front(std::make_shared<CmdPause>());
@@ -109,19 +109,20 @@ void execute()
                     }
                 };
                 text->send_front(std::make_shared<CmdCustom>(fn));
-                /*r->add_event(std::make_shared<CmdCustom>( [](GameState* g)
+                r->add_event(std::make_shared<CmdCustom>( [](GameState* g)
                             {
                             } );
                r->add_event(std::make_shared<CmdPause>());*/
-            }
+            //}
             return true;
         };
         world->add_child(temp_lane);
     }
     
-    cmd_ptr describe = std::make_shared<CmdDescribe>();
+    /*cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());
-    text->send(describe);
+    text->send(describe);*/
+    world->get_current_room()->describe(text);
     text->send(std::make_shared<CmdInput>());
     engine->push_state(text);
     engine->push_state(intro);

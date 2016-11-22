@@ -2,184 +2,157 @@
 #include "Room.h"
 #include "World.h"
 #include "Player.h"
-
-std::vector<std::string> Parser::tokenize(std::string input, char delim)
-{
-	std::vector<std::string> tokens;
-	std::string cur_str = "";
-	for (size_t i = 0; i < input.size(); i++)
-	{
-		if (input[i] == delim)
-		{
-			if (cur_str.size() > 0)
-			{
-				tokens.push_back(cur_str);
-				cur_str = "";
-			}
-		}
-		else
-			cur_str.push_back(input[i]);
-	}
-	if (cur_str.size() > 0)
-		tokens.push_back(cur_str);
-	return tokens;
-}
-
-cmd_ptr Parser::get_cmd(std::string word, World* world)
-{
-    cmd_ptr cmd = nullptr;
-    if(word == "look")
-    {
-    }
-    else if (word == "quit" || word == "q") cmd = std::make_shared<CmdQuit>();
-
-    
-		/*if (word.id == l->GO) return new ActionGo(word);
-		else if (word.id == l->LOOK) return new ActionLook(word);
-		else if (word.id == l->QUIT) return new ActionQuit(word);
-		else if (word.id == l->TAKE) return new ActionTake(word);
-		else if (word.id == l->WEAR) return new ActionWear(word);
-		else if (word.id == l->HIT) return new ActionHit(word);
-		else if (word.id == l->OPEN_CONTAINER) return new ActionOpenContainer(word);
-		else if (word.id == l->READ) return new ActionRead(word);
-		else if (action_type == Action::PUT_IN_CONTAINER) return new ActionPutInContainer();
-		else if (action_type == Action::TURN_ON) return new ActionTurnOn();
-		else if (action_type == Action::TURN_OFF) return new ActionTurnOff();
-		else if (action_type == Action::MOVE) return new ActionMove();
-		else if (action_type == Action::EXAMINE) return new ActionExamine();
-		else if (action_type == Action::INVENTORY) return new ActionInventory();
-		else if (action_type == Action::EAT) return new ActionEat();
-		else if (action_type == Action::DRINK) return new ActionDrink();
-		else if (word.id == l->SHOUT) return new ActionShout(word);
-		else if (action_type == Action::BREAK) return new ActionBreak();
-		else if (action_type == Action::BLESSUP) return new ActionBlessup();
-        else if (word.id == l->TALK_TO) return new ActionTalkTo(word);
-        else if (word.id == l->HELP) return new ActionHelp(word);*/
-
-    return cmd;
-}
+#include "GameState.h"
+#include "Command.h"
 
 Parser::Parser()
- : word_list()
+ : instruction_lookup_table({})
 {
+    for(int i = 0; i < static_cast<int>(Instruction::INSTRUCTION_MAX); i++)
+    {
+        InstructionPtr instruction = make_instruction(static_cast<Instruction::Type>(i), 0, {});
+        if(instruction)
+            instruction_lookup_table.push_back(instruction);
+    }
 }
-
 
 Parser::~Parser()
 {
-}
-
-bool matches_regex(std::string regex, std::string str)
-{
-
-
 }
 
 Object* Parser::get_object(std::string name, World* w)
 {
     Object* object = nullptr;
     Room* room = w->get_current_room();
-    if (object = room->get_indirect_child(name, Object::DISCOVERED))
+    if ((object = room->get_indirect_child(name, Object::DISCOVERED)))
     {
         return object;
     }
-    else if (object = w->player->get_indirect_child(name, Object::DISCOVERED))
+    else if ((object = w->player->get_indirect_child(name, Object::DISCOVERED)))
     {
         return object;
     }
     return object;
 }
 
-cmd_ptr Parser::parse(std::string statement, World* w)
+token_list slice(token_list list, int start)
 {
-	Object* object = nullptr;
-	Room* room = w->get_current_room();
-	std::vector<std::string> tokens = tokenize(statement, ' ');
+    token_list slice_list(list.begin() + start, list.end());
+    return slice_list;
+}
 
-	/*for (size_t i = 0; i < token_strings.size(); i++)
-	{
-		tokens.push_back(word_list.get_word(token_strings[i]));
-	}*/
-
-	for (size_t i = 0; i < tokens.size(); i++)
-	{
-        if(tokens[i] == "look")
+token_list tokenize(std::string str, char delim)
+{
+    token_list tokens;
+    token cur_str = "";
+    for(int i = 0; i < str.size(); i++)
+    {
+        if(str[i] == delim)
         {
-            if(tokens.size() > i + 1)
+            if(cur_str.size() > 0)
             {
-                if(tokens[i + 1] == "around")
-                {
-                    cmd_ptr cmd = std::make_shared<CmdDescribe>();
-                    cmd->add_object(w->get_current_room());
-                    return cmd;
-                }
-                else if(tokens[i + 1] == "at")
-                {
-                    if(tokens.size() > i + 2)
-                    {
-                        Object* object = get_object(tokens[i + 2], w);
-                        if(object)
-                        {
-                            cmd_ptr cmd = std::make_shared<CmdDescribe>();
-                            cmd->add_object(object);
-                            return cmd;
-                        }
-                    }
-                }
+                tokens.push_back(cur_str);
+                cur_str = "";
             }
-            return std::make_shared<CmdDisp>("Look at what?");
         }
-        else if(tokens[i] == "go")
-        {
-            DirectionId direction = DIRECTION_MAX;
-            if(tokens.size() > i + 1)
-            {
-                for(int j = 0; j < DIRECTION_MAX && direction == DIRECTION_MAX; j++)
-                {
-                    if(tokens[i + 1] == dir[(DirectionId)j].name)
-                        direction = (DirectionId)j;
-                }
-            }
+        else
+            cur_str.push_back(str[i]);
+    }
+    if(cur_str.size() > 0)
+        tokens.push_back(cur_str);
+    return tokens;
+}
 
-            if(direction == DIRECTION_MAX)
+std::string join(token_list list, char delim)
+{
+    std::string cur_str = "";
+    for(int i = 0; i < list.size(); i++)
+    {
+        cur_str += list[i];
+        if(i < list.size() - 1)
+            cur_str += delim;
+    }
+    return cur_str;
+}
+
+bool match_tokens(token s_token, token p_token, arg_list* args)
+{
+    //std::cout << "Comparing token: " << s_token << " | " << p_token << std::endl;
+
+    if(p_token != "#")
+    {
+        return (s_token == p_token);
+    }
+    else
+    {
+        args->push_front( { s_token } );
+        return true;
+    }
+}
+
+bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
+{
+    /*std::cout << "Comparing token list:";
+    for(int i = 0; i < statement.size(); i++)
+        std::cout << " " << statement[i];
+    std::cout << " | ";
+    for(int j = 0; j < pattern.size(); j++)
+        std::cout << " " << pattern[j];
+    std::cout << std::endl;*/
+
+
+    if(statement.size() == 1)   // There is only one token in the statement
+    {
+        return match_tokens(statement[0], pattern[0], args);
+    }
+    if(statement.size() > 1)
+    {
+        if(pattern[0] != "#")   // The statement does not begin with #
+        {
+            return match_tokens(statement[0], pattern[0], args)
+                && match_token_lists(slice(statement, 1), slice(pattern, 1), args);
+        }
+        else    // The statement begins with #
+        {
+            if(pattern.size() == 1) // # is the only remaining token
             {
-                return std::make_shared<CmdDisp>("Go where?");
+                args->push_front(statement);
+                return true;
             }
             else
             {
-                Room* room = w->get_current_room();
-                if(room && room->directions[direction] != "") {
-                    return std::make_shared<CmdSetRoom>(room->directions[direction]);
-                } else {
-                    return std::make_shared<CmdDisp>("You can't go " + dir[direction].name + " from here.");
+                // Slice the remaining tokens, moving closer and closer to the
+                // end until the string matches. If it never matches, the
+                // statement doesn't match the pattern.
+                for(int i = 1; i < statement.size(); i++)
+                {
+                    //std::cout << "###" << i << "###\n";
+                    if(match_token_lists(slice(statement, i), slice(pattern, 1), args))
+                    {
+                        args->push_front(token_list(statement.begin(), statement.begin() + i));
+                        return true;
+                    }
                 }
+                return false;
             }
         }
-        else if(tokens[i] == "quit" || tokens[i] == "q")
-        {
-            return std::make_shared<CmdQuit>();
-        }
+    }
+}
 
-        /*
-		if (tokens[i].get_part_of_speech() == Word::ACTION && !found_command)
-		{
-			command = get_cmd(tokens[i]);
-            if(command)
-                found_command = true;
-		}
-		else if (!found_object && found_command)
-		{
-			if (object = room->get_indirect_child(tokens[i].word, Object::DISCOVERED))
-			{
-				found_object = true;
-				command->add_object(object);
-			}
-            else if (object = w->player->get_indirect_child(tokens[i].word, Object::DISCOVERED))
+InstructionPtr Parser::parse(std::string statement, GameState* g)
+{
+    InstructionPtr instruction = nullptr;
+    token_list tokens = tokenize(statement, ' ');
+    for(int i = 0; i < instruction_lookup_table.size() && !instruction; i++)
+    {
+        for(int j = 0; j < instruction_lookup_table[i]->patterns.size() && !instruction; j++)
+        {
+            arg_list args = {};
+            if(match_token_lists(tokens, tokenize(instruction_lookup_table[i]->patterns[j], ' '), &args))
             {
-                found_object = true;
-                command->add_object(object);
+                instruction = make_instruction(instruction_lookup_table[i]->type, j, args);
             }
-		}*/
-	}
-    return nullptr;
+        }
+    }
+    return instruction;
 }
