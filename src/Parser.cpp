@@ -1,12 +1,12 @@
 #include "Parser.h"
-#include "Room.h"
 #include "World.h"
 #include "Player.h"
 #include "GameState.h"
 #include "Command.h"
 
 Parser::Parser()
- : instruction_lookup_table({})
+ : instruction_lookup_table({}),
+   tokens_to_remove({})
 {
     for(int i = 0; i < static_cast<int>(Instruction::INSTRUCTION_MAX); i++)
     {
@@ -14,6 +14,12 @@ Parser::Parser()
         if(instruction)
             instruction_lookup_table.push_back(instruction);
     }
+
+    tokens_to_remove = {
+        "the",
+        "a",
+        "and"
+    };
 }
 
 Parser::~Parser()
@@ -23,7 +29,7 @@ Parser::~Parser()
 Object* Parser::get_object(std::string name, World* w)
 {
     Object* object = nullptr;
-    Room* room = w->get_current_room();
+    Object* room = w->get_current_room();
     if ((object = room->get_indirect_child(name, 0)))
     {
         return object;
@@ -61,6 +67,14 @@ token_list tokenize(std::string str, char delim)
     if(cur_str.size() > 0)
         tokens.push_back(cur_str);
     return tokens;
+}
+
+void remove_tokens(token_list* tokens, token_list tokens_to_remove)
+{
+    for(int i = 0; i < tokens_to_remove.size(); i++)
+    {
+        tokens->erase(std::remove(tokens->begin(), tokens->end(), tokens_to_remove[i]), tokens->end());
+    }
 }
 
 std::string join(token_list list, char delim)
@@ -143,6 +157,7 @@ InstructionPtr Parser::parse(std::string statement, GameState* g)
 {
     InstructionPtr instruction = nullptr;
     token_list tokens = tokenize(statement, ' ');
+    remove_tokens(&tokens, tokens_to_remove);
     for(int i = 0; i < instruction_lookup_table.size() && !instruction; i++)
     {
         for(int j = 0; j < instruction_lookup_table[i]->patterns.size() && !instruction; j++)

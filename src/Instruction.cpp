@@ -81,7 +81,28 @@ InstructionLook::InstructionLook(int matched_pattern_in, arg_list args_in)
 
 std::vector<cmd_ptr> InstructionLook::compile(GameState* g)
 {
-    return { };
+    std::vector<cmd_ptr> commands = {};
+    if(matched_pattern == 0)    // look around
+    {
+        cmd_ptr describe = std::make_shared<CmdDescribe>();
+        describe->add_object(g->engine->world->get_current_room());
+        commands.push_back(describe);
+    }
+    else if(matched_pattern >= 1 && matched_pattern <= 3)
+    {
+        Object* obj = get_object(args[0], g);
+        if(obj)
+        {
+            cmd_ptr describe = std::make_shared<CmdDescribe>();
+            describe->add_object(obj);
+            commands.push_back(describe);
+        }
+        else
+        {
+            commands.push_back(std::make_shared<CmdDisp>("There is no " + args[0][0] + " for you to look at here."));
+        }
+    }
+    return commands;
 }
 
 InstructionQuit::InstructionQuit(int matched_pattern_in, arg_list args_in)
@@ -145,4 +166,14 @@ InstructionPtr make_instruction(Instruction::Type type, int matched_pattern_in, 
     else if(type == Instruction::QUIT)
         instruction = std::make_shared<InstructionQuit>(matched_pattern_in, args);
     return instruction;
+}
+
+Object* get_object(token_list tokens, GameState* g)
+{
+    Object* found_object = nullptr;
+    for(int i = 0; i < tokens.size() && !found_object; i++)
+    {
+        found_object = g->engine->world->get_indirect_child(tokens[i], 0);
+    }
+    return found_object;
 }
