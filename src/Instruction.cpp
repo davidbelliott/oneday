@@ -3,6 +3,7 @@
 #include "GameState.h"
 #include "Engine.h"
 #include "World.h"
+#include "Parser.h"
 
 Instruction::Instruction(Type type_in, int matched_pattern_in,  arg_list args_in)
     : type(type_in),
@@ -120,12 +121,71 @@ std::vector<cmd_ptr> InstructionQuit::compile(GameState* g)
 {
     return {std::make_shared<CmdQuit>()};
 }
-/*
-std::vector<cmd_ptr> InstructionTake::compile(GameState* g)
+
+InstructionTake::InstructionTake(int matched_pattern_in, arg_list args_in)
+    : Instruction(TAKE, matched_pattern_in, args_in)
 {
-    return { };
+    patterns = {
+        { "take #" },
+        { "pick up #" },
+        { "pick # up" },
+        { "grab #" },
+        { "snatch #" },
+        { "obtain #" },
+        { "grasp #" } };
 }
 
+std::vector<cmd_ptr> InstructionTake::compile(GameState* g)
+{
+    std::vector<cmd_ptr> commands = {};
+    Object* obj = get_object(args[0], g);
+    if(!obj)
+    {
+        commands.push_back(std::make_shared<CmdDisp>("There's no " + join(args[0], ' ') + " for you to take here."));
+    }
+    else
+    {
+        cmd_ptr cmd_take = std::make_shared<CmdTake>();
+        cmd_take->add_object(obj);
+        commands.push_back(cmd_take);
+        commands.push_back(std::make_shared<CmdDisp>("You take the " + obj->name.word + "."));
+    }
+    return commands;
+}
+
+InstructionObscenity::InstructionObscenity(int matched_pattern_in, arg_list args_in)
+    : Instruction(OBSCENITY, matched_pattern_in, args_in)
+{
+    std::vector<std::string> obscenities = {
+        "fuck",
+        "shit",
+        "damn",
+        "bitch",
+        "nigger",
+        "faggot",
+        "bastard",
+        "hell",
+        "bloody",
+        "durned",
+        "fug"
+    };
+    for(int i = 0; i < obscenities.size(); i++)
+    {
+        patterns.push_back(obscenities[i]);
+        patterns.push_back("# " + obscenities[i]);
+        patterns.push_back(obscenities[i] + " #");
+        patterns.push_back("# " + obscenities[i] + " #");
+    }
+}
+
+std::vector<cmd_ptr> InstructionObscenity::compile(GameState* g)
+{
+    std::vector<cmd_ptr> commands = {};
+    commands.push_back(std::make_shared<CmdDisp>("-keep it clean, nigga."));
+    return commands;
+}
+
+/*
 std::vector<cmd_ptr> InstructionWear::compile(GameState* g)
 {
     return { };
@@ -165,6 +225,10 @@ InstructionPtr make_instruction(Instruction::Type type, int matched_pattern_in, 
         instruction = std::make_shared<InstructionLook>(matched_pattern_in, args);
     else if(type == Instruction::QUIT)
         instruction = std::make_shared<InstructionQuit>(matched_pattern_in, args);
+    else if(type == Instruction::TAKE)
+        instruction = std::make_shared<InstructionTake>(matched_pattern_in, args);
+    else if(type == Instruction::OBSCENITY)
+        instruction = std::make_shared<InstructionObscenity>(matched_pattern_in, args);
     return instruction;
 }
 
@@ -177,3 +241,4 @@ Object* get_object(token_list tokens, GameState* g)
     }
     return found_object;
 }
+

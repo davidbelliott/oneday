@@ -20,6 +20,7 @@ class Instruction
             SHOUT,
             TALK_TO,
             HELP,
+            OBSCENITY,
             INSTRUCTION_MAX
         } type;
         std::vector<std::string> patterns;
@@ -55,7 +56,6 @@ class InstructionQuit : public Instruction
         std::vector<cmd_ptr> compile(GameState* g);
 };
 
-/*
 class InstructionTake : public Instruction
 {
     public:
@@ -63,7 +63,14 @@ class InstructionTake : public Instruction
         std::vector<cmd_ptr> compile(GameState* g);
 };
 
-class InstructionWear : public Instruction
+class InstructionObscenity : public Instruction
+{
+    public:
+        InstructionObscenity(int matched_pattern_in, arg_list args_in);
+        std::vector<cmd_ptr> compile(GameState* g);
+};
+
+/*class InstructionWear : public Instruction
 {
     public:
         InstructionWear(int matched_pattern_in, arg_list args_in);

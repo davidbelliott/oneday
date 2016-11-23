@@ -4,6 +4,7 @@
 #include "Terminal.h"
 #include "World.h"
 #include "Directions.h"
+#include "Player.h"
 
 Command::Command(CommandType type_in)
     : type(type_in),
@@ -213,5 +214,18 @@ void CmdDescribe::run(GameState* g)
     for(int i = 0; i < objects.size(); i++)
     {
         describe(g, objects[i]);
+    }
+}
+
+CmdTake::CmdTake()
+    : Command(TAKE)
+{ }
+
+void CmdTake::run(GameState* g)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        g->engine->world->player->add_child(objects[i]);
+        g->engine->world->get_current_room()->remove_child(objects[i]);
     }
 }

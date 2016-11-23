@@ -32,8 +32,7 @@ public:
         ADD_GAMESTATE,
         ADD_OBJECT,
         RM_OBJECT,
-        INV_ADD_OBJECT,
-        INV_RM_OBJECT,
+        TAKE,
         CLOTHES_ADD_OBJECT,
         CLOTHES_REMOVE_OBJECT,
         DESCRIBE,
@@ -194,5 +193,12 @@ class CmdDescribe : public Command
     public:
         CmdDescribe();
         void describe(GameState* g, Object* o);
+        void run(GameState* g);
+};
+
+class CmdTake : public Command
+{
+    public:
+        CmdTake();
         void run(GameState* g);
 };

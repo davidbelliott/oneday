@@ -42,6 +42,14 @@ Object* Parser::get_object(std::string name, World* w)
     return object;
 }
 
+std::string to_lower(std::string str)
+{
+    std::string lower_str;
+    for(int i = 0; i < str.size(); i++)
+        lower_str.push_back(std::tolower(str[i]));
+    return lower_str;
+}
+
 token_list slice(token_list list, int start)
 {
     token_list slice_list(list.begin() + start, list.end());
@@ -167,9 +175,11 @@ bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
 
 InstructionPtr Parser::parse(std::string statement, GameState* g)
 {
-    InstructionPtr instruction = nullptr;
+    statement = to_lower(statement);
     token_list tokens = tokenize(statement, ' ');
     remove_tokens(&tokens, tokens_to_remove);
+
+    InstructionPtr instruction = nullptr;
     for(int i = 0; i < instruction_lookup_table.size() && !instruction; i++)
     {
         for(int j = 0; j < instruction_lookup_table[i]->patterns.size() && !instruction; j++)
