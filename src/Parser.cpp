@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "GameState.h"
 #include "Command.h"
+#include <iostream>
 
 Parser::Parser()
  : instruction_lookup_table({}),
@@ -91,7 +92,7 @@ std::string join(token_list list, char delim)
 
 bool match_tokens(token s_token, token p_token, arg_list* args)
 {
-    //std::cout << "Comparing token: " << s_token << " | " << p_token << std::endl;
+    std::cout << "Comparing token: " << s_token << " | " << p_token << std::endl;
 
     if(p_token != "#")
     {
@@ -106,50 +107,61 @@ bool match_tokens(token s_token, token p_token, arg_list* args)
 
 bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
 {
-    /*std::cout << "Comparing token list:";
+    std::cout << "Comparing token list:";
     for(int i = 0; i < statement.size(); i++)
         std::cout << " " << statement[i];
     std::cout << " | ";
     for(int j = 0; j < pattern.size(); j++)
         std::cout << " " << pattern[j];
-    std::cout << std::endl;*/
+    std::cout << std::endl;
 
 
-    if(statement.size() == 1)   // There is only one token in the statement
+    if(statement.size() >= pattern.size())
     {
-        return match_tokens(statement[0], pattern[0], args);
-    }
-    if(statement.size() > 1)
-    {
-        if(pattern[0] != "#")   // The statement does not begin with #
+        if(pattern.size() == 0)
         {
-            return match_tokens(statement[0], pattern[0], args)
-                && match_token_lists(slice(statement, 1), slice(pattern, 1), args);
-        }
-        else    // The statement begins with #
-        {
-            if(pattern.size() == 1) // # is the only remaining token
-            {
-                args->push_front(statement);
+            if(statement.size() == 0)
                 return true;
-            }
             else
-            {
-                // Slice the remaining tokens, moving closer and closer to the
-                // end until the string matches. If it never matches, the
-                // statement doesn't match the pattern.
-                for(int i = 1; i < statement.size(); i++)
-                {
-                    //std::cout << "###" << i << "###\n";
-                    if(match_token_lists(slice(statement, i), slice(pattern, 1), args))
-                    {
-                        args->push_front(token_list(statement.begin(), statement.begin() + i));
-                        return true;
-                    }
-                }
                 return false;
-            }
         }
+        else
+        {
+            if(pattern[0] != "#")   // The statement does not begin with #
+            {
+                return match_tokens(statement[0], pattern[0], args)
+                    && match_token_lists(slice(statement, 1), slice(pattern, 1), args);
+            }
+            else    // The statement begins with #
+            {
+                if(pattern.size() == 1)
+                {
+                    args->push_front(statement);
+                    return true;
+                }
+                else
+                {
+                    // Slice the remaining tokens, moving closer and closer to the
+                    // end until the string matches. If it never matches, the
+                    // statement doesn't match the pattern.
+                    for(int i = 1; i < statement.size(); i++)
+                    {
+                        //std::cout << "###" << i << "###\n";
+                        if(match_token_lists(slice(statement, i), slice(pattern, 1), args))
+                        {
+                            args->push_front(token_list(statement.begin(), statement.begin() + i));
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+        }
+    }
+    else    // Pattern is longer than statement
+    {
+        return false;
     }
 }
 
