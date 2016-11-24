@@ -62,6 +62,7 @@ class CmdDisp : public Command
     public:
         std::string str;
         bool append_newline;
+        int spread;
 
         CmdDisp(std::string str_in, bool append_newline_in = true);
         void run(GameState* g);
@@ -72,6 +73,7 @@ class CmdOutput : public Command
     public:
         int x;
         int y;
+        int spread;
         std::string str;
 
         CmdOutput(int x_in, int y_in, std::string str_in);

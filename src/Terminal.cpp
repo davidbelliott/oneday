@@ -5,7 +5,7 @@
 #include <iostream>
 
 Terminal::Terminal(GameState* owner_state_in)
-:   state({ 0, config::colors[config::color_default_fg], config::colors[config::color_default_bg], OUTPUT }),
+:   state({ 0, sf::Color::White, sf::Color::Black, OUTPUT }),
     buffer(new CharBuffer()),
     owner_state(owner_state_in),
     cur_user_string("")
@@ -18,16 +18,19 @@ Terminal::~Terminal()
     delete buffer;
 }
 
-void Terminal::output(int start_x, int start_y, std::string str)
+void Terminal::output(int start_x, int start_y, std::string str, int spread)
 {
     int x = start_x;
     int y = start_y;
 	for (int i = 0; i < str.size(); i++)
 	{
-        if (x >= 0 && x < config::screen_w_chars && y >= 0 && y < config::screen_h_chars && str[i] != '\0')
+        if (x >= 0 && x < config::screen_w_chars && y >= 0 && y < config::screen_h_chars && str[i] != '\0' && str[i] != '\n')
         {
             int index = buffer->get_index(x, y);
-            buffer->setChar(index, str[i], state.foreground_color, state.background_color);
+            Char c = Char(str[i], spread);
+            c.fg = state.foreground_color;
+            c.bg = state.background_color;
+            buffer->setChar(index, c);
         }
 		if (str[i] == '\n')
 		{
@@ -43,14 +46,14 @@ void Terminal::output(int start_x, int start_y, std::string str)
 
 void Terminal::input_mode()
 {
-    set_color(config::colors[config::color_user_input]);
+    //set_color(config::colors[config::color_user_input]);
     disp(">", false);
     state.mode = INPUT;
 }
 
 void Terminal::output_mode()
 {
-    set_color(config::colors[config::color_default_fg]);
+    //set_color(config::colors[config::color_default_fg]);
     state.mode = OUTPUT;
 }
 
@@ -76,9 +79,12 @@ void Terminal::disp(std::string str, bool newline)
 			y--;
 		}
 		int index = buffer->get_index(x, y);
-        if (index < buffer->contents.size() && str[i] != '\0')
+        if (index < buffer->contents.size() && str[i] != '\0' && str[i] != '\n')
         {
-            buffer->setChar(index, str[i], state.foreground_color, state.background_color);
+            Char c = Char(str[i]);
+            c.fg = state.foreground_color;
+            c.bg = state.background_color;
+            buffer->setChar(index, c);
         }
 		if (str[i] == '\n')
 		{
@@ -116,7 +122,7 @@ void Terminal::backspace()
     if(stop_index > 0)
     {
         stop_index -= 1;
-        buffer->setChar(stop_index, '\0', sf::Color::Transparent, sf::Color::Transparent);
+        buffer->setChar(stop_index, '\0');
     }
     state.cursor_index = stop_index;
 }

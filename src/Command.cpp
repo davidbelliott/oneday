@@ -41,13 +41,14 @@ CmdOutput::CmdOutput(int x_in, int y_in, std::string str_in)
     : Command(OUTPUT),
     x(x_in),
     y(y_in),
-    str(str_in)
+    str(str_in),
+    spread(0)
 {
 }
 
 void CmdOutput::run(GameState* g)
 {
-    g->terminal->output(x, y, str);
+    g->terminal->output(x, y, str, spread);
 }
 
 CmdClear::CmdClear()
@@ -162,9 +163,9 @@ void CmdDescribe::describe(GameState* g, Object* o)
         std::shared_ptr<ComponentDescription> cd = std::static_pointer_cast<ComponentDescription>(o->get_component(Component::DESCRIPTION));
         if(o->has_component(Component::ROOM))
         {
-            g->terminal->set_color(config::colors[config::color_room_title]);
+            //g->terminal->set_color(config::colors[config::color_room_title]);
             g->terminal->disp("You in " + o->pretty_name + ".");
-            g->terminal->set_color();
+            //g->terminal->set_color();
         }
         //if(describe_this)
         {

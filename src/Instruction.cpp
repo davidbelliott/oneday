@@ -23,7 +23,7 @@ InstructionGo::InstructionGo(int matched_pattern_in, arg_list args_in)
     : Instruction(GO, matched_pattern_in, args_in)
 {
     patterns = {
-        { "go to the #" },
+        { "go to #" },
         { "go #" },
         { "head #" },
         { "n" },
@@ -54,7 +54,7 @@ std::vector<cmd_ptr> InstructionGo::compile(GameState* g)
         {
             auto room_component = std::static_pointer_cast<ComponentRoom>(room->get_component(Component::ROOM));
             if(desired_direction == DIRECTION_MAX)
-                commands.push_back(std::make_shared<CmdDisp>("I don't know where " + args[0][0] + " is, m8."));
+                commands.push_back(std::make_shared<CmdDisp>("I don't know where the " + args[0][0] + " is, m8."));
             else if(room && room_component->directions[desired_direction] != "")
             {
                 commands.push_back(std::make_shared<CmdSetRoom>(room_component->directions[desired_direction]));
@@ -127,6 +127,7 @@ InstructionTake::InstructionTake(int matched_pattern_in, arg_list args_in)
 {
     patterns = {
         { "take #" },
+        { "get #" },
         { "pick up #" },
         { "pick # up" },
         { "grab #" },

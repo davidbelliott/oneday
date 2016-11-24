@@ -10,7 +10,6 @@
 void execute()
 {
     Engine* engine = new Engine();
-    GameStateIntro* intro = new GameStateIntro(engine);
     GameStateText* text = new GameStateText(engine);
 
     // Generate the world
@@ -123,13 +122,12 @@ void execute()
         world->add_child(temp_lane);
     }
     
-    cmd_ptr describe = std::make_shared<CmdDescribe>();
+    /*cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());
-    text->send(describe);
+    text->send(describe);*/
     //world->get_current_room()->describe(text);
     text->send(std::make_shared<CmdInput>());
     engine->push_state(text);
-    engine->push_state(intro);
 
     sf::Clock clock;
     sf::Time dt;
@@ -157,6 +155,5 @@ void execute()
     }
 
     delete text;
-    delete intro;
 	delete engine;
 }

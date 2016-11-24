@@ -34,7 +34,7 @@ public:
 
     /* Outputs the specified string at the specified x and y values. Leaves x and y at the position following
      * the last modified character. */
-    void output(int x, int y, std::string string);
+    void output(int x, int y, std::string string, int spread = 0);
 
     /* Puts the terminal into input mode, displaying the carat and changing the color accordingly. */
     void input_mode();
