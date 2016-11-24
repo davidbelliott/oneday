@@ -10,13 +10,10 @@ GameStateText::GameStateText(Engine* engine_in)
 {
     std::string title_string(get_file_contents("jamal.txt"));
     running = true;
-//    send(std::make_shared<CmdOutput>(0, 0, "================================================================================"));
     send(std::make_shared<CmdOutput>(0, 0, "One Day in the Life of"));
     std::shared_ptr<CmdOutput> output = std::make_shared<CmdOutput>(0, 1, title_string);
     output->spread = 100;
     send(output);
- //   send(std::make_shared<CmdOutput>(0, 9, "================================================================================"));
-  //  send(std::make_shared<CmdOutput>(0, 10, "Produced by moraine"));
     send(std::make_shared<CmdDisp>("\n\n\n\n\n\n\n"));
     send(std::make_shared<CmdDisp>("You wake."));
     send(std::make_shared<CmdDisp>("No canine utterances grace your ears,\nand you can smell no fresh bacon cooking in the kitchen."));
@@ -53,7 +50,7 @@ void GameStateText::notify(event_ptr event)
     {
         std::string line = std::static_pointer_cast<EventUserLine>(event)->line;
         if(line == "")
-            send(std::make_shared<CmdDisp>("Please enter a command."));
+            send(std::make_shared<CmdDisp>("-say something, pls"));
         else
         {
             InstructionPtr instruction = parser->parse(line, this);
@@ -67,7 +64,7 @@ void GameStateText::notify(event_ptr event)
             }
             else
             {
-                send(std::make_shared<CmdDisp>("What R U talking about, boy?"));
+                send(std::make_shared<CmdDisp>("-what u talkin bout, boi?"));
             }
         }
         send(std::make_shared<CmdInput>());
