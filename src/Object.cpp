@@ -6,8 +6,8 @@
 #include "Terminal.h"
 
 Object::Object(std::string name_in)
-	: name(name_in, {""}, Word::OBJECT),
-      pretty_name(""),
+	: name(name_in),
+      pretty_name(name_in),
       parent(nullptr),
       components()
 {
@@ -27,9 +27,9 @@ void Object::add_child(Object* child)
 {
 	child->parent = this;
 	children.push_back(child);
-	children_hash[child->name.word].push_back(child);
-	for (size_t i = 0; i < child->name.aliases.size(); i++)
-		children_hash[child->name.aliases[i]].push_back(child);
+	children_hash[child->name].push_back(child);
+	for (size_t i = 0; i < child->aliases.size(); i++)
+		children_hash[child->aliases[i]].push_back(child);
 }
 
 void Object::remove_child(Object* child)
@@ -86,7 +86,7 @@ void Object::set_flag(std::string name, int value)
 
 void Object::set_name(std::string name_in)
 {
-    name.word = name_in;
+    name = name_in;
 }
 
 void Object::add_component(ComponentPtr component)

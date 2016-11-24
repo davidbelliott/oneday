@@ -100,7 +100,7 @@ std::string join(token_list list, char delim)
 
 bool match_tokens(token s_token, token p_token, arg_list* args)
 {
-    std::cout << "Comparing token: " << s_token << " | " << p_token << std::endl;
+    //std::cout << "Comparing token: " << s_token << " | " << p_token << std::endl;
 
     if(p_token != "#")
     {
@@ -115,13 +115,13 @@ bool match_tokens(token s_token, token p_token, arg_list* args)
 
 bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
 {
-    std::cout << "Comparing token list:";
+    /*std::cout << "Comparing token list:";
     for(int i = 0; i < statement.size(); i++)
         std::cout << " " << statement[i];
     std::cout << " | ";
     for(int j = 0; j < pattern.size(); j++)
         std::cout << " " << pattern[j];
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
 
     if(statement.size() >= pattern.size())

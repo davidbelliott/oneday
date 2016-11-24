@@ -11,8 +11,9 @@ public:
 	std::map<std::string, int> flags;
     std::map<Component::Type, ComponentPtr> components;
 
-    Word name;
+    std::string name;
     std::string pretty_name;
+    std::vector<std::string> aliases;
 
 	Object(std::string name_in);
 	Object();

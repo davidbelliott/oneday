@@ -148,7 +148,7 @@ std::vector<cmd_ptr> InstructionTake::compile(GameState* g)
         cmd_ptr cmd_take = std::make_shared<CmdTake>();
         cmd_take->add_object(obj);
         commands.push_back(cmd_take);
-        commands.push_back(std::make_shared<CmdDisp>("You take the " + obj->name.word + "."));
+        commands.push_back(std::make_shared<CmdDisp>("You take the " + obj->pretty_name + "."));
     }
     return commands;
 }
