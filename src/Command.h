@@ -49,6 +49,8 @@ public:
     // Adds an object to the list of objects that will be acted on
     virtual void add_object(Object* o);
 
+    virtual void run_and_callback(GameState* g);
+
     // === Methods subclasses should overload ===
 
     // Runs the command.

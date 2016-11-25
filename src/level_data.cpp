@@ -30,26 +30,25 @@ void execute()
 		Object* jamal_bedroom = new Object("jamal_bedroom");
         jamal_bedroom->pretty_name = "Jamal's bedroom";
 
-        std::shared_ptr<ComponentDescription> c_description = std::make_shared<ComponentDescription>(
+        ComponentDescription* c_description = new ComponentDescription(
 		    "The walls of this cluttered hovel are plastered with layers of grime and old posters.");
         jamal_bedroom->add_component(c_description);
 
-        std::shared_ptr<ComponentRoom> c_room = std::make_shared<ComponentRoom>();
+        ComponentRoom* c_room = new ComponentRoom();
 		c_room->directions[EAST] = "jamal_corridor";
 		c_room->directions[SOUTH] = "temp_lane";
         jamal_bedroom->add_component(c_room);
 
 		Object* window = new Object("window");
-        window->add_component(std::make_shared<ComponentDescription>("A single smeared window to the north suffuses the room in dim light."));
+        window->add_component(new ComponentDescription("A single smeared window to the north suffuses the room in dim light."));
 		//window->deep_description = "Looking through the window, you notice a gang of thugs gathered in front of your house.";
 		jamal_bedroom->add_child(window);
 
-        /*Object* paper = new Object("paper", "A crumpled sheeit of paper lies on the floor.");
-        paper->name.aliases = { "sheet", "sheeit" };
-        paper->properties |= Object::READABLE | Object::TAKEABLE;
-        paper->readable_data = "Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog.";
-        paper->readable_data += "\nY'all cowards type help, pls.";
-        jamal_bedroom->add_child(paper);*/
+        Object* paper = new Object("paper");
+        paper->aliases = { "sheet", "sheeit" };
+        paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor."));
+        paper->add_component(new ComponentText("Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog."));
+        jamal_bedroom->add_child(paper);
 
 		world->add_child(jamal_bedroom);
 	}
@@ -87,10 +86,17 @@ void execute()
 
     {
         Object* temp_lane = new Object("temp_lane");
+        temp_lane->pretty_name = "Temporary Lane";
+
+        ComponentRoom* c_room = new ComponentRoom();
+        c_room->directions[NORTH] = "jamal_bedroom";
+        temp_lane->add_component(c_room);
+
+        temp_lane->add_component(new ComponentDescription("A temporary lane."));
         //temp_lane->directions[NORTH] = "hood_avenue";
-        /*temp_lane->pre_command = [=](Command* cmd)
+        temp_lane->pre_command = [=](Command* cmd)
         {
-            /*if(cmd->type == Command::DESCRIBE && world->get_flag("thug_fight_outcome") == 0)
+            if(cmd->type == Command::DESCRIBE && world->get_flag("thug_fight_outcome") == 0)
             {
                 text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!"));
                 text->send_front(std::make_shared<CmdPause>());
@@ -99,7 +105,6 @@ void execute()
                 text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
                 auto fn = [=](GameState* g)
                 {
-                    g->send_front(std::make_shared<CmdClear>());
                     if(world->get_flag("thugfight_outcome") == 1)  // Won the fight
                     {
                         g->send_front(std::make_shared<CmdDisp>("Cowed by your abdominal prowess, the thugs slink off."));
@@ -112,13 +117,9 @@ void execute()
                     }
                 };
                 text->send_front(std::make_shared<CmdCustom>(fn));
-                r->add_event(std::make_shared<CmdCustom>( [](GameState* g)
-                            {
-                            } );
-               r->add_event(std::make_shared<CmdPause>());*/
-            //}
-        /*    return true;
-        };*/
+            }
+            return true;
+        };
         world->add_child(temp_lane);
     }
     

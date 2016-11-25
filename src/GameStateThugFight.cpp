@@ -150,26 +150,26 @@ void GameStateThugFight::draw(sf::RenderTarget* target)
     for(int i = 0; i < 4; i++)
     {
         std::string ab_str_to_display = abs.tense_ab == i ? abs_tense_str : abs_str;
-        if(abs.tense_ab == i)
+        /*if(abs.tense_ab == i)
             terminal->set_color(config::colors[config::ORANGE]);
         else
-            terminal->set_color();
+            terminal->set_color();*/
         terminal->output(abs.health - 5, i * ab_height, ab_str_to_display);
     }
-    terminal->set_color();
+    //terminal->set_color();
     for(int i = 0; i < fists.size(); i++)
     {
-        terminal->set_color(config::colors[fists[i].color_index]);
+        //terminal->set_color(config::colors[fists[i].color_index]);
         terminal->output((int)fists[i].x, (int)fists[i].y * ab_height, thug_fist);
-        terminal->set_color();
+        //terminal->set_color();
     }
     for(int i = 0; i < fragments.size(); i++)
     {
-        terminal->set_color(config::colors[fragments[i].color_index]);
+        //terminal->set_color(config::colors[fragments[i].color_index]);
         terminal->output((int)fragments[i].x, (int)fragments[i].y, "*");
-        terminal->set_color();
+        //terminal->set_color();
     }
-    terminal->set_color();
+    //terminal->set_color();
     terminal->output(0, 0, "AB HEALTH:");
     terminal->output(13, 0, "AB STAMINA: ");
     terminal->draw(target);

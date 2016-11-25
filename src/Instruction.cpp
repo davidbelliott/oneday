@@ -52,10 +52,10 @@ std::vector<cmd_ptr> InstructionGo::compile(GameState* g)
         Object* room = g->engine->world->get_current_room();
         if(room)
         {
-            auto room_component = std::static_pointer_cast<ComponentRoom>(room->get_component(Component::ROOM));
+            ComponentRoom* room_component = (ComponentRoom*)room->get_component(Component::ROOM);
             if(desired_direction == DIRECTION_MAX)
                 commands.push_back(std::make_shared<CmdDisp>("I don't know where the " + args[0][0] + " is, m8."));
-            else if(room && room_component->directions[desired_direction] != "")
+            else if(room && room_component && room_component->directions[desired_direction] != "")
             {
                 commands.push_back(std::make_shared<CmdSetRoom>(room_component->directions[desired_direction]));
                 std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
@@ -159,6 +159,7 @@ InstructionObscenity::InstructionObscenity(int matched_pattern_in, arg_list args
 {
     std::vector<std::string> obscenities = {
         "fuck",
+        "fucking",
         "shit",
         "damn",
         "bitch",
@@ -183,6 +184,40 @@ std::vector<cmd_ptr> InstructionObscenity::compile(GameState* g)
 {
     std::vector<cmd_ptr> commands = {};
     commands.push_back(std::make_shared<CmdDisp>("-keep it clean, nigga."));
+    return commands;
+}
+
+InstructionRead::InstructionRead(int matched_pattern_in, arg_list args_in)
+    : Instruction(READ, matched_pattern_in, args_in)
+{
+    patterns = {
+        "read #",
+        "peruse #",
+        "browse #"
+    };
+}
+
+std::vector<cmd_ptr> InstructionRead::compile(GameState* g)
+{
+    std::vector<cmd_ptr> commands = {};
+    Object* obj = get_object(args[0], g);
+    if(obj)
+    {
+        ComponentText* text = (ComponentText*)obj->get_component(Component::TEXT);
+        if(text)
+        {
+            commands.push_back(std::make_shared<CmdDisp>("The " + obj->pretty_name + " reads:"));
+            commands.push_back(std::make_shared<CmdDisp>(text->text));
+        }
+        else
+        {
+            commands.push_back(std::make_shared<CmdDisp>("There's nothing to read on the " + obj->pretty_name + "."));
+        }
+    }
+    else
+    {
+        commands.push_back(std::make_shared<CmdDisp>("There's no " + join(args[0], ' ') + "for you to read."));
+    }
     return commands;
 }
 

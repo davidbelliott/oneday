@@ -16,6 +16,23 @@ Command::~Command()
 {
 }
 
+void Command::run_and_callback(GameState* g)
+{
+    std::vector<Object*> objects_to_act = {};
+    for(int i = 0; i < objects.size(); i++)
+    {
+        if(!objects[i]->pre_command || objects[i]->pre_command(this))
+            objects_to_act.push_back(objects[i]);
+    }
+    objects = objects_to_act;
+    run(g);
+    for(int i = 0; i < objects.size(); i++)
+    {
+        if(objects[i]->post_command)
+            objects[i]->post_command(this);
+    }
+}
+
 void Command::run(GameState* g)
 {
 }
@@ -160,7 +177,7 @@ void CmdDescribe::describe(GameState* g, Object* o)
 {
     if(o->has_component(Component::DESCRIPTION))
     {
-        std::shared_ptr<ComponentDescription> cd = std::static_pointer_cast<ComponentDescription>(o->get_component(Component::DESCRIPTION));
+        ComponentDescription* cd = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
         if(o->has_component(Component::ROOM))
         {
             //g->terminal->set_color(config::colors[config::color_room_title]);
@@ -176,7 +193,7 @@ void CmdDescribe::describe(GameState* g, Object* o)
         }
         if(o->has_component(Component::ROOM))
         {
-            std::shared_ptr<ComponentRoom> cr = std::static_pointer_cast<ComponentRoom>(o->get_component(Component::ROOM));
+            ComponentRoom* cr = (ComponentRoom*)(o->get_component(Component::ROOM));
             for(int i = 0; i < DIRECTION_MAX; i++)
             {
                 if(cr->directions[i] != "")

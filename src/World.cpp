@@ -17,10 +17,10 @@ World::~World()
 
 Object* World::get_current_room()
 {
-	if (has_direct_child(cur_room))
+	if(has_direct_child(cur_room))
 		return get_direct_child(cur_room, 0);
 	else
-		return NULL;
+		return nullptr;
 }
 
 void World::set_current_room(std::string room_name)

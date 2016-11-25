@@ -43,7 +43,7 @@ void GameStateText::notify(event_ptr event)
 {
     if(paused)
     {
-        if(event->type == Event::KEY_PRESSED)
+        if(event->type == Event::KEY_PRESSED && std::static_pointer_cast<EventKeyPressed>(event)->code == sf::Keyboard::Return)
             unpause();
     }
     else if(event->type == Event::USER_LINE)

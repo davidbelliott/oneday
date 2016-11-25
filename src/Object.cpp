@@ -9,7 +9,9 @@ Object::Object(std::string name_in)
 	: name(name_in),
       pretty_name(name_in),
       parent(nullptr),
-      components()
+      components(),
+      pre_command(nullptr),
+      post_command(nullptr)
 {
 }
 
@@ -89,7 +91,7 @@ void Object::set_name(std::string name_in)
     name = name_in;
 }
 
-void Object::add_component(ComponentPtr component)
+void Object::add_component(Component* component)
 {
     components[component->type] = component;
 }
@@ -104,7 +106,7 @@ bool Object::has_component(Component::Type type)
     return (components.count(type) >= 1);
 }
 
-ComponentPtr Object::get_component(Component::Type type)
+Component* Object::get_component(Component::Type type)
 {
     if(has_component(type))
         return components[type];
