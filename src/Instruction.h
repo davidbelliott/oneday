@@ -15,7 +15,7 @@ class Instruction
             QUIT,
             TAKE,
             WEAR,
-            HIT,
+            TOGGLE,
             READ,
             SHOUT,
             TALK_TO,
@@ -74,6 +74,13 @@ class InstructionRead : public Instruction
 {
     public:
         InstructionRead(int matched_pattern_in, arg_list args_in);
+        std::vector<cmd_ptr> compile(GameState* g);
+};
+
+class InstructionToggle : public Instruction
+{
+    public:
+        InstructionToggle(int matched_pattern_in, arg_list args_in);
         std::vector<cmd_ptr> compile(GameState* g);
 };
 

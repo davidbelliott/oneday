@@ -10,16 +10,16 @@ class World : public Object
 public:
 	std::map<std::string, int> flags;
 
-    Player* player;
-
-
 	std::string cur_room;
+    Object* player;
 	bool active;
     sf::Music good_day;
 
 	World();
 	virtual ~World();
 
+    Object* get_player();
+    void set_player(Object* player_in);
 	Object* get_current_room();
 	void set_current_room(std::string room_name);
 };

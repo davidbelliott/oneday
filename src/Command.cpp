@@ -18,18 +18,20 @@ Command::~Command()
 
 void Command::run_and_callback(GameState* g)
 {
-    std::vector<Object*> objects_to_act = {};
-    for(int i = 0; i < objects.size(); i++)
+    bool run_this = true;
+    for(int i = 0; i < objects.size() && run_this; i++)
     {
-        if(!objects[i]->pre_command || objects[i]->pre_command(this))
-            objects_to_act.push_back(objects[i]);
+        if(objects[i]->pre_command && !objects[i]->pre_command(this))
+            run_this = false;
     }
-    objects = objects_to_act;
-    run(g);
-    for(int i = 0; i < objects.size(); i++)
+    if(run_this)
     {
-        if(objects[i]->post_command)
-            objects[i]->post_command(this);
+        run(g);
+        for(int i = 0; i < objects.size(); i++)
+        {
+            if(objects[i]->post_command)
+                objects[i]->post_command(this);
+        }
     }
 }
 
@@ -135,13 +137,13 @@ void CmdAddGameState::run(GameState* g)
     g->engine->push_state(state_to_add);
 }
 
-CmdSetRoom::CmdSetRoom(std::string new_room_in)
-    : Command(SET_ROOM),
+CmdGo::CmdGo(std::string new_room_in)
+    : Command(GO),
       new_room(new_room_in)
 {
 }
 
-void CmdSetRoom::run(GameState* g)
+void CmdGo::run(GameState* g)
 {
     g->engine->world->set_current_room(new_room);
     //g->engine->world->get_current_room()->describe(g);
@@ -169,11 +171,12 @@ void CmdCustom::run(GameState* g)
 }
 
 CmdDescribe::CmdDescribe()
-    : Command(DESCRIBE)
+    : Command(DESCRIBE),
+    deep(false)
 {
 }
 
-void CmdDescribe::describe(GameState* g, Object* o)
+void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
 {
     if(o->has_component(Component::DESCRIPTION))
     {
@@ -186,7 +189,7 @@ void CmdDescribe::describe(GameState* g, Object* o)
         }
         //if(describe_this)
         {
-            if (/*deep && */!cd->deep_description.empty())
+            if (deep_describe && !cd->deep_description.empty())
                 g->terminal->disp(cd->deep_description);
             else
                 g->terminal->disp(cd->shallow_description);
@@ -217,13 +220,14 @@ void CmdDescribe::describe(GameState* g, Object* o)
             {
                 // If it's a deep description, show all children.
                 // Otherwise, don't show the undiscovered children.
-                //if(deep)// || (o->children[j]->properties & Object::DISCOVERED))
+                if(o->children[j]->active &&
+                    (deep_describe || o->children[j]->discovered))
                 {
                     describe(g, o->children[j]);
                 }
             }
         //}
-        //properties |= Object::DISCOVERED;
+        o->discovered = true;
 
 }
 
@@ -231,7 +235,7 @@ void CmdDescribe::run(GameState* g)
 {
     for(int i = 0; i < objects.size(); i++)
     {
-        describe(g, objects[i]);
+        describe(g, objects[i], deep);
     }
 }
 
@@ -243,7 +247,23 @@ void CmdTake::run(GameState* g)
 {
     for(int i = 0; i < objects.size(); i++)
     {
-        g->engine->world->player->add_child(objects[i]);
-        g->engine->world->get_current_room()->remove_child(objects[i]);
+        if(objects[i]->parent)
+            objects[i]->parent->remove_child(objects[i]);
+        if(g->engine->world->get_player())
+            g->engine->world->get_player()->add_child(objects[i]);
+    }
+}
+
+CmdHit::CmdHit()
+    : Command(HIT)
+{ }
+
+void CmdHit::run(GameState* g)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        ComponentHittable* c_hittable = (ComponentHittable*)objects[i]->get_component(Component::HITTABLE);
+        if(c_hittable)
+            c_hittable->flipped = !c_hittable->flipped;
     }
 }

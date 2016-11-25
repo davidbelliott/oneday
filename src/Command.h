@@ -27,7 +27,7 @@ public:
         UNPAUSE,
         QUIT,
         // Model commands
-        SET_ROOM,
+        GO,
         SET_OBJECTIVE,
         ADD_GAMESTATE,
         ADD_OBJECT,
@@ -36,6 +36,7 @@ public:
         CLOTHES_ADD_OBJECT,
         CLOTHES_REMOVE_OBJECT,
         DESCRIBE,
+        HIT,
         CUSTOM
     };
 
@@ -134,11 +135,11 @@ class CmdAddGameState : public Command
         void run(GameState* g);
 };
 
-class CmdSetRoom : public Command
+class CmdGo : public Command
 {
     public:
         std::string new_room;
-        CmdSetRoom(std::string new_room_in);
+        CmdGo(std::string new_room_in);
         void run(GameState* g);
 };
 
@@ -195,8 +196,9 @@ class CmdCustom : public Command
 class CmdDescribe : public Command
 {
     public:
+        bool deep;
         CmdDescribe();
-        void describe(GameState* g, Object* o);
+        void describe(GameState* g, Object* o, bool deep_describe = false);
         void run(GameState* g);
 };
 

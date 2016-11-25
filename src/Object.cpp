@@ -10,6 +10,8 @@ Object::Object(std::string name_in)
       pretty_name(name_in),
       parent(nullptr),
       components(),
+      active(true),
+      discovered(false),
       pre_command(nullptr),
       post_command(nullptr)
 {
@@ -23,6 +25,9 @@ Object::Object()
 
 Object::~Object()
 {
+    for(std::map<Component::Type, Component*>::iterator it = components.begin();
+            it != components.end(); ++it)
+        delete it->second;
 }
 
 void Object::add_child(Object* child)
@@ -98,7 +103,11 @@ void Object::add_component(Component* component)
 
 void Object::rm_component(Component::Type type)
 {
-    components.erase(type);
+    if(components.count(type) > 0)
+    {
+        delete components[type];
+        components.erase(type);
+    }
 }
 
 bool Object::has_component(Component::Type type)

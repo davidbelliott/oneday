@@ -36,7 +36,6 @@ public:
 	Parser();
 	virtual ~Parser();
 
-    Object* get_object(std::string name, World* w);
     InstructionPtr parse(std::string statement, GameState* g);
 };
 

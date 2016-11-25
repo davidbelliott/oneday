@@ -15,6 +15,8 @@ public:
     // State data
 	std::map<std::string, int> flags;
     std::map<Component::Type, Component*> components;
+    bool active;
+    bool discovered;
 
     // Name data
     std::string name;

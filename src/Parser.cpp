@@ -27,21 +27,6 @@ Parser::~Parser()
 {
 }
 
-Object* Parser::get_object(std::string name, World* w)
-{
-    Object* object = nullptr;
-    Object* room = w->get_current_room();
-    if ((object = room->get_indirect_child(name, 0)))
-    {
-        return object;
-    }
-    else if ((object = w->player->get_indirect_child(name, 0)))
-    {
-        return object;
-    }
-    return object;
-}
-
 std::string to_lower(std::string str)
 {
     std::string lower_str;

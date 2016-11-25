@@ -5,7 +5,7 @@
 
 
 World::World()
-	: Object(), active(true), player(NULL)
+	: Object(), active(true), player(nullptr)
 {
     if(!good_day.openFromFile("good_day.ogg"))
         std::cerr << "Error: unable to load good_day.ogg" << std::endl;
@@ -13,6 +13,16 @@ World::World()
 
 World::~World()
 {
+}
+
+Object* World::get_player()
+{
+    return player;
+}
+
+void World::set_player(Object* player_in)
+{
+    player = player_in;
 }
 
 Object* World::get_current_room()

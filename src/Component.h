@@ -15,7 +15,9 @@ class Component
             HITTABLE,
             WEARABLE,
             TALKABLE,
-            ROOM
+            ROOM,
+            PORTAL,
+            TAKEABLE,
         } type;
         Component(Type type_in)
             : type(type_in)
@@ -30,10 +32,10 @@ class ComponentDescription : public Component
         std::string shallow_description;
         std::string deep_description;
         bool show_children;
-        ComponentDescription(std::string shallow_in)
+        ComponentDescription(std::string shallow_in, std::string deep_in = "")
             : Component(DESCRIPTION),
             shallow_description(shallow_in),
-            deep_description(shallow_in),
+            deep_description(deep_in == "" ? shallow_in : deep_in),
             show_children(true)
         { }
 };
@@ -108,9 +110,34 @@ class ComponentRoom : public Component
 {
     public:
         std::string directions[DIRECTION_MAX];
-        ComponentRoom()
+        ComponentRoom(std::map<DirectionId, std::string> directions_in)
             : Component(ROOM),
             directions()
+    {
+        for(int i = 0; i < DIRECTION_MAX; i++)
+            directions[i] = "";
+        for(auto it = directions_in.begin(); it != directions_in.end(); ++it)
+            directions[int(it->first)] = it->second;
+    }
+};
+
+class ComponentPortal : public Component
+{
+    public:
+        std::string destination;
+        ComponentPortal(std::string destination_in)
+            : Component(PORTAL),
+              destination(destination_in)
+    { }
+};
+
+class ComponentTakeable : public Component
+{
+    public:
+        int mass;
+        ComponentTakeable()
+            : Component(TAKEABLE),
+            mass(1)
     { }
 };
 
