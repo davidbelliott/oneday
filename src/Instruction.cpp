@@ -362,6 +362,12 @@ Object* get_object(token_list tokens, GameState* g)
         found_object = g->engine->world->get_current_room()->get_indirect_child(tokens[i], 0);
         if(found_object && (!found_object->active || !found_object->discovered))
             found_object = nullptr;
+        if(!found_object)
+        {
+            found_object = g->engine->world->get_player()->get_indirect_child(tokens[i], 0);
+            if(found_object && (!found_object->active || !found_object->discovered))
+                found_object = nullptr;
+        }
     }
     return found_object;
 }

@@ -5,8 +5,8 @@ namespace config
 {
     int screen_h_chars = 24;
     int screen_w_chars = 80;
-    int char_height = 12;
-    int char_width = 12;
+    int char_height = 16;
+    int char_width = 8;
     int padding = 2;
     int window_height = 0;
     int window_width = 0;
@@ -21,7 +21,7 @@ namespace config
 
     void config_init()
     {
-        if (!font.loadFromFile("bin/cp437_12x12.png", char_width, char_height))
+        if (!font.loadFromFile("bin/cp437-16.png", char_width, char_height))
         {
             std::cerr << "Error: unable to load font." << std::endl;
             exit(1);

@@ -148,7 +148,7 @@ void Terminal::draw(sf::RenderTarget* target)
         sf::RectangleShape cursor_shape;
         cursor_shape.setSize(sf::Vector2f(config::char_width, config::char_height));
         cursor_shape.setFillColor(state.foreground_color);
-        cursor_shape.setPosition(buffer->get_x(state.cursor_index) * config::char_width + config::padding, buffer->get_y(state.cursor_index) * config::char_height + config::padding);
+        cursor_shape.setPosition(buffer->get_x(state.cursor_index) * config::char_width + config::padding, buffer->get_y(state.cursor_index) * config::char_height);
         target->draw(cursor_shape);
     }
 }

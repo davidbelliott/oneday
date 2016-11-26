@@ -1,10 +1,6 @@
 #include <cstdio>
 #include "BitmapFont.hpp"
 
-// ASCII Printable characters range
-const char FIRST_PRINTABLE_CHAR = 32;
-const char LAST_PRINTABLE_CHAR = 126;
-
 
 BitmapFont::BitmapFont():
 	m_width(0),
@@ -35,13 +31,12 @@ const sf::Texture& BitmapFont::getTexture() const
 
 sf::IntRect BitmapFont::getGlyphRect(char character) const
 {
-	if (character < FIRST_PRINTABLE_CHAR || character > LAST_PRINTABLE_CHAR)
+	if (character < 0 || character >= m_height & m_width)
 	{
 		fprintf(stderr, "BitmapFont: non printable character encoutered (ASCII %d\n)", character);
 		// Replace non printable characters with '?'
 		character = '?';
 	}
-	character -= FIRST_PRINTABLE_CHAR;
 
 	sf::IntRect subrect;
 	subrect.left = (character % m_width) * m_glyphSize.x;
