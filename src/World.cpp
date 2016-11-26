@@ -35,12 +35,8 @@ Object* World::get_current_room()
 
 void World::set_current_room(std::string room_name)
 {
-	cur_room = room_name;
-	Object* room = get_current_room();
-    //clear screen
-	if (!room)
-	{
-        std::cerr << "Error: room " + cur_room + " does not exist." << std::endl;
-		exit(1);
-	}
+    if(has_direct_child(room_name))
+        cur_room = room_name;
+    else
+        std::cerr << "Error: room " + room_name + " does not exist." << std::endl;
 }

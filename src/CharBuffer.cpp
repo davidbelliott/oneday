@@ -1,5 +1,6 @@
 #include "CharBuffer.h"
 #include "Config.h"
+#include "BitmapText.hpp"
 #include <iostream>
 #include <cmath>
 
@@ -57,9 +58,8 @@ void CharBuffer::scroll(int delta)
 
 void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::RenderStates states) const
 {
-    sf::Text text;
+    BitmapText text;
     text.setFont(config::font);
-    text.setCharacterSize(config::char_size);
 
     for(int i = 0; i < config::screen_h_chars; i++)
     {
@@ -72,7 +72,7 @@ void CharBuffer::draw(sf::RenderTarget* target)//sf::RenderTarget& target, sf::R
                 str += contents[index].c;
                 text.setString(str);
                 text.setPosition(int(contents[index].x + j) * config::char_width + config::padding, int(contents[index].y + i) * config::char_height);
-                text.setFillColor(contents[index].fg);
+                text.setColor(contents[index].fg);
                 target->draw(text);
             }
         }

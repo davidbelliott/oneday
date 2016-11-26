@@ -1,10 +1,11 @@
 #pragma once
 
+#include "BitmapFont.hpp"
 #include <SFML/Graphics.hpp>
 
 namespace config
 {
-    extern sf::Font font;
+    extern BitmapFont font;
     extern int screen_w_chars;
     extern int screen_h_chars;
     extern int char_size;

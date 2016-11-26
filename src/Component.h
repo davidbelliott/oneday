@@ -35,7 +35,7 @@ class ComponentDescription : public Component
         ComponentDescription(std::string shallow_in, std::string deep_in = "")
             : Component(DESCRIPTION),
             shallow_description(shallow_in),
-            deep_description(deep_in == "" ? shallow_in : deep_in),
+            deep_description(deep_in),
             show_children(true)
         { }
 };

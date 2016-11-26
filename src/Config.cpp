@@ -5,14 +5,13 @@ namespace config
 {
     int screen_h_chars = 24;
     int screen_w_chars = 80;
-    int char_size = 14;
-    int char_height = 14;
-    int char_width = 8;
+    int char_height = 12;
+    int char_width = 12;
     int padding = 2;
     int window_height = 0;
     int window_width = 0;
     int update_frequency = 60;
-    sf::Font font;
+    BitmapFont font;
     sf::Color colors[N_COLORS];
     ColorIndex color_default_fg = BASE_6;
     ColorIndex color_default_bg = BASE_0;
@@ -22,21 +21,11 @@ namespace config
 
     void config_init()
     {
-        if (!font.loadFromFile("bin/ter-u14n.bdf"))
+        if (!font.loadFromFile("bin/cp437_12x12.png", char_width, char_height))
         {
             std::cerr << "Error: unable to load font." << std::endl;
             exit(1);
         }
-
-        sf::Text text;
-        text.setFont(font);
-        text.setCharacterSize(char_size);
-
-        /* If width and height are not known
-        text.setString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-        char_height = static_cast<int>(text.getLocalBounds().height);
-        char_width = static_cast<int>(text.getLocalBounds().width / 52.0f);
-        */
 
         window_height = char_height * screen_h_chars + 2 * padding;
         window_width = char_width * screen_w_chars + 2 * padding;

@@ -189,8 +189,10 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
         }
         //if(describe_this)
         {
-            if (deep_describe && !cd->deep_description.empty())
-                g->terminal->disp(cd->deep_description);
+            if (deep_describe && cd->deep_description != "")
+            {
+                    g->terminal->disp(cd->deep_description);
+            }
             else
                 g->terminal->disp(cd->shallow_description);
         }
@@ -212,23 +214,18 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
             }
         }
     }
-        // If this isn't a container and show_children is true, show the children;
-        // If this is a container and it's open, show the children.
-        /*if ((!(properties & Object::CONTAINER) && show_children) || ((properties & Object::CONTAINER) && open))
-        {*/
-            for (int j = 0; j < o->children.size(); j++)
-            {
-                // If it's a deep description, show all children.
-                // Otherwise, don't show the undiscovered children.
-                if(o->children[j]->active &&
-                    (deep_describe || o->children[j]->discovered))
-                {
-                    describe(g, o->children[j]);
-                }
-            }
-        //}
-        o->discovered = true;
 
+    for (int j = 0; j < o->children.size(); j++)
+    {
+        // If it's a deep description, show all children.
+        // Otherwise, don't show the undiscovered children.
+        if(o->children[j]->active &&
+            (deep_describe || o->children[j]->discovered))
+        {
+            describe(g, o->children[j]);
+        }
+    }
+    o->discovered = true;
 }
 
 void CmdDescribe::run(GameState* g)

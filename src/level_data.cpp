@@ -32,22 +32,25 @@ void execute()
 		Object* jamal_bedroom = new Object("jamal_bedroom");
         jamal_bedroom->pretty_name = "Jamal's bedroom";
 
-        ComponentDescription* c_description = new ComponentDescription(
-		    "The walls of this cluttered hovel are plastered with layers of grime and old posters.");
+        ComponentDescription* c_description = new ComponentDescription( "It's a wretched hovel.");
         jamal_bedroom->add_component(c_description);
         jamal_bedroom->add_component(new ComponentRoom({
                     {EAST, "jamal_corridor"},
                     {SOUTH, "jamal_bathroom"}
                     }));
 
+        Object* posters = new Object("posters");
+        posters->aliases = { "poster", "wall", "walls" };
+        posters->add_component(new ComponentDescription("The walls are plastered with grimy old posters."));
+        jamal_bedroom->add_child(posters);
+
 		Object* window = new Object("window");
-        window->add_component(new ComponentDescription("A single smeared window to the north suffuses the room in dim light."));
-		//window->deep_description = "Looking through the window, you notice a gang of thugs gathered in front of your house.";
+        window->add_component(new ComponentDescription("A single smeared window to the north suffuses the room in dim light.", "Looking through the window, you notice a gang of thugs gathered in front of your house."));
 		jamal_bedroom->add_child(window);
 
         Object* paper = new Object("paper");
         paper->aliases = { "sheet" };
-        paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor."));
+        paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor.", "There are words written on the paper."));
         paper->add_component(new ComponentText("Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog."));
         paper->add_component(new ComponentTakeable());
         jamal_bedroom->add_child(paper);

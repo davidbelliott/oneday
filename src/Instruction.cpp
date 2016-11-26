@@ -182,10 +182,10 @@ std::vector<cmd_ptr> InstructionTake::compile(GameState* g)
     {
         if(obj->has_component(Component::TAKEABLE))
         {
+            commands.push_back(std::make_shared<CmdDisp>("You take the " + obj->pretty_name + "."));
             cmd_ptr cmd_take = std::make_shared<CmdTake>();
             cmd_take->add_object(obj);
             commands.push_back(cmd_take);
-            commands.push_back(std::make_shared<CmdDisp>("You take the " + obj->pretty_name + "."));
         }
         else
         {
@@ -285,14 +285,14 @@ std::vector<cmd_ptr> InstructionToggle::compile(GameState* g)
         ComponentHittable* c_hittable = (ComponentHittable*)obj->get_component(Component::HITTABLE);
         if(c_hittable)
         {
+            commands.push_back(std::make_shared<CmdDisp>("You hit the " + join(args[0], ' ') + "."));
             std::shared_ptr<CmdHit> hit = std::make_shared<CmdHit>();
             hit->add_object(obj);
             commands.push_back(hit);
-            commands.push_back(std::make_shared<CmdDisp>("You hit the " + join(args[0], ' ') + "."));
         }
         else
         {
-            commands.push_back(std::make_shared<CmdDisp>("You hit the " + join(args[0], ' ') + ", but nothing happens."));
+            commands.push_back(std::make_shared<CmdDisp>("You can't hit the " + join(args[0], ' ') + ", baka!"));
         }
     }
     else
