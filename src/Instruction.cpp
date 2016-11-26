@@ -66,11 +66,19 @@ std::vector<cmd_ptr> InstructionGo::compile(GameState* g)
             else if(room && room_component && room_component->directions[desired_direction] != "")
             {
                 commands.push_back(std::make_shared<CmdGo>(room_component->directions[desired_direction]));
-                commands.push_back(std::make_shared<CmdClear>());
-                std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
-                describe->deep = true;
-                describe->add_object(g->engine->world->get_direct_child(room_component->directions[desired_direction], 0));
-                commands.push_back(describe);
+                Object* dest_room = g->engine->world->get_direct_child(room_component->directions[desired_direction], 0);
+                if(dest_room)
+                {
+                    commands.push_back(std::make_shared<CmdClear>());
+                    std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
+                    describe->deep = true;
+                    describe->add_object(g->engine->world->get_direct_child(room_component->directions[desired_direction], 0));
+                    commands.push_back(describe);
+                }
+                else
+                {
+                    commands.push_back(std::make_shared<CmdDisp>("Error: room " + room_component->directions[desired_direction] + " doesn't exist."));
+                }
             }
             else
                 commands.push_back(std::make_shared<CmdDisp>("You can't go " + args[0][0] + " from here, baka!"));
