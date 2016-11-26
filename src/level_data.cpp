@@ -41,7 +41,7 @@ void execute()
 
         Object* posters = new Object("posters");
         posters->aliases = { "poster", "wall", "walls" };
-        posters->add_component(new ComponentDescription("The walls are plastered with grimy old posters."));
+        posters->add_component(new ComponentDescription("The walls are plastered with grimy old posters.", "The posters feature realistic depictions of mom's spaghetti."));
         jamal_bedroom->add_child(posters);
 
 		Object* window = new Object("window");
@@ -99,9 +99,32 @@ void execute()
         jamal_corridor->add_component(new ComponentRoom({
                     {NORTH, "jamal_house_block"},
                     {EAST, "jamal_staircase"},
-                    {WEST, "jamal_bedroom"}
+                    {WEST, "jamal_bedroom"},
+                    {SOUTH, "jamal_kitchen"},
                     }));
         world->add_child(jamal_corridor);
+    }
+
+    {
+        Object* kitchen = new Object("jamal_kitchen");
+        kitchen->pretty_name = "the kitchen";
+        kitchen->add_component(new ComponentDescription("This rickety cookery would make Martha Stewart turn over in her grave."));
+        kitchen->add_component(new ComponentRoom({{NORTH, "jamal_corridor"}}));
+        world->add_child(kitchen);
+
+        Object* stove = new Object("stove");
+        stove->add_component(new ComponentDescription("An electric stove leans against one wall."));
+        kitchen->add_child(stove);
+
+        Object* pan = new Object("pan");
+        pan->add_component(new ComponentDescription("There's an aluminum pan on one burner."));
+        pan->add_component(new ComponentTakeable());
+        stove->add_child(pan);
+
+        Object* pellets = new Object("pellets");
+        pellets->add_component(new ComponentDescription("Several brown pellets are in the pan. They do not contain pork."));
+        pellets->add_component(new ComponentTakeable());
+        pan->add_child(pellets);
     }
 
     {
@@ -137,7 +160,7 @@ void execute()
             {
                 text->send_front(std::make_shared<CmdDisp>("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
                 c_desc->shallow_description = "A massive bookshelf is slid to one side of the west wall.";
-                c_room->directions[WEST] = "henrik_lab";
+                c_room->directions[WEST] = "lab";
             }
             return true;
         };
@@ -161,6 +184,35 @@ void execute()
         
         world->add_child(library);
     }
+
+    {
+        Object* lab = new Object("lab");
+        lab->pretty_name = "Thomas Pynchon's lab";
+        lab->add_component(new ComponentDescription("This is the underground lab where Pynchon does his stuff."));
+        lab->add_component(new ComponentRoom({{EAST, "library"}}));
+        world->add_child(lab);
+
+        Object* table = new Object("table");
+        table->add_component(new ComponentDescription("A polished granite table supports several scientific instruments."));
+        lab->add_child(table);
+
+        Object* instruments = new Object("instruments");
+        instruments->add_component(new ComponentDescription("You'd play the instruments if you knew how."));
+        table->add_child(instruments);
+
+        Object* lockers = new Object("lockers");
+        lockers->add_component(new ComponentDescription("Three metal lockers line the wall."));
+        lab->add_child(lockers);
+
+        Object* hazmat = new Object("hazmat suit");
+        hazmat->aliases = {"hazmat", "suit"};
+        hazmat->add_component(new ComponentDescription("A hazmat suit is hanging inside one locker."));
+        hazmat->add_component(new ComponentTakeable());
+        hazmat->add_component(new ComponentWearable());
+        lockers->add_child(hazmat);
+    }
+
+
 
 
 

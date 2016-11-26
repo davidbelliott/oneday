@@ -184,7 +184,7 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
         if(o->has_component(Component::ROOM))
         {
             //g->terminal->set_color(config::colors[config::color_room_title]);
-            g->terminal->disp("You in " + o->pretty_name + ".");
+            g->terminal->disp("You are in " + o->pretty_name + ".");
             //g->terminal->set_color();
         }
         //if(describe_this)
