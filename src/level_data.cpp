@@ -72,7 +72,7 @@ void execute()
             bool execute = true;
             if(cmd->type == Command::GO)
             {
-                if(/*world->get_player->clothing != "" && world->player->clothing == "hazmat"*/ true)
+                if(((Player*)world->get_player())->clothing == "hazmat suit")
                 {
                     text->send_front(std::make_shared<CmdDisp>("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage."));
                     text->send_front(std::make_shared<CmdPause>());
@@ -141,7 +141,7 @@ void execute()
     {
         Object* library = new Object("library");
         library->pretty_name = "Thomas Pynchon's library";
-        library->add_component(new ComponentDescription("This subterranean den is where the father of realism does his stuff.\nHe is becoming a rap god."));
+        library->add_component(new ComponentDescription("This subterranean den is where the father of realism does his stuff.\nHe is beginning to feel like a rap god."));
         ComponentRoom* c_room = new ComponentRoom({{NORTH, "jamal_staircase"}});
         library->add_component(c_room);
 
@@ -213,6 +213,12 @@ void execute()
     }
 
 
+    {
+        Object* sewer = new Object("sewer");
+        sewer->add_component(new ComponentRoom({{WEST, "temp_lane"}}));
+        sewer->add_component(new ComponentDescription("Filthy water flows around your ankles."));
+        world->add_child(sewer);
+    }
 
 
 

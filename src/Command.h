@@ -33,8 +33,7 @@ public:
         ADD_OBJECT,
         RM_OBJECT,
         TAKE,
-        CLOTHES_ADD_OBJECT,
-        CLOTHES_REMOVE_OBJECT,
+        WEAR,
         DESCRIBE,
         HIT,
         CUSTOM
@@ -206,5 +205,12 @@ class CmdTake : public Command
 {
     public:
         CmdTake();
+        void run(GameState* g);
+};
+
+class CmdWear : public Command
+{
+    public:
+        CmdWear();
         void run(GameState* g);
 };

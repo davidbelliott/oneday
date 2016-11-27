@@ -84,14 +84,14 @@ class InstructionToggle : public Instruction
         std::vector<cmd_ptr> compile(GameState* g);
 };
 
-/*class InstructionWear : public Instruction
+class InstructionWear : public Instruction
 {
     public:
         InstructionWear(int matched_pattern_in, arg_list args_in);
         std::vector<cmd_ptr> compile(GameState* g);
 };
 
-class InstructionHit : public Instruction
+/*class InstructionHit : public Instruction
 {
     public:
         InstructionHit(int matched_pattern_in, arg_list args_in);

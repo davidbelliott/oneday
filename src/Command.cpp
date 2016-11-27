@@ -264,3 +264,21 @@ void CmdHit::run(GameState* g)
             c_hittable->flipped = !c_hittable->flipped;
     }
 }
+
+CmdWear::CmdWear()
+    : Command(WEAR)
+{ }
+
+void CmdWear::run(GameState* g)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        if(objects[i]->parent)
+            objects[i]->parent->remove_child(objects[i]);
+        if(g->engine->world->get_player())
+        {
+            g->engine->world->get_player()->add_child(objects[i]);
+            ((Player*)g->engine->world->get_player())->clothing = objects[i]->name;
+        }
+    }
+}

@@ -310,12 +310,43 @@ std::vector<cmd_ptr> InstructionToggle::compile(GameState* g)
     return commands;
 }
 
-/*
-std::vector<cmd_ptr> InstructionWear::compile(GameState* g)
+InstructionWear::InstructionWear(int matched_pattern_in, arg_list args_in)
+    : Instruction(WEAR, matched_pattern_in, args_in)
 {
-    return { };
+    patterns = {
+        "wear #",
+        "put on #",
+        "put # on",
+        "don #",
+        "dress in #"
+    };
 }
 
+std::vector<cmd_ptr> InstructionWear::compile(GameState* g)
+{
+    std::vector<cmd_ptr> commands = {};
+    Object* obj = get_object(args[0], g);
+    if(obj)
+    {
+        if(obj->has_component(Component::WEARABLE))
+        {
+            commands.push_back(std::make_shared<CmdDisp>("You put on the " + obj->pretty_name + "."));
+            std::shared_ptr<CmdWear> wear = std::make_shared<CmdWear>();
+            wear->add_object(obj);
+            commands.push_back(wear);
+        }
+        else
+        {
+            commands.push_back(std::make_shared<CmdDisp>("You can't wear a " + obj->pretty_name + ", silly~"));
+        }
+    }
+    else
+    {
+        commands.push_back(std::make_shared<CmdDisp>("You see no such thing."));
+    }
+    return commands;
+}
+/*
 std::vector<cmd_ptr> InstructionHit::compile(GameState* g)
 {
     return { };
@@ -358,6 +389,8 @@ InstructionPtr make_instruction(Instruction::Type type, int matched_pattern_in, 
         instruction = std::make_shared<InstructionRead>(matched_pattern_in, args);
     else if(type == Instruction::TOGGLE)
         instruction = std::make_shared<InstructionToggle>(matched_pattern_in, args);
+    else if(type == Instruction::WEAR)
+        instruction = std::make_shared<InstructionWear>(matched_pattern_in, args);
     return instruction;
 }
 
