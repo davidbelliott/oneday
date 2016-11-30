@@ -17,7 +17,7 @@ GameStateThugFight::GameStateThugFight(Engine* engine_in)
     abs_str(),
     abs_tense_str(),
     time_alive(sf::seconds(0)),
-    total_time(sf::seconds(180)),
+    total_time(sf::seconds(120)),
     time_since_spawn(sf::seconds(0)),
     spawn_beats(8),
     ab_height(6),
@@ -125,7 +125,16 @@ void GameStateThugFight::update(sf::Time dt)
         else
             i++;
     }
-    if(time_since_spawn.asSeconds() >= spawn_beats * beat.asSeconds())
+    if(time_alive >= total_time)
+    {
+        if(fists.size() == 0)
+        {
+            running = false;
+            engine->world->set_flag("thug_fight_outcome", 1);
+        }
+
+    }
+    else if(time_since_spawn.asSeconds() >= spawn_beats * beat.asSeconds())
     {
         int rand_offset = rand() % 3;
         if(!fists.empty() && rand_offset >= fists.back().y)
@@ -139,6 +148,7 @@ void GameStateThugFight::update(sf::Time dt)
         time_since_spawn = sf::seconds(0);
         spawn_beats = static_cast<int>((total_time - time_alive) / (total_time) * 7.0) + 1;
     }
+
     time_alive += dt;
     
     time_since_spawn += dt;

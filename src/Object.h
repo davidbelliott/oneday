@@ -31,20 +31,20 @@ public:
 	Object();
 	virtual ~Object();
 
-    void add_component(Component* component);
-    void rm_component(Component::Type type);
+    virtual void add_component(Component* component);
+    virtual void rm_component(Component::Type type);
 
-    bool has_component(Component::Type type);
-    Component* get_component(Component::Type type);
+    virtual bool has_component(Component::Type type);
+    virtual Component* get_component(Component::Type type);
 
 
-	void add_child(Object* child);
-	void remove_child(Object* child);
-	bool has_direct_child(std::string name);
-	Object* get_direct_child(std::string name, int filter);
-	Object* get_indirect_child(std::string name, int filter);
-	int get_flag(std::string name);
-	void set_flag(std::string name, int value);
-    void set_name(std::string name_in);
+	virtual void add_child(Object* child);
+	virtual void remove_child(Object* child);
+	virtual bool has_direct_child(std::string name);
+	virtual Object* get_direct_child(std::string name, int filter);
+	virtual Object* get_indirect_child(std::string name, int filter);
+	virtual int get_flag(std::string name);
+	virtual void set_flag(std::string name, int value);
+    virtual void set_name(std::string name_in);
 };
 

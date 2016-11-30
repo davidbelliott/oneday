@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "temp_lane";
     {
         Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
         player->clothing = "";
@@ -237,9 +237,9 @@ void execute()
                 text->send_front(std::make_shared<CmdDisp>("Press any key to tense your abs and deflect their blows."));
                 text->send_front(std::make_shared<CmdPause>());
                 text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
-                auto fn = [=](GameState* g)
+                auto fn = [](GameState* g)
                 {
-                    if(world->get_flag("thugfight_outcome") == 1)  // Won the fight
+                    if(g->engine->world->get_flag("thug_fight_outcome") == 1)  // Won the fight
                     {
                         g->send_front(std::make_shared<CmdDisp>("Cowed by your abdominal prowess, the thugs slink off."));
                     }
@@ -250,6 +250,7 @@ void execute()
                         g->send_front(std::make_shared<CmdQuit>());
                     }
                 };
+                text->send_front(std::make_shared<CmdPause>());
                 text->send_front(std::make_shared<CmdCustom>(fn));
             }
             return true;
