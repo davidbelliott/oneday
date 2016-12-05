@@ -346,6 +346,44 @@ std::vector<cmd_ptr> InstructionWear::compile(GameState* g)
     }
     return commands;
 }
+
+InstructionTalkTo::InstructionTalkTo(int matched_pattern_in, arg_list args_in)
+    : Instruction(TALK_TO, matched_pattern_in, args_in)
+{
+    patterns = {
+        "talk to #",
+        "talk with #",
+        "converse with #",
+        "ask #"
+    };
+}
+
+std::vector<cmd_ptr> InstructionTalkTo::compile(GameState* g)
+{
+    std::vector<cmd_ptr> commands = {};
+    Object* obj = get_object(args[0], g);
+    if(obj)
+    {
+        if(obj->has_component(Component::TALKABLE))
+        {
+            ComponentTalkable* ctalk = (ComponentTalkable*)obj->get_component(Component::TALKABLE);
+            for(int i = 0; i < ctalk->talkable_data.size(); i++)
+            {
+                commands.push_back(std::make_shared<CmdDisp>(ctalk->talkable_data[i]));
+                commands.push_back(std::make_shared<CmdPause>());
+            }
+        }
+        else
+        {
+            commands.push_back(std::make_shared<CmdDisp>("You can't talk to the " + obj->pretty_name + ", honey."));
+        }
+    }
+    else
+    {
+        commands.push_back(std::make_shared<CmdDisp>("You can't find a " + join(args[0], ' ') + " to talk to."));
+    }
+    return commands;
+}
 /*
 std::vector<cmd_ptr> InstructionHit::compile(GameState* g)
 {
@@ -391,6 +429,8 @@ InstructionPtr make_instruction(Instruction::Type type, int matched_pattern_in, 
         instruction = std::make_shared<InstructionToggle>(matched_pattern_in, args);
     else if(type == Instruction::WEAR)
         instruction = std::make_shared<InstructionWear>(matched_pattern_in, args);
+    else if(type == Instruction::TALK_TO)
+        instruction = std::make_shared<InstructionTalkTo>(matched_pattern_in, args);
     return instruction;
 }
 

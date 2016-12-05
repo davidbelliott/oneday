@@ -9,6 +9,7 @@ Object::Object(std::string name_in)
 	: name(name_in),
       pretty_name(name_in),
       parent(nullptr),
+      constraint(IN),
       components(),
       active(true),
       discovered(false),

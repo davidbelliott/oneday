@@ -91,6 +91,13 @@ class InstructionWear : public Instruction
         std::vector<cmd_ptr> compile(GameState* g);
 };
 
+class InstructionTalkTo : public Instruction
+{
+    public:
+        InstructionTalkTo(int matched_pattern_in, arg_list args_in);
+        std::vector<cmd_ptr> compile(GameState* g);
+};
+
 /*class InstructionHit : public Instruction
 {
     public:
@@ -102,13 +109,6 @@ class InstructionShout : public Instruction
 {
     public:
         InstructionShout(int matched_pattern_in, arg_list args_in);
-        std::vector<cmd_ptr> compile(GameState* g);
-};
-
-class InstructionTalkTo : public Instruction
-{
-    public:
-        InstructionTalkTo(int matched_pattern_in, arg_list args_in);
         std::vector<cmd_ptr> compile(GameState* g);
 };
 

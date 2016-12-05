@@ -17,7 +17,7 @@ GameStateThugFight::GameStateThugFight(Engine* engine_in)
     abs_str(),
     abs_tense_str(),
     time_alive(sf::seconds(0)),
-    total_time(sf::seconds(120)),
+    total_time(sf::seconds(5)),
     time_since_spawn(sf::seconds(0)),
     spawn_beats(8),
     ab_height(6),

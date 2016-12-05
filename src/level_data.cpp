@@ -220,13 +220,10 @@ void execute()
         world->add_child(sewer);
     }
 
-
-
-
     {
         Object* temp_lane = new Object("temp_lane");
         temp_lane->pretty_name = "Temporary Lane";
-        temp_lane->add_component(new ComponentRoom({{NORTH, "jamal_bedroom"}}));
+        temp_lane->add_component(new ComponentRoom({{NORTH, "compton_street"}}));
         temp_lane->add_component(new ComponentDescription("A temporary lane."));
         temp_lane->pre_command = [=](Command* cmd)
         {
@@ -257,6 +254,75 @@ void execute()
         };
         world->add_child(temp_lane);
     }
+
+    {
+        Object* compton_street = new Object("compton_street");
+        compton_street->pretty_name = "Compton Street";
+        compton_street->add_component(new ComponentRoom({{NORTH, "lil_wayne_front"}, {EAST, "magdalene_lane"}, {SOUTH, "temp_lane"}, {WEST, "vacant_lot"}}));
+        compton_street->add_component(new ComponentDescription("This strip of gritty asphalt comes straight outta the dark and unknown reaches of the city of Compton."));
+        world->add_child(compton_street);
+
+        Object* urban_youth = new Object("urban youth");
+        urban_youth->aliases = {"youth", "man", "person", "guy", "dude", "urban", "stranger", "him"};
+        urban_youth->add_component(new ComponentDescription("An urban youth stands in the corner, his hands tucked inside hoodie pockets."));
+        urban_youth->add_component(new ComponentTalkable({">Why are you standing here?",
+                    "-I'm here 4 da people, Jamal.",
+                    ">W...what do you mean?",
+                    "-The man has kept us down for 2 long, Jamal.",
+                    "-You must report our grievances 2 the president.",
+                    ">But how?",
+                    "-Viper will host a rap contest in the Club. The winner goes 2 the White House.",
+                    "-You must challenge him, and emerge the victor.",
+                    "Yet this is truly a great responsibility, you think--",
+                    "-Go forth with faith, Jamal."}));
+        compton_street->add_child(urban_youth);
+    }
+
+    {
+        Object* vacant_lot = new Object("vacant_lot");
+        vacant_lot->pretty_name = "a Vacant Lot";
+        vacant_lot->add_component(new ComponentRoom({{EAST, "compton_street"}}));
+        vacant_lot->add_component(new ComponentDescription("This lot is empty."));
+        world->add_child(vacant_lot);
+
+        Object* grass = new Object("grass");
+        grass->add_component(new ComponentDescription("The politics of bacteria, the soil's stringing of rings and chains in nets only God can tell the meshes of, have seen the grass thrive often to lengths of a foot and a half, yes amazing but true."));
+        vacant_lot->add_child(grass);
+
+        Object* magnet = new Object("magnet");
+        magnet->add_component(new ComponentTakeable());
+        magnet->add_component(new ComponentDescription("A magnet lies in the grass.", "Who can fathom the mysterious workings of the magnet?"));
+        grass->add_child(magnet);
+    }
+
+    {
+        Object* magdalene_lane = new Object("magdalene_lane");
+        magdalene_lane->pretty_name = "Magdalene Lane";
+        magdalene_lane->add_component(new ComponentRoom({{WEST, "compton_street"}, {NORTH, "garbage_alley"}, {EAST, "kolob_street"}}));
+        magdalene_lane->add_component(new ComponentDescription("The red-light domain where everybody's soul is for sale."));
+        world->add_child(magdalene_lane);
+    }
+
+    {
+        Object* garbage_alley = new Object("garbage_alley");
+        garbage_alley->pretty_name = "a dim alley overflowing with garbage.";
+        garbage_alley->add_component(new ComponentRoom({{SOUTH, "magdalene_lane"}}));
+        world->add_child(garbage_alley);
+
+        Object* garbage_cans = new Object("garbage cans");
+        garbage_cans->aliases = {"cans", "garbage", "rubbish", "bins", "can", "bin"};
+        garbage_cans->add_component(new ComponentDescription("Several cans huddle by the wall in a pool of sodium-vapor light."));
+        garbage_alley->add_child(garbage_cans);
+    }
+
+    {
+        Object* kolob_street = new Object("kolob_street");
+        kolob_street->pretty_name = "Kolob Street";
+        kolob_street->add_component(new ComponentRoom({{SOUTH, "jamal_corridor"}, {WEST, "magdalene_lane"}}));
+        world->add_child(kolob_street);
+    }
+
+
     
     /*cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());

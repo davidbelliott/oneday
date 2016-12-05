@@ -3,12 +3,20 @@
 #include "Component.h"
 class Command;
 
+enum ChildConstraint
+{
+    IN,
+    ON,
+    UNDER
+};
+
 class Object
 {
 public:
 
     // Object tree data
 	Object* parent;
+    ChildConstraint constraint;
 	std::vector<Object*> children;
 	std::map<std::string, std::vector<Object*>> children_hash;
 
