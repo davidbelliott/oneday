@@ -41,7 +41,6 @@ public:
 
     CommandType type;
     std::vector<Object*> objects;
-    std::vector<std::string> patterns;
 
     Command(CommandType type_in);
     virtual ~Command();

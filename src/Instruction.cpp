@@ -384,6 +384,55 @@ std::vector<cmd_ptr> InstructionTalkTo::compile(GameState* g)
     }
     return commands;
 }
+
+InstructionClimb::InstructionClimb(int matched_pattern_in, arg_list args_in)
+    : Instruction(CLIMB, matched_pattern_in, args_in)
+{
+    patterns = {
+        "climb up #",
+        "climb down #",
+        "climb on #",
+        "climb #",
+        "get on #",
+    };
+}
+
+std::vector<cmd_ptr> InstructionClimb::compile(GameState* g)
+{
+    std::vector<cmd_ptr> commands = {};
+    Object* obj = get_object(args[0], g);
+    if(obj)
+    {
+        if(obj->has_component(Component::CLIMBABLE))
+        {
+            ComponentClimbable* cclimb = (ComponentClimbable*)obj->get_component(Component::CLIMBABLE);
+            DirectionId desired_direction = UP;
+            if(matched_pattern == 0 || matched_pattern == 3)
+                desired_direction = UP;
+            else if(matched_pattern == 1)
+                desired_direction = DOWN;
+
+            if(cclimb->directions[desired_direction] != "")
+            {
+                commands.push_back(std::make_shared<CmdDisp>("With concerted effort and a sharp puff of breath, you climb " + dir[desired_direction].name + " the " + obj->pretty_name + "."));
+                commands.push_back(std::make_shared<CmdGo>(cclimb->directions[desired_direction]));
+            }
+            else
+            {
+                commands.push_back(std::make_shared<CmdDisp>("The " + obj->pretty_name + " can be climbed, but cannot be climbed " + dir[desired_direction].name + "."));
+            }
+        }
+        else
+        {
+            commands.push_back(std::make_shared<CmdDisp>("The " + obj->pretty_name + " cannot be climbed."));
+        }
+    }
+    else
+    {
+        commands.push_back(std::make_shared<CmdDisp>("You can find no " + join(args[0], ' ') + " to climb here."));
+    }
+    return commands;
+}
 /*
 std::vector<cmd_ptr> InstructionHit::compile(GameState* g)
 {
@@ -431,6 +480,8 @@ InstructionPtr make_instruction(Instruction::Type type, int matched_pattern_in, 
         instruction = std::make_shared<InstructionWear>(matched_pattern_in, args);
     else if(type == Instruction::TALK_TO)
         instruction = std::make_shared<InstructionTalkTo>(matched_pattern_in, args);
+    else if(type == Instruction::CLIMB)
+        instruction = std::make_shared<InstructionClimb>(matched_pattern_in, args);
     return instruction;
 }
 

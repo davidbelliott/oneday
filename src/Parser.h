@@ -26,6 +26,13 @@ bool match_tokens(token s_token, token p_token, arg_list* args);
 // Attempts to match two lists of tokens, pushing arguments to args if needed
 bool match_token_lists(token_list statement, token_list pattern, arg_list* args);
 
+enum ParseOutcome
+{
+    SUCCESS,
+    UNKNOWN_VERB,
+    UNKNOWN
+};
+
 class Parser
 {
 public:
@@ -36,6 +43,6 @@ public:
 	Parser();
 	virtual ~Parser();
 
-    InstructionPtr parse(std::string statement, GameState* g);
+    InstructionPtr parse(std::string statement, GameState* g, ParseOutcome* outcome=nullptr);
 };
 

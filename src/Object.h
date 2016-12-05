@@ -3,12 +3,15 @@
 #include "Component.h"
 class Command;
 
-enum ChildConstraint
+enum Constraint
 {
     IN,
     ON,
-    UNDER
+    UNDER,
+    PRESENT
 };
+
+std::string get_descriptor(Constraint c, std::string parent_name);
 
 class Object
 {
@@ -16,7 +19,7 @@ public:
 
     // Object tree data
 	Object* parent;
-    ChildConstraint constraint;
+    Constraint constraint;
 	std::vector<Object*> children;
 	std::map<std::string, std::vector<Object*>> children_hash;
 

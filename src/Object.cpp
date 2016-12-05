@@ -5,11 +5,23 @@
 #include "Command.h"
 #include "Terminal.h"
 
+std::string get_descriptor(Constraint c, std::string parent_name)
+{
+    std::string descriptor = "here.";
+    if(c == ON)
+        descriptor = "on " + parent_name;
+    else if(c == IN)
+        descriptor = "in " + parent_name;
+    else if(c == UNDER)
+        descriptor = "under " + parent_name;
+    return descriptor;
+}
+
 Object::Object(std::string name_in)
 	: name(name_in),
       pretty_name(name_in),
       parent(nullptr),
-      constraint(IN),
+      constraint(PRESENT),
       components(),
       active(true),
       discovered(false),

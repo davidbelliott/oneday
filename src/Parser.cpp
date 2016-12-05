@@ -158,7 +158,7 @@ bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
     }
 }
 
-InstructionPtr Parser::parse(std::string statement, GameState* g)
+InstructionPtr Parser::parse(std::string statement, GameState* g, ParseOutcome* outcome)
 {
     statement = to_lower(statement);
     token_list tokens = tokenize(statement, ' ');
@@ -174,6 +174,25 @@ InstructionPtr Parser::parse(std::string statement, GameState* g)
             {
                 instruction = make_instruction(instruction_lookup_table[i]->type, j, args);
             }
+        }
+    }
+    if(outcome)
+    {
+        if(!instruction)
+        {
+            Object* o = get_object(tokens, g);
+            if(o)
+            {
+                *outcome = UNKNOWN_VERB;
+            }
+            else
+            {
+                *outcome = UNKNOWN;
+            }
+        }
+        else
+        {
+            *outcome = SUCCESS;
         }
     }
     return instruction;

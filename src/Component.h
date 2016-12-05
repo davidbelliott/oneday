@@ -18,6 +18,7 @@ class Component
             ROOM,
             PORTAL,
             TAKEABLE,
+            CLIMBABLE
         } type;
         Component(Type type_in)
             : type(type_in)
@@ -29,8 +30,8 @@ class Component
 class ComponentDescription : public Component
 {
     public:
-        std::string shallow_description;
-        std::string deep_description;
+        std::string shallow_description;    // Description shown when parent described
+        std::string deep_description;       // Description shown when this described
         bool show_children;
         ComponentDescription(std::string shallow_in, std::string deep_in = "")
             : Component(DESCRIPTION),
@@ -139,6 +140,16 @@ class ComponentTakeable : public Component
             : Component(TAKEABLE),
             mass(1)
     { }
+};
+
+class ComponentClimbable : public ComponentRoom
+{
+    public:
+        ComponentClimbable(std::map<DirectionId, std::string> directions_in)
+            : ComponentRoom(directions_in)
+        {
+            type = CLIMBABLE;
+        }
 };
 
 typedef std::shared_ptr<Component> ComponentPtr;

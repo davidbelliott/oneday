@@ -178,15 +178,16 @@ CmdDescribe::CmdDescribe()
 
 void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
 {
+    if(o->has_component(Component::ROOM))
+    {
+        //g->terminal->set_color(config::colors[config::color_room_title]);
+        g->terminal->disp("You are in " + o->pretty_name + ".");
+        //g->terminal->set_color();
+    }
+
     if(o->has_component(Component::DESCRIPTION))
     {
         ComponentDescription* cd = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
-        if(o->has_component(Component::ROOM))
-        {
-            //g->terminal->set_color(config::colors[config::color_room_title]);
-            g->terminal->disp("You are in " + o->pretty_name + ".");
-            //g->terminal->set_color();
-        }
         //if(describe_this)
         {
             if (deep_describe && cd->deep_description != "")
@@ -196,20 +197,21 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
             else
                 g->terminal->disp(cd->shallow_description);
         }
-        if(o->has_component(Component::ROOM))
+    }
+
+    if(o->has_component(Component::ROOM))
+    {
+        ComponentRoom* cr = (ComponentRoom*)(o->get_component(Component::ROOM));
+        for(int i = 0; i < DIRECTION_MAX; i++)
         {
-            ComponentRoom* cr = (ComponentRoom*)(o->get_component(Component::ROOM));
-            for(int i = 0; i < DIRECTION_MAX; i++)
+            if(cr->directions[i] != "")
             {
-                if(cr->directions[i] != "")
+                DirectionId dir_id = (DirectionId)i;
+                Object* dir_room = g->engine->world->get_direct_child(cr->directions[i], 0);
+                if(dir_room && dir_room->pretty_name != "")
                 {
-                    DirectionId dir_id = (DirectionId)i;
-                    Object* dir_room = g->engine->world->get_direct_child(cr->directions[i], 0);
-                    if(dir_room && dir_room->pretty_name != "")
-                    {
-                        std::string dir_reference = dir[dir_id].dir_reference;
-                        g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
-                    }
+                    std::string dir_reference = dir[dir_id].dir_reference;
+                    g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
                 }
             }
         }

@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "temp_lane";
+	world->cur_room = "jamal_bedroom";
     {
         Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
         player->clothing = "";
@@ -50,8 +50,9 @@ void execute()
 
         Object* paper = new Object("paper");
         paper->aliases = { "sheet" };
-        paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor.", "There are words written on the paper."));
-        paper->add_component(new ComponentText("Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog."));
+        std::string paper_text = "Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog.";
+        paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor.", paper_text));
+        paper->add_component(new ComponentText(paper_text));
         paper->add_component(new ComponentTakeable());
         jamal_bedroom->add_child(paper);
 
@@ -312,7 +313,21 @@ void execute()
         Object* garbage_cans = new Object("garbage cans");
         garbage_cans->aliases = {"cans", "garbage", "rubbish", "bins", "can", "bin"};
         garbage_cans->add_component(new ComponentDescription("Several cans huddle by the wall in a pool of sodium-vapor light."));
+        garbage_cans->add_component(new ComponentClimbable({{UP, "can_tops"}}));
         garbage_alley->add_child(garbage_cans);
+    }
+
+    {
+        Object* can_tops = new Object("can_tops");
+        can_tops->pretty_name = "the top of the garbage cans.";
+        can_tops->add_component(new ComponentRoom({{DOWN, "garbage_alley"}}));
+        world->add_child(can_tops);
+
+        Object* drain_pipe = new Object("drain pipe");
+        drain_pipe->aliases = {"pipe", "drain"};
+        drain_pipe->add_component(new ComponentDescription("A drain pipe runs down the wall on one side."));
+        drain_pipe->add_component(new ComponentClimbable({{UP, "roof"}}));
+        can_tops->add_child(drain_pipe);
     }
 
     {

@@ -21,6 +21,7 @@ class Instruction
             TALK_TO,
             HELP,
             OBSCENITY,
+            CLIMB,
             INSTRUCTION_MAX
         } type;
         std::vector<std::string> patterns;
@@ -95,6 +96,13 @@ class InstructionTalkTo : public Instruction
 {
     public:
         InstructionTalkTo(int matched_pattern_in, arg_list args_in);
+        std::vector<cmd_ptr> compile(GameState* g);
+};
+
+class InstructionClimb : public Instruction
+{
+    public:
+        InstructionClimb(int matched_pattern_in, arg_list args_in);
         std::vector<cmd_ptr> compile(GameState* g);
 };
 
