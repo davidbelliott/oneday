@@ -69,6 +69,7 @@ std::vector<cmd_ptr> InstructionGo::compile(GameState* g)
                 Object* dest_room = g->engine->world->get_direct_child(room_component->directions[desired_direction], 0);
                 if(dest_room)
                 {
+                    commands.push_back(std::make_shared<CmdClear>());
                     std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
                     describe->deep = true;
                     describe->add_object(g->engine->world->get_direct_child(room_component->directions[desired_direction], 0));

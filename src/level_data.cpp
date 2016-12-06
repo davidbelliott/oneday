@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "temp_lane";
     {
         Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
         player->clothing = "";
@@ -160,7 +160,7 @@ void execute()
             if(cmd->type == Command::HIT)
             {
                 text->send_front(std::make_shared<CmdDisp>("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
-                c_desc->shallow_description = "A massive bookshelf is slid to one side of the west wall.";
+                c_desc->initial_appearance = "A massive bookshelf is slid to one side of the west wall.";
                 c_room->directions[WEST] = "lab";
             }
             return true;
@@ -175,8 +175,8 @@ void execute()
             if(cmd->type == Command::TAKE)
             {
                 text->send_front(std::make_shared<CmdDisp>("Taking the book reveals a secret switch."));
-                c_desc->shallow_description += " One book is missing, leaving an empty slot.";
-                c_desc->deep_description += " One book is missing, leaving an empty slot.";
+                c_desc->initial_appearance += " One book is missing, leaving an empty slot.";
+                c_desc->description += " One book is missing, leaving an empty slot.";
                 secret_switch->active = true;
                 secret_switch->discovered = true;
             }
@@ -328,6 +328,19 @@ void execute()
         drain_pipe->add_component(new ComponentDescription("A drain pipe runs down the wall on one side."));
         drain_pipe->add_component(new ComponentClimbable({{UP, "roof"}}));
         can_tops->add_child(drain_pipe);
+    }
+
+    {
+        Object* roof = new Object("roof");
+        roof->pretty_name = "the roof";
+        roof->add_component(new ComponentRoom({{DOWN, "can_tops"}}));
+        roof->add_component(new ComponentDescription("You hear the regular dripping of water. The roof is dark and tarry."));
+        world->add_child(roof);
+
+        Object* rope = new Object("rope");
+        rope->add_component(new ComponentTakeable());
+        rope->add_component(new ComponentDescription("A coil of rope lies to one side."));
+        roof->add_child(rope);
     }
 
     {

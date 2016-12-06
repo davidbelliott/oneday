@@ -22,6 +22,8 @@ class Instruction
             HELP,
             OBSCENITY,
             CLIMB,
+            UNRECOGNIZED_VERB,
+            UNRECOGNIZED,
             INSTRUCTION_MAX
         } type;
         std::vector<std::string> patterns;

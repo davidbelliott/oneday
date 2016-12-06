@@ -54,7 +54,7 @@ void GameStateText::notify(event_ptr event)
         else
         {
             ParseOutcome outcome = UNKNOWN;
-            InstructionPtr instruction = parser->parse(line, this, &outcome);
+            InstructionPtr instruction = parser->parse(line, this);
             if(instruction)
             {
                 std::vector<cmd_ptr> commands = instruction->compile(this);
@@ -63,13 +63,6 @@ void GameStateText::notify(event_ptr event)
                     send(commands[i]);
                 }
             }
-            if(outcome == UNKNOWN)
-            {
-                send(std::make_shared<CmdDisp>("-what u talkin bout boi?"));
-            }
-            else if(outcome == UNKNOWN_VERB)
-            {
-                send(std::make_shared<CmdDisp>("-
         }
         send(std::make_shared<CmdInput>());
     }

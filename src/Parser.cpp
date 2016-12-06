@@ -158,7 +158,7 @@ bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
     }
 }
 
-InstructionPtr Parser::parse(std::string statement, GameState* g, ParseOutcome* outcome)
+InstructionPtr Parser::parse(std::string statement, GameState* g)
 {
     statement = to_lower(statement);
     token_list tokens = tokenize(statement, ' ');
@@ -176,23 +176,16 @@ InstructionPtr Parser::parse(std::string statement, GameState* g, ParseOutcome* 
             }
         }
     }
-    if(outcome)
+    if(!instruction)
     {
-        if(!instruction)
+        Object* o = get_object(tokens, g);
+        if(o)
         {
-            Object* o = get_object(tokens, g);
-            if(o)
-            {
-                *outcome = UNKNOWN_VERB;
-            }
-            else
-            {
-                *outcome = UNKNOWN;
-            }
+            g->send(std::make_shared<CmdDisp>("You can't do that to the " + o->pretty_name + ", baka."));
         }
         else
         {
-            *outcome = SUCCESS;
+            g->send(std::make_shared<CmdDisp>("-what u talkin bout boi?"));
         }
     }
     return instruction;

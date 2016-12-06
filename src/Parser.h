@@ -43,6 +43,6 @@ public:
 	Parser();
 	virtual ~Parser();
 
-    InstructionPtr parse(std::string statement, GameState* g, ParseOutcome* outcome=nullptr);
+    InstructionPtr parse(std::string statement, GameState* g);
 };
 

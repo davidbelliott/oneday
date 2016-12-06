@@ -7,8 +7,7 @@
 #include "Player.h"
 
 Command::Command(CommandType type_in)
-    : type(type_in),
-      patterns({})
+    : type(type_in)
 {
 }
 
@@ -178,24 +177,31 @@ CmdDescribe::CmdDescribe()
 
 void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
 {
-    if(o->has_component(Component::ROOM))
-    {
-        //g->terminal->set_color(config::colors[config::color_room_title]);
-        g->terminal->disp("You are in " + o->pretty_name + ".");
-        //g->terminal->set_color();
-    }
+    ComponentRoom* c_room = (ComponentRoom*)o->get_component(Component::ROOM);
+    ComponentDescription* c_desc = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
 
-    if(o->has_component(Component::DESCRIPTION))
+    if(c_room)
     {
-        ComponentDescription* cd = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
-        //if(describe_this)
+        g->terminal->disp("You are in " + o->pretty_name + ".");
+        if(c_desc)
+            g->terminal->disp(c_desc->current_appearance);
+    }
+    else if(c_desc)
+    {
+        if(deep_describe)
         {
-            if (deep_describe && cd->deep_description != "")
+            if(c_desc->description != "")
             {
-                    g->terminal->disp(cd->deep_description);
+                g->terminal->disp(c_desc->description);
             }
             else
-                g->terminal->disp(cd->shallow_description);
+            {
+                g->terminal->disp("You see nothing special about the " + o->pretty_name + ".");
+            }
+        }
+        else
+        {
+            g->terminal->disp(c_desc->current_appearance);
         }
     }
 

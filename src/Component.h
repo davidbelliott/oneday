@@ -30,15 +30,20 @@ class Component
 class ComponentDescription : public Component
 {
     public:
-        std::string shallow_description;    // Description shown when parent described
-        std::string deep_description;       // Description shown when this described
+        std::string initial_appearance;    // Description shown when parent described
+        std::string later_appearance;
+        std::string current_appearance;
+        std::string description;       // Description shown when this described
         bool show_children;
-        ComponentDescription(std::string shallow_in, std::string deep_in = "")
+        ComponentDescription(std::string initial_in, std::string description_in = "", std::string later_in = "")
             : Component(DESCRIPTION),
-            shallow_description(shallow_in),
-            deep_description(deep_in),
+            initial_appearance(initial_in),
+            later_appearance(later_in),
+            description(description_in),
             show_children(true)
-        { }
+        {
+            current_appearance = initial_appearance;
+        }
 };
 
 class ComponentText : public Component
