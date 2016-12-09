@@ -4,12 +4,14 @@
 #include "common.h"
 #include "Event.h"
 #include "Console.h"
+#include "Audio.h"
 #include <iostream>
 
 Engine::Engine()
 :   running(true),
     world(new World()),
     console(new Console(this)),
+    audio(new Audio()),
     window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal")),
     game_states()
 {
@@ -19,6 +21,9 @@ Engine::Engine()
 Engine::~Engine()
 {
     delete world;
+    delete console;
+    delete audio;
+    delete window;
 }
 
 void Engine::push_state(GameState* state)
@@ -69,6 +74,7 @@ void Engine::update(sf::Time dt)
     {
         game_states.back()->update(dt);
     }
+    audio->update(dt);
 }
 
 void Engine::draw()

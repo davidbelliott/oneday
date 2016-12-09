@@ -184,12 +184,11 @@ void execute()
     world->add_child(lab);
 
     Object* table = new Object("table");
-    table->add_component(new ComponentDescription("A polished granite table supports several scientific instruments."));
+    table->add_component(new ComponentDescription("A polished granite table sits in the middle of the room."));
     lab->add_child(table);
 
     Object* instruments = new Object("instruments");
-    instruments->add_component(new ComponentDescription("You'd play the instruments if you knew how."));
-    instruments->discovered = true;
+    instruments->add_component(new ComponentDescription("The table supports several scientific instruments.", "You'd play the instruments if you knew how."));
     table->add_child(instruments);
 
     Object* lockers = new Object("lockers");

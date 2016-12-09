@@ -3,6 +3,7 @@
 class World;
 class GameState;
 class Console;
+class Audio;
 
 #include "Event.h"
 #include "Command.h"
@@ -15,6 +16,7 @@ class Engine
 public:
     World* world;
     Console* console;
+    Audio* audio;
     sf::RenderWindow* window;
     std::vector<GameState*> game_states;
 	bool running;

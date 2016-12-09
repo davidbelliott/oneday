@@ -2,6 +2,7 @@
 
 class Object;
 class GameState;
+class Music;
 
 #include "Config.h"
 #include <SFML/Graphics.hpp>
@@ -21,6 +22,8 @@ public:
         OUTPUT,
         CLEAR,
         SETCOLOR,
+        PLAY_MUSIC,
+        PAUSE_MUSIC,
         // Controller commands
         INPUT,
         PAUSE,
@@ -123,6 +126,22 @@ class CmdInput : public Command
 {
     public:
         CmdInput();
+        void run(GameState* g);
+};
+
+class CmdPlayMusic : public Command
+{
+    public:
+        Music* music;
+        CmdPlayMusic(Music* music_in);
+        void run(GameState* g);
+};
+
+class CmdPauseMusic : public Command
+{
+    public:
+        Music* music;
+        CmdPauseMusic(Music* music_in);
         void run(GameState* g);
 };
 

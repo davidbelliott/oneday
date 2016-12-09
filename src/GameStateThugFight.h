@@ -1,5 +1,6 @@
 #pragma once
 #include "GameState.h"
+#include "Audio.h"
 
 struct Fist
 {
@@ -29,6 +30,8 @@ struct Fragment
 class GameStateThugFight: public GameState
 {
     public:
+        // Resources
+        Music music;
 
         // Entities
         Abs abs;

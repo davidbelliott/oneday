@@ -100,6 +100,26 @@ void CmdInput::run(GameState* g)
     g->terminal->input_mode();
 }
 
+CmdPlayMusic::CmdPlayMusic(Music* music_in)
+    : Command(PLAY_MUSIC),
+      music(music_in)
+{}
+
+void CmdPlayMusic::run(GameState* g)
+{
+    g->engine->audio->play_music(music);
+}
+
+CmdPauseMusic::CmdPauseMusic(Music* music_in)
+    : Command(PAUSE_MUSIC),
+    music(music_in)
+{}
+
+void CmdPauseMusic::run(GameState* g)
+{
+    music->set_fade(Music::PAUSE);
+}
+
 CmdPause::CmdPause()
     : Command(PAUSE)
 {}
@@ -149,10 +169,10 @@ void CmdGo::run(GameState* g)
     ComponentMusic* music_leaving = (ComponentMusic*)g->engine->world->get_current_room()->get_component(Component::MUSIC);
     g->engine->world->set_current_room(new_room);
     ComponentMusic* music_entering = (ComponentMusic*)g->engine->world->get_current_room()->get_component(Component::MUSIC);
-    if(music_leaving)
-        music_leaving->set_fade(ComponentMusic::PAUSE);
+    if(music_leaving && !music_leaving->persistent)
+        g->send_front(std::make_shared<CmdPauseMusic>(&music_leaving->music));
     if(music_entering)
-        music_entering->set_fade(ComponentMusic::PLAY);
+        g->send_front(std::make_shared<CmdPlayMusic>(&music_entering->music));
     //g->engine->world->get_current_room()->describe(g);
 }
 

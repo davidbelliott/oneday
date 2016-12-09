@@ -21,12 +21,14 @@ GameStateThugFight::GameStateThugFight(Engine* engine_in)
     time_since_spawn(sf::seconds(0)),
     spawn_beats(8),
     ab_height(6),
-    beat(sf::seconds(60.0 / 150.0 / 2))
+    beat(sf::seconds(60.0 / 150.0 / 2)),
+    music("100kilos.ogg")
 {
     std::ifstream thug_fist_file;
     thug_fist = get_file_contents("fist.txt");
     abs_str = get_file_contents("abs.txt");
     abs_tense_str = get_file_contents("abs_tense.txt");
+    send(std::make_shared<CmdPlayMusic>(&music));
 }
 
 GameStateThugFight::~GameStateThugFight()

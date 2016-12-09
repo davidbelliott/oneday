@@ -1,5 +1,6 @@
 #pragma once
 #include "Directions.h"
+#include "Audio.h"
 #include <SFML/Audio.hpp>
 #include <memory>
 
@@ -20,7 +21,8 @@ class Component
             PORTAL,
             TAKEABLE,
             CLIMBABLE,
-            MUSIC
+            MUSIC,
+            OPEN_CLOSE
         } type;
         Component(Type type_in)
             : type(type_in)
@@ -166,36 +168,15 @@ class ComponentMusic : public Component
 {
     public:
 
-        enum Fade
-        {
-            PLAY,
-            PAUSE,
-            STOP,
-            NONE
-        } fade;
-        double cur_volume;
-        double target_volume;
-        double volume_step;
+        Music music;
         bool persistent;
 
-        sf::Music music;
-
-        ComponentMusic(std::string filename_in, bool persistent_in = true)
+        ComponentMusic(std::string filename_in, bool persistent_in = false)
             : Component(MUSIC),
-            music(),
-            fade(NONE),
-            cur_volume(0),
-            target_volume(0),
-            volume_step(0),
+            music(filename_in),
             persistent(persistent_in)
         {
-            music.openFromFile(filename_in);
-            music.setLoop(true);
         }
-
-        void update(sf::Time dt);
-
-        void set_fade(Fade fade_in);
 };
 
 typedef std::shared_ptr<Component> ComponentPtr;
