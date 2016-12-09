@@ -18,18 +18,26 @@ Command::~Command()
 void Command::run_and_callback(GameState* g)
 {
     bool run_this = true;
-    for(int i = 0; i < objects.size() && run_this; i++)
+    std::vector<Object*> callback_list = {};
+    Object* parent = g->engine->world->get_current_room();
+    while(parent)
     {
-        if(objects[i]->pre_command && !objects[i]->pre_command(this))
+        callback_list.insert(callback_list.begin(), parent);
+        parent = parent->parent;
+    }
+
+    for(int i = 0; i < callback_list.size() && run_this; i++)
+    {
+        if(callback_list[i]->pre_command && !callback_list[i]->pre_command(this))
             run_this = false;
     }
     if(run_this)
     {
         run(g);
-        for(int i = 0; i < objects.size(); i++)
+        for(int i = 0; i < callback_list.size(); i++)
         {
-            if(objects[i]->post_command)
-                objects[i]->post_command(this);
+            if(callback_list[i]->post_command)
+                callback_list[i]->post_command(this);
         }
     }
 }

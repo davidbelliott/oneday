@@ -133,6 +133,3 @@ typedef std::shared_ptr<Instruction> InstructionPtr;
 
 InstructionPtr make_instruction(Instruction::Type type, int matched_pattern_in, arg_list args);
 
-// Iterates through the provided tokens until it is able to find one corresponding
-// to an object in the gamestate provided.
-Object* get_object(token_list tokens, GameState* g);
