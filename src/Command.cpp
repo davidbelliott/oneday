@@ -18,13 +18,7 @@ Command::~Command()
 void Command::run_and_callback(GameState* g)
 {
     bool run_this = true;
-    std::vector<Object*> callback_list = {};
-    Object* parent = g->engine->world->get_current_room();
-    while(parent)
-    {
-        callback_list.insert(callback_list.begin(), parent);
-        parent = parent->parent;
-    }
+    std::vector<Object*> callback_list = objects;
 
     for(int i = 0; i < callback_list.size() && run_this; i++)
     {
@@ -152,7 +146,13 @@ CmdGo::CmdGo(std::string new_room_in)
 
 void CmdGo::run(GameState* g)
 {
+    ComponentMusic* music_leaving = (ComponentMusic*)g->engine->world->get_current_room()->get_component(Component::MUSIC);
     g->engine->world->set_current_room(new_room);
+    ComponentMusic* music_entering = (ComponentMusic*)g->engine->world->get_current_room()->get_component(Component::MUSIC);
+    if(music_leaving)
+        music_leaving->set_fade(ComponentMusic::PAUSE);
+    if(music_entering)
+        music_entering->set_fade(ComponentMusic::PLAY);
     //g->engine->world->get_current_room()->describe(g);
 }
 
@@ -202,7 +202,7 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
             {
                 g->terminal->disp(c_desc->description);
             }
-            else
+            else if(o->children.empty())
             {
                 g->terminal->disp("You see nothing special about the " + o->pretty_name + ".");
             }

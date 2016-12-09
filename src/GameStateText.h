@@ -11,4 +11,5 @@ class GameStateText: public GameState
         virtual ~GameStateText();
 
         virtual void notify(event_ptr event);
+        virtual void update(sf::Time dt);
 };

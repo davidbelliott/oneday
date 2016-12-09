@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "temp_lane";
+	world->cur_room = "jamal_corridor";
 
     Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
     player->clothing = "";
@@ -36,6 +36,9 @@ void execute()
                 {EAST, "jamal_corridor"},
                 {SOUTH, "jamal_bathroom"}
                 }));
+
+    ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg");
+    jamal_bedroom->add_component(c_music);
 
     Object* posters = new Object("posters");
     posters->aliases = { "poster", "wall", "walls" };
@@ -177,6 +180,7 @@ void execute()
     lab->pretty_name = "Thomas Pynchon's lab";
     lab->add_component(new ComponentDescription("This is the underground lab where Pynchon does his stuff."));
     lab->add_component(new ComponentRoom({{EAST, "library"}}));
+    lab->add_component(new ComponentMusic("res/100kilos.ogg"));
     world->add_child(lab);
 
     Object* table = new Object("table");
@@ -185,6 +189,7 @@ void execute()
 
     Object* instruments = new Object("instruments");
     instruments->add_component(new ComponentDescription("You'd play the instruments if you knew how."));
+    instruments->discovered = true;
     table->add_child(instruments);
 
     Object* lockers = new Object("lockers");

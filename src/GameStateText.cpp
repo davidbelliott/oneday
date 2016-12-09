@@ -63,3 +63,8 @@ void GameStateText::notify(event_ptr event)
     }
     terminal->notify(event);
 }
+
+void GameStateText::update(sf::Time dt)
+{
+    engine->world->update(dt);
+}

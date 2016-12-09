@@ -1,5 +1,6 @@
 #pragma once
 #include "Directions.h"
+#include <SFML/Audio.hpp>
 #include <memory>
 
 class Component
@@ -18,12 +19,16 @@ class Component
             ROOM,
             PORTAL,
             TAKEABLE,
-            CLIMBABLE
+            CLIMBABLE,
+            MUSIC
         } type;
         Component(Type type_in)
             : type(type_in)
         { }
         virtual ~Component()
+        { }
+
+        virtual void update(sf::Time dt)
         { }
 };
 
@@ -155,6 +160,42 @@ class ComponentClimbable : public ComponentRoom
         {
             type = CLIMBABLE;
         }
+};
+
+class ComponentMusic : public Component
+{
+    public:
+
+        enum Fade
+        {
+            PLAY,
+            PAUSE,
+            STOP,
+            NONE
+        } fade;
+        double cur_volume;
+        double target_volume;
+        double volume_step;
+        bool persistent;
+
+        sf::Music music;
+
+        ComponentMusic(std::string filename_in, bool persistent_in = true)
+            : Component(MUSIC),
+            music(),
+            fade(NONE),
+            cur_volume(0),
+            target_volume(0),
+            volume_step(0),
+            persistent(persistent_in)
+        {
+            music.openFromFile(filename_in);
+            music.setLoop(true);
+        }
+
+        void update(sf::Time dt);
+
+        void set_fade(Fade fade_in);
 };
 
 typedef std::shared_ptr<Component> ComponentPtr;

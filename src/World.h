@@ -13,7 +13,6 @@ public:
 	std::string cur_room;
     Object* player;
 	bool active;
-    sf::Music good_day;
 
 	World();
 	virtual ~World();
