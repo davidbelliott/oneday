@@ -53,15 +53,10 @@ void GameStateText::notify(event_ptr event)
             send(std::make_shared<CmdDisp>("-say something, pls"));
         else
         {
-            ParseOutcome outcome = UNKNOWN;
-            InstructionPtr instruction = parser->parse(line, this);
-            if(instruction)
+            std::vector<cmd_ptr> commands = parser->parse(line, this);
+            for(int i = 0; i < commands.size(); i++)
             {
-                std::vector<cmd_ptr> commands = instruction->compile(this);
-                for(int i = 0; i < commands.size(); i++)
-                {
-                    send(commands[i]);
-                }
+                send(commands[i]);
             }
         }
         send(std::make_shared<CmdInput>());

@@ -1,7 +1,7 @@
 #pragma once
 class World;
-#include "Instruction.h"
 #include "Token.h"
+#include "Command.h"
 #include <string>
 #include <vector>
 
@@ -26,6 +26,14 @@ bool match_tokens(token s_token, token p_token, arg_list* args);
 // Attempts to match two lists of tokens, pushing arguments to args if needed
 bool match_token_lists(token_list statement, token_list pattern, arg_list* args);
 
+/* Clears args, tokenizes statement and pattern, and uses the two above functions to recursively test
+ * for equality of the statement and pattern. */
+bool matches(std::string statement, std::string pattern, arg_list* args);
+
+// Iterates through the provided tokens until it is able to find one corresponding
+// to an object in the gamestate provided.
+Object* get_object(token_list tokens, GameState* g);
+
 enum ParseOutcome
 {
     SUCCESS,
@@ -36,13 +44,12 @@ enum ParseOutcome
 class Parser
 {
 public:
-    std::vector<InstructionPtr> instruction_lookup_table;
     token_list tokens_to_remove;
 
 public:
 	Parser();
 	virtual ~Parser();
 
-    InstructionPtr parse(std::string statement, GameState* g);
+    std::vector<cmd_ptr> parse(std::string statement, GameState* g);
 };
 
