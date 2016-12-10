@@ -11,6 +11,9 @@ class GameStateText: public GameState
         GameStateText(Engine* engine_in);
         virtual ~GameStateText();
 
+        virtual void init();
+        virtual void cleanup();
+
         virtual void notify(event_ptr event);
         virtual void update(sf::Time dt);
 };

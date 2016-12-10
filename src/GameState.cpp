@@ -22,6 +22,18 @@ GameState::~GameState()
     delete world;
 }
 
+void GameState::init()
+{
+    last_command_result = "";
+    paused = false;
+    running = true;
+}
+
+void GameState::cleanup()
+{
+
+}
+
 void GameState::notify(event_ptr event)
 {
     if(paused)

@@ -31,7 +31,7 @@ class GameStateThugFight: public GameState
 {
     public:
         // Resources
-        std::shared_ptr<Music> music;
+        Music* music;
 
         // Entities
         Abs abs;
@@ -59,7 +59,11 @@ class GameStateThugFight: public GameState
         GameStateThugFight(Engine* engine_in);
         virtual ~GameStateThugFight();
 
+        virtual void init();
+        virtual void cleanup();
         virtual void notify(event_ptr event);
         virtual void update(sf::Time dt);
         virtual void draw(sf::RenderTarget* target);
+        virtual void win();
+        virtual void lose();
 };

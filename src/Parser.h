@@ -28,7 +28,7 @@ bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
 
 /* Clears args, tokenizes statement and pattern, and uses the two above functions to recursively test
  * for equality of the statement and pattern. */
-bool matches(std::string statement, std::string pattern, arg_list* args);
+bool matches(std::string statement, std::string pattern, arg_list& args);
 
 // Iterates through the provided tokens until it is able to find one corresponding
 // to an object in the gamestate provided.

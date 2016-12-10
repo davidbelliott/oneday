@@ -26,6 +26,7 @@ Engine::~Engine()
 void Engine::push_state(GameState* state)
 {
     game_states.push_back(state);
+    state->init();
 }
 
 void Engine::pop_state()
@@ -34,6 +35,7 @@ void Engine::pop_state()
     {
         GameState* remove = game_states.back();
         game_states.pop_back();
+        remove->cleanup();
         delete remove;
         remove = nullptr;
     }

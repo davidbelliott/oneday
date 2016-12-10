@@ -4,6 +4,7 @@
 #include "GameStateIntro.h"
 #include "GameStateText.h"
 #include "GameStateThugFight.h"
+#include "GameStateTryAgainMenu.h"
 #include "Player.h"
 #include "World.h"
 
@@ -225,29 +226,6 @@ void execute()
             text->send_front(std::make_shared<CmdDisp>("Press any key to tense your abs and deflect their blows."));
             text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
-            auto fn = [=](GameState* g)
-            {
-                if(g->world->get_flag("thug_fight_outcome") == 1)  // Won the fight
-                {
-                    g->send_front(std::make_shared<CmdDisp>("Cowed by your abdominal prowess, the thugs slink off."));
-                    g->send_front(std::make_shared<CmdPause>());
-                }
-                else
-                {
-                    g->send_front(std::make_shared<CmdDisp>("Your abdomen is hard and tender from the repeated blows. You give up the ghost."));
-                    g->send_front(std::make_shared<CmdPause>());
-                    g->send_front(std::make_shared<CmdDisp>("Try again? (y/n)"));
-                    auto quit_menu = [=](GameState* g)
-                    {
-                        if(text->line == "n")
-                            text->send_front(std::make_shared<CmdQuit>());
-                        else
-                            text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
-                    };
-                    g->send_front(std::make_shared<CmdCustom>(quit_menu));
-                }
-            };
-            text->send_front(std::make_shared<CmdCustom>(fn));
         }
         return true;
     };

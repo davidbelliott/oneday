@@ -100,7 +100,7 @@ void CmdInput::run(GameState* g)
     g->terminal->input_mode();
 }
 
-CmdPlayMusic::CmdPlayMusic(std::shared_ptr<Music> music_in)
+CmdPlayMusic::CmdPlayMusic(Music* music_in)
     : Command(PLAY_MUSIC),
       music(music_in)
 {}
@@ -110,7 +110,7 @@ void CmdPlayMusic::run(GameState* g)
     g->engine->audio->play_music(music);
 }
 
-CmdPauseMusic::CmdPauseMusic(std::shared_ptr<Music> music_in)
+CmdPauseMusic::CmdPauseMusic(Music* music_in)
     : Command(PAUSE_MUSIC),
     music(music_in)
 {}
@@ -120,7 +120,7 @@ void CmdPauseMusic::run(GameState* g)
     music->set_fade(Music::PAUSE);
 }
 
-CmdStopMusic::CmdStopMusic(std::shared_ptr<Music> music_in)
+CmdStopMusic::CmdStopMusic(Music* music_in)
     : Command(STOP_MUSIC),
     music(music_in)
 {}
@@ -166,6 +166,15 @@ CmdAddGameState::CmdAddGameState(GameState* state_to_add_in)
 void CmdAddGameState::run(GameState* g)
 {
     g->engine->push_state(state_to_add);
+}
+
+CmdPopGameState::CmdPopGameState()
+    : Command(POP_GAMESTATE)
+{}
+
+void CmdPopGameState::run(GameState* g)
+{
+    g->engine->game_states.back()->running = false;
 }
 
 CmdGo::CmdGo(std::string new_room_in)
