@@ -7,7 +7,6 @@ struct Fist
     double x, y;
     bool punching;
     sf::Time remaining_time;
-    int color_index;
     bool dead;
 };
 
@@ -22,10 +21,8 @@ struct Fragment
     double x, y;
     double vx, vy;
     sf::Time remaining_time;
-    int color_index;
     bool dead;
 };
-
 
 class GameStateThugFight: public GameState
 {

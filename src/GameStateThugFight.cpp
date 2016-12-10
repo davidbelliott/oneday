@@ -82,7 +82,7 @@ void GameStateThugFight::update(sf::Time dt)
         {
             if(fists[i].punching)
             {
-                if(fists[i].x < abs.health)
+                if(fists[i].x < abs.health + 1)
                 {
                     if(abs.tense_ab == fists[i].y)
                     {
@@ -93,30 +93,19 @@ void GameStateThugFight::update(sf::Time dt)
                                                   static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 50.0,
                                                   static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
                                                   sf::seconds(0.5),
-                                                  fists[i].color_index,
                                                   false});
                         }
+                        fists[i].dead = true;
                     }
-                    else
+                    else if(fists[i].x < abs.health)
                     {
-
-                        for(int j = 0; j < 50; j++)
-                        {
-                            fragments.push_back({ static_cast<double>(abs.health),
-                                                  static_cast<double>(rand() % 6) + fists[i].y * ab_height,
-                                                  static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
-                                                  static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
-                                                  sf::seconds(0.5),
-                                                  config::RED,
-                                                  false});
-                        }
                         abs.health--;
                         if(abs.health == 0)
                         {
                             lose();
                         }
+                        fists[i].dead = true;
                     }
-                    fists[i].dead = true;
                 }
                 fists[i].x -= 2;
             }
@@ -126,8 +115,6 @@ void GameStateThugFight::update(sf::Time dt)
             }
 
 
-            if(fists[i].remaining_time.asSeconds() <= 0.25f && fists[i].color_index == config::BASE_6)
-              fists[i].color_index = rand() % (config::N_COLORS - config::RED) + config::RED;
             if(fists[i].remaining_time.asSeconds() <= 0.0)
                 fists[i].punching = true;
 
@@ -167,7 +154,6 @@ void GameStateThugFight::update(sf::Time dt)
                               static_cast<double>(rand_offset % 4),
                               false,
                               sf::seconds(2),
-                              rand() % (config::N_COLORS - config::RED) + config::RED,
                               false});
             time_since_spawn = sf::seconds(0);
             spawn_beats = round(8.0 / (0.025 * time_alive.asSeconds() + 1.0) + 1.2);
@@ -175,10 +161,8 @@ void GameStateThugFight::update(sf::Time dt)
         }
 
         time_alive += dt;
-        
         time_since_spawn += dt;
     }
-
 }
 
 void GameStateThugFight::draw(sf::RenderTarget* target)
