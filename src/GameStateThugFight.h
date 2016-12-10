@@ -31,7 +31,7 @@ class GameStateThugFight: public GameState
 {
     public:
         // Resources
-        Music music;
+        std::shared_ptr<Music> music;
 
         // Entities
         Abs abs;
@@ -50,6 +50,7 @@ class GameStateThugFight: public GameState
         // Difficulty
         sf::Time time_since_spawn;
         int spawn_beats;
+        int beats_to_wait;
 
         // Constants
         int ab_height;

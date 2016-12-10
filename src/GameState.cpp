@@ -1,14 +1,17 @@
 #include "GameState.h"
 #include "Terminal.h"
+#include "World.h"
 
 GameState::GameState(Engine* engine_in)
 :   Observer(),
     terminal(new Terminal(this)),
     commands(),
     commands_priority(),
+    last_command_result(""),
     engine(engine_in),
     paused(false),
-    running(true)
+    running(true),
+    world(new World())
 {
 }
 
@@ -16,6 +19,7 @@ GameState::GameState(Engine* engine_in)
 GameState::~GameState()
 {
     delete terminal;
+    delete world;
 }
 
 void GameState::notify(event_ptr event)

@@ -1,6 +1,5 @@
 #pragma once
 
-class World;
 class GameState;
 class Console;
 class Audio;
@@ -14,7 +13,6 @@ class Audio;
 class Engine
 {
 public:
-    World* world;
     Console* console;
     Audio* audio;
     sf::RenderWindow* window;

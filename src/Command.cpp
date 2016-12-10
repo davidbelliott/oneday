@@ -100,7 +100,7 @@ void CmdInput::run(GameState* g)
     g->terminal->input_mode();
 }
 
-CmdPlayMusic::CmdPlayMusic(Music* music_in)
+CmdPlayMusic::CmdPlayMusic(std::shared_ptr<Music> music_in)
     : Command(PLAY_MUSIC),
       music(music_in)
 {}
@@ -110,7 +110,7 @@ void CmdPlayMusic::run(GameState* g)
     g->engine->audio->play_music(music);
 }
 
-CmdPauseMusic::CmdPauseMusic(Music* music_in)
+CmdPauseMusic::CmdPauseMusic(std::shared_ptr<Music> music_in)
     : Command(PAUSE_MUSIC),
     music(music_in)
 {}
@@ -118,6 +118,16 @@ CmdPauseMusic::CmdPauseMusic(Music* music_in)
 void CmdPauseMusic::run(GameState* g)
 {
     music->set_fade(Music::PAUSE);
+}
+
+CmdStopMusic::CmdStopMusic(std::shared_ptr<Music> music_in)
+    : Command(STOP_MUSIC),
+    music(music_in)
+{}
+
+void CmdStopMusic::run(GameState* g)
+{
+    music->set_fade(Music::STOP);
 }
 
 CmdPause::CmdPause()
@@ -166,14 +176,14 @@ CmdGo::CmdGo(std::string new_room_in)
 
 void CmdGo::run(GameState* g)
 {
-    ComponentMusic* music_leaving = (ComponentMusic*)g->engine->world->get_current_room()->get_component(Component::MUSIC);
-    g->engine->world->set_current_room(new_room);
-    ComponentMusic* music_entering = (ComponentMusic*)g->engine->world->get_current_room()->get_component(Component::MUSIC);
+    ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
+    g->world->set_current_room(new_room);
+    ComponentMusic* music_entering = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
     if(music_leaving && !music_leaving->persistent)
-        g->send_front(std::make_shared<CmdPauseMusic>(&music_leaving->music));
+        g->send_front(std::make_shared<CmdPauseMusic>(music_leaving->music));
     if(music_entering)
-        g->send_front(std::make_shared<CmdPlayMusic>(&music_entering->music));
-    //g->engine->world->get_current_room()->describe(g);
+        g->send_front(std::make_shared<CmdPlayMusic>(music_entering->music));
+    //g->world->get_current_room()->describe(g);
 }
 
 CmdQuit::CmdQuit()
@@ -207,6 +217,7 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
 {
     ComponentRoom* c_room = (ComponentRoom*)o->get_component(Component::ROOM);
     ComponentDescription* c_desc = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
+    ComponentText* c_text = (ComponentText*)o->get_component(Component::TEXT);
 
     if(c_room)
     {
@@ -221,6 +232,12 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
             if(c_desc->description != "")
             {
                 g->terminal->disp(c_desc->description);
+            }
+            else if(c_text)
+            {
+                std::shared_ptr<CmdRead> read = std::make_shared<CmdRead>();
+                read->add_object(o);
+                g->send_front(read);
             }
             else if(o->children.empty())
             {
@@ -241,7 +258,7 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
             if(cr->directions[i] != "")
             {
                 DirectionId dir_id = (DirectionId)i;
-                Object* dir_room = g->engine->world->get_direct_child(cr->directions[i], 0);
+                Object* dir_room = g->world->get_direct_child(cr->directions[i], 0);
                 if(dir_room && dir_room->pretty_name != "")
                 {
                     std::string dir_reference = dir[dir_id].dir_reference;
@@ -282,8 +299,8 @@ void CmdTake::run(GameState* g)
     {
         if(objects[i]->parent)
             objects[i]->parent->remove_child(objects[i]);
-        if(g->engine->world->get_player())
-            g->engine->world->get_player()->add_child(objects[i]);
+        if(g->world->get_player())
+            g->world->get_player()->add_child(objects[i]);
     }
 }
 
@@ -311,10 +328,31 @@ void CmdWear::run(GameState* g)
     {
         if(objects[i]->parent)
             objects[i]->parent->remove_child(objects[i]);
-        if(g->engine->world->get_player())
+        if(g->world->get_player())
         {
-            g->engine->world->get_player()->add_child(objects[i]);
-            ((Player*)g->engine->world->get_player())->clothing = objects[i]->name;
+            g->world->get_player()->add_child(objects[i]);
+            ((Player*)g->world->get_player())->clothing = objects[i]->name;
+        }
+    }
+}
+
+CmdRead::CmdRead()
+    : Command(READ)
+{ }
+
+void CmdRead::run(GameState* g)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        ComponentText* c_text = (ComponentText*)objects[i]->get_component(Component::TEXT);
+        if(c_text)
+        {
+            g->send_front(std::make_shared<CmdDisp>("The " + objects[i]->pretty_name + " reads:"));
+            g->send_front(std::make_shared<CmdDisp>(c_text->text));
+        }
+        else
+        {
+            g->send_front(std::make_shared<CmdDisp>("There's nothing to read on the " + objects[i]->pretty_name + "."));
         }
     }
 }

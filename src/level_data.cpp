@@ -13,7 +13,7 @@ void execute()
     GameStateText* text = new GameStateText(engine);
 
     // Generate the world
-	World* world = engine->world;
+	World* world = text->world;
 
 	world->flags =
 	{
@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_corridor";
+	world->cur_room = "temp_lane";
 
     Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
     player->clothing = "";
@@ -52,9 +52,14 @@ void execute()
     Object* paper = new Object("paper");
     paper->aliases = { "sheet" };
     std::string paper_text = "Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog.";
-    paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor.", paper_text));
+    paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor."));
     paper->add_component(new ComponentText(paper_text));
     paper->add_component(new ComponentTakeable());
+    paper->pre_command = [=](Command* cmd)
+    {
+        text->send_front(std::make_shared<CmdPlayMusic>(c_music->music));
+        return true;
+    };
     jamal_bedroom->add_child(paper);
 
     world->add_child(jamal_bedroom);
@@ -220,20 +225,28 @@ void execute()
             text->send_front(std::make_shared<CmdDisp>("Press any key to tense your abs and deflect their blows."));
             text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
-            auto fn = [](GameState* g)
+            auto fn = [=](GameState* g)
             {
-                if(g->engine->world->get_flag("thug_fight_outcome") == 1)  // Won the fight
+                if(g->world->get_flag("thug_fight_outcome") == 1)  // Won the fight
                 {
                     g->send_front(std::make_shared<CmdDisp>("Cowed by your abdominal prowess, the thugs slink off."));
+                    g->send_front(std::make_shared<CmdPause>());
                 }
                 else
                 {
                     g->send_front(std::make_shared<CmdDisp>("Your abdomen is hard and tender from the repeated blows. You give up the ghost."));
                     g->send_front(std::make_shared<CmdPause>());
-                    g->send_front(std::make_shared<CmdQuit>());
+                    g->send_front(std::make_shared<CmdDisp>("Try again? (y/n)"));
+                    auto quit_menu = [=](GameState* g)
+                    {
+                        if(text->line == "n")
+                            text->send_front(std::make_shared<CmdQuit>());
+                        else
+                            text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
+                    };
+                    g->send_front(std::make_shared<CmdCustom>(quit_menu));
                 }
             };
-            text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdCustom>(fn));
         }
         return true;

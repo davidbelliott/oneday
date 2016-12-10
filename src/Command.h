@@ -24,6 +24,7 @@ public:
         SETCOLOR,
         PLAY_MUSIC,
         PAUSE_MUSIC,
+        STOP_MUSIC,
         // Controller commands
         INPUT,
         PAUSE,
@@ -132,16 +133,24 @@ class CmdInput : public Command
 class CmdPlayMusic : public Command
 {
     public:
-        Music* music;
-        CmdPlayMusic(Music* music_in);
+        std::shared_ptr<Music> music;
+        CmdPlayMusic(std::shared_ptr<Music> music_in);
         void run(GameState* g);
 };
 
 class CmdPauseMusic : public Command
 {
     public:
-        Music* music;
-        CmdPauseMusic(Music* music_in);
+        std::shared_ptr<Music> music;
+        CmdPauseMusic(std::shared_ptr<Music> music_in);
+        void run(GameState* g);
+};
+
+class CmdStopMusic : public Command
+{
+    public:
+        std::shared_ptr<Music> music;
+        CmdStopMusic(std::shared_ptr<Music> music_in);
         void run(GameState* g);
 };
 

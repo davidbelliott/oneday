@@ -168,12 +168,12 @@ class ComponentMusic : public Component
 {
     public:
 
-        Music music;
+        std::shared_ptr<Music> music;
         bool persistent;
 
         ComponentMusic(std::string filename_in, bool persistent_in = false)
             : Component(MUSIC),
-            music(filename_in),
+            music(std::make_shared<Music>(filename_in)),
             persistent(persistent_in)
         {
         }
