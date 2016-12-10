@@ -17,20 +17,24 @@ GameStateThugFight::GameStateThugFight(Engine* engine_in)
     abs_str(),
     abs_tense_str(),
     time_alive(sf::seconds(0)),
-    total_time(sf::seconds(5)),
-    time_since_spawn(sf::seconds(0)),
+    total_time(sf::seconds(120)),
+    time_since_spawn(sf::seconds(100)),
+    beats_to_wait(0),
     spawn_beats(8),
     ab_height(6),
-    beat(sf::seconds(60.0 / 150.0 / 2))
+    beat(sf::seconds(60.0 / 165.5 )),
+    music(std::make_shared<Music>("res/100kilos.ogg"))
 {
     std::ifstream thug_fist_file;
     thug_fist = get_file_contents("fist.txt");
     abs_str = get_file_contents("abs.txt");
     abs_tense_str = get_file_contents("abs_tense.txt");
+    send(std::make_shared<CmdPlayMusic>(music));
 }
 
 GameStateThugFight::~GameStateThugFight()
 {
+    std::make_shared<CmdStopMusic>(music)->run(this);
 }
 
 void GameStateThugFight::notify(event_ptr event)
@@ -86,7 +90,7 @@ void GameStateThugFight::update(sf::Time dt)
                     abs.health--;
                     if(abs.health == 0)
                     {
-                        engine->world->set_flag("thug_fight_outcome", -1);
+                        world->set_flag("thug_fight_outcome", -1);
                         running = false;
                     }
                 }
@@ -130,11 +134,11 @@ void GameStateThugFight::update(sf::Time dt)
         if(fists.size() == 0)
         {
             running = false;
-            engine->world->set_flag("thug_fight_outcome", 1);
+            world->set_flag("thug_fight_outcome", 1);
         }
 
     }
-    else if(time_since_spawn.asSeconds() >= spawn_beats * beat.asSeconds())
+    else if(time_since_spawn.asSeconds() >= beats_to_wait * beat.asSeconds())
     {
         int rand_offset = rand() % 3;
         if(!fists.empty() && rand_offset >= fists.back().y)
@@ -146,7 +150,8 @@ void GameStateThugFight::update(sf::Time dt)
                           rand() % (config::N_COLORS - config::RED) + config::RED,
                           false});
         time_since_spawn = sf::seconds(0);
-        spawn_beats = static_cast<int>((total_time - time_alive) / (total_time) * 7.0) + 1;
+        spawn_beats = static_cast<int>((total_time - time_alive) / (total_time) * 7.0 + 1);
+        beats_to_wait = 1;//spawn_beats;
     }
 
     time_alive += dt;

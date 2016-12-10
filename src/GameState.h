@@ -2,6 +2,7 @@
 
 class Engine;
 class Terminal;
+class World;
 #include "Observer.h"
 #include "Command.h"
 #include <queue>
@@ -11,8 +12,10 @@ class GameState : public Observer
 public:
 	Engine* engine;
     Terminal* terminal;
+    World* world;
     std::queue<cmd_ptr> commands;
     std::queue<cmd_ptr> commands_priority;
+    std::string last_command_result;
 	bool paused;		//Is this game state paused?
     bool running;       //Is this game state running?
 

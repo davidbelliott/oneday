@@ -57,5 +57,6 @@ public:
 	virtual int get_flag(std::string name);
 	virtual void set_flag(std::string name, int value);
     virtual void set_name(std::string name_in);
+    virtual void update(sf::Time dt);
 };
 

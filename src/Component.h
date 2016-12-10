@@ -1,5 +1,7 @@
 #pragma once
 #include "Directions.h"
+#include "Audio.h"
+#include <SFML/Audio.hpp>
 #include <memory>
 
 class Component
@@ -18,12 +20,17 @@ class Component
             ROOM,
             PORTAL,
             TAKEABLE,
-            CLIMBABLE
+            CLIMBABLE,
+            MUSIC,
+            OPEN_CLOSE
         } type;
         Component(Type type_in)
             : type(type_in)
         { }
         virtual ~Component()
+        { }
+
+        virtual void update(sf::Time dt)
         { }
 };
 
@@ -154,6 +161,21 @@ class ComponentClimbable : public ComponentRoom
             : ComponentRoom(directions_in)
         {
             type = CLIMBABLE;
+        }
+};
+
+class ComponentMusic : public Component
+{
+    public:
+
+        std::shared_ptr<Music> music;
+        bool persistent;
+
+        ComponentMusic(std::string filename_in, bool persistent_in = false)
+            : Component(MUSIC),
+            music(std::make_shared<Music>(filename_in)),
+            persistent(persistent_in)
+        {
         }
 };
 

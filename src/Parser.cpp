@@ -25,12 +25,12 @@ Object* get_object(token_list tokens, GameState* g)
     Object* found_object = nullptr;
     for(int i = 0; i < tokens.size() && !found_object; i++)
     {
-        found_object = g->engine->world->get_current_room()->get_indirect_child(tokens[i], 0);
+        found_object = g->world->get_current_room()->get_indirect_child(tokens[i], 0);
         if(found_object && (!found_object->active || !found_object->discovered))
             found_object = nullptr;
         if(!found_object)
         {
-            found_object = g->engine->world->get_player()->get_indirect_child(tokens[i], 0);
+            found_object = g->world->get_player()->get_indirect_child(tokens[i], 0);
             if(found_object && (!found_object->active || !found_object->discovered))
                 found_object = nullptr;
         }
@@ -222,19 +222,19 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
 
         if(desired_direction == DIRECTION_MAX)
             commands.push_back(std::make_shared<CmdDisp>("I don't know where " + join(args[0], ' ') + " is, m8."));
-        else if(Object* room = g->engine->world->get_current_room())
+        else if(Object* room = g->world->get_current_room())
         {
             ComponentRoom* room_component = (ComponentRoom*)room->get_component(Component::ROOM);
             if(room_component && room_component->directions[desired_direction] != "")
             {
                 commands.push_back(std::make_shared<CmdGo>(room_component->directions[desired_direction]));
-                Object* dest_room = g->engine->world->get_direct_child(room_component->directions[desired_direction], 0);
+                Object* dest_room = g->world->get_direct_child(room_component->directions[desired_direction], 0);
                 if(dest_room)
                 {
                     commands.push_back(std::make_shared<CmdClear>());
                     std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
                     describe->deep = true;
-                    describe->add_object(g->engine->world->get_direct_child(room_component->directions[desired_direction], 0));
+                    describe->add_object(g->world->get_direct_child(room_component->directions[desired_direction], 0));
                     commands.push_back(describe);
                 }
                 else
@@ -252,7 +252,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     {
         std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
         describe->deep = true;
-        describe->add_object(g->engine->world->get_current_room());
+        describe->add_object(g->world->get_current_room());
         commands.push_back(describe);
     }
 
@@ -325,16 +325,9 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         Object* obj = get_object(args[0], g);
         if(obj)
         {
-            ComponentText* text = (ComponentText*)obj->get_component(Component::TEXT);
-            if(text)
-            {
-                commands.push_back(std::make_shared<CmdDisp>("The " + obj->pretty_name + " reads:"));
-                commands.push_back(std::make_shared<CmdDisp>(text->text));
-            }
-            else
-            {
-                commands.push_back(std::make_shared<CmdDisp>("There's nothing to read on the " + obj->pretty_name + "."));
-            }
+            std::shared_ptr<CmdRead> read = std::make_shared<CmdRead>();
+            read->add_object(obj);
+            commands.push_back(read);
         }
         else
         {

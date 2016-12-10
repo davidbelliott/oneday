@@ -7,8 +7,6 @@
 World::World()
 	: Object(), active(true), player(nullptr)
 {
-    if(!good_day.openFromFile("good_day.ogg"))
-        std::cerr << "Error: unable to load good_day.ogg" << std::endl;
 }
 
 World::~World()

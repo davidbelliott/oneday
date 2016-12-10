@@ -6,7 +6,8 @@
 
 GameStateText::GameStateText(Engine* engine_in)
     : GameState(engine_in),
-      parser(new Parser())
+      parser(new Parser()),
+      line("")
 {
     std::string title_string(get_file_contents("jamal.txt"));
     running = true;
@@ -17,6 +18,7 @@ GameStateText::GameStateText(Engine* engine_in)
     send(std::make_shared<CmdDisp>("\n\n\n\n\n\n\n"));
     send(std::make_shared<CmdDisp>("You wake."));
     send(std::make_shared<CmdDisp>("No canine utterances grace your ears,\nand you can smell no fresh bacon cooking in the kitchen."));
+    send(std::make_shared<CmdDisp>("You should look around."));
 }
 
 GameStateText::~GameStateText()
@@ -48,7 +50,7 @@ void GameStateText::notify(event_ptr event)
     }
     else if(event->type == Event::USER_LINE)
     {
-        std::string line = std::static_pointer_cast<EventUserLine>(event)->line;
+        line = std::static_pointer_cast<EventUserLine>(event)->line;
         if(line == "")
             send(std::make_shared<CmdDisp>("-say something, pls"));
         else
@@ -62,4 +64,9 @@ void GameStateText::notify(event_ptr event)
         send(std::make_shared<CmdInput>());
     }
     terminal->notify(event);
+}
+
+void GameStateText::update(sf::Time dt)
+{
+    world->update(dt);
 }

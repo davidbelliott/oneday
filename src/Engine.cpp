@@ -1,15 +1,15 @@
 #include "Engine.h"
 #include "GameState.h"
-#include "World.h"
 #include "common.h"
 #include "Event.h"
 #include "Console.h"
+#include "Audio.h"
 #include <iostream>
 
 Engine::Engine()
 :   running(true),
-    world(new World()),
     console(new Console(this)),
+    audio(new Audio()),
     window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal")),
     game_states()
 {
@@ -18,7 +18,9 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-    delete world;
+    delete console;
+    delete audio;
+    delete window;
 }
 
 void Engine::push_state(GameState* state)
@@ -30,7 +32,10 @@ void Engine::pop_state()
 {
     if(!game_states.empty())
     {
+        GameState* remove = game_states.back();
         game_states.pop_back();
+        delete remove;
+        remove = nullptr;
     }
 }
 
@@ -69,6 +74,7 @@ void Engine::update(sf::Time dt)
     {
         game_states.back()->update(dt);
     }
+    audio->update(dt);
 }
 
 void Engine::draw()
@@ -84,7 +90,7 @@ void Engine::prune()
 {
     while(!game_states.empty() && !game_states.back()->running)
     {
-        game_states.pop_back();
+        pop_state();
     }
     if(game_states.empty())
         running = false;

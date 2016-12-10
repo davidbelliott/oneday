@@ -13,7 +13,7 @@ void execute()
     GameStateText* text = new GameStateText(engine);
 
     // Generate the world
-	World* world = engine->world;
+	World* world = text->world;
 
 	world->flags =
 	{
@@ -37,6 +37,9 @@ void execute()
                 {SOUTH, "jamal_bathroom"}
                 }));
 
+    ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg");
+    jamal_bedroom->add_component(c_music);
+
     Object* posters = new Object("posters");
     posters->aliases = { "poster", "wall", "walls" };
     posters->add_component(new ComponentDescription("The walls are plastered with grimy old posters.", "The posters feature realistic depictions of mom's spaghetti."));
@@ -49,9 +52,14 @@ void execute()
     Object* paper = new Object("paper");
     paper->aliases = { "sheet" };
     std::string paper_text = "Just waking up in the morning, gotta thank God\nI don't know but today seems kinda odd\nNo barking from the dog, no smog\nAnd momma cooked a breakfast with no hog.";
-    paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor.", paper_text));
+    paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor."));
     paper->add_component(new ComponentText(paper_text));
     paper->add_component(new ComponentTakeable());
+    paper->pre_command = [=](Command* cmd)
+    {
+        text->send_front(std::make_shared<CmdPlayMusic>(c_music->music));
+        return true;
+    };
     jamal_bedroom->add_child(paper);
 
     world->add_child(jamal_bedroom);
@@ -177,14 +185,15 @@ void execute()
     lab->pretty_name = "Thomas Pynchon's lab";
     lab->add_component(new ComponentDescription("This is the underground lab where Pynchon does his stuff."));
     lab->add_component(new ComponentRoom({{EAST, "library"}}));
+    lab->add_component(new ComponentMusic("res/100kilos.ogg"));
     world->add_child(lab);
 
     Object* table = new Object("table");
-    table->add_component(new ComponentDescription("A polished granite table supports several scientific instruments."));
+    table->add_component(new ComponentDescription("A polished granite table sits in the middle of the room."));
     lab->add_child(table);
 
     Object* instruments = new Object("instruments");
-    instruments->add_component(new ComponentDescription("You'd play the instruments if you knew how."));
+    instruments->add_component(new ComponentDescription("The table supports several scientific instruments.", "You'd play the instruments if you knew how."));
     table->add_child(instruments);
 
     Object* lockers = new Object("lockers");
@@ -216,20 +225,28 @@ void execute()
             text->send_front(std::make_shared<CmdDisp>("Press any key to tense your abs and deflect their blows."));
             text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
-            auto fn = [](GameState* g)
+            auto fn = [=](GameState* g)
             {
-                if(g->engine->world->get_flag("thug_fight_outcome") == 1)  // Won the fight
+                if(g->world->get_flag("thug_fight_outcome") == 1)  // Won the fight
                 {
                     g->send_front(std::make_shared<CmdDisp>("Cowed by your abdominal prowess, the thugs slink off."));
+                    g->send_front(std::make_shared<CmdPause>());
                 }
                 else
                 {
                     g->send_front(std::make_shared<CmdDisp>("Your abdomen is hard and tender from the repeated blows. You give up the ghost."));
                     g->send_front(std::make_shared<CmdPause>());
-                    g->send_front(std::make_shared<CmdQuit>());
+                    g->send_front(std::make_shared<CmdDisp>("Try again? (y/n)"));
+                    auto quit_menu = [=](GameState* g)
+                    {
+                        if(text->line == "n")
+                            text->send_front(std::make_shared<CmdQuit>());
+                        else
+                            text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
+                    };
+                    g->send_front(std::make_shared<CmdCustom>(quit_menu));
                 }
             };
-            text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdCustom>(fn));
         }
         return true;
