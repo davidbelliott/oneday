@@ -1,5 +1,6 @@
 #include "GameStateThugFight.h"
 #include "GameStateTryAgainMenu.h"
+#include "GameStateNotification.h"
 #include "Event.h"
 #include "Engine.h"
 #include "World.h"
@@ -59,10 +60,11 @@ void GameStateThugFight::notify(event_ptr event)
                 abs.tense_ab = 3;
         }
     }
-    else if(event->type == Event::KEY_PRESSED)
+    else if(event->type == Event::KEY_PRESSED && std::static_pointer_cast<EventKeyPressed>(event)->code == sf::Keyboard::Return)
     {
         paused = false;
     }
+    terminal->notify(event);
 }
 
 void GameStateThugFight::update(sf::Time dt)
@@ -168,6 +170,7 @@ void GameStateThugFight::update(sf::Time dt)
         
         time_since_spawn += dt;
     }
+
 }
 
 void GameStateThugFight::draw(sf::RenderTarget* target)
@@ -203,15 +206,13 @@ void GameStateThugFight::draw(sf::RenderTarget* target)
 
 void GameStateThugFight::win()
 {
-    send_front(std::make_shared<CmdDisp>("Cowed by your abdominal prowess, the thugs slink off."));
-    send_front(std::make_shared<CmdPause>());
-    send_front(std::make_shared<CmdPopGameState>());
+    send_front(std::make_shared<CmdRemoveGameState>(this));
+    send_front(std::make_shared<CmdAddGameState>(new GameStateNotification(engine, "Cowed by your abdominal prowess, the thugs slink off.")));
 }
 
 void GameStateThugFight::lose()
 {
-    send_front(std::make_shared<CmdDisp>("Your abdomen is hard and tender from the repeated blows. You give up the ghost."));
-    send_front(std::make_shared<CmdPause>());
-    send_front(std::make_shared<CmdPopGameState>());
-    send_front(std::make_shared<CmdAddGameState>(new GameStateTryAgainMenu(engine)));
+    send(std::make_shared<CmdRemoveGameState>(this));
+    send(std::make_shared<CmdAddGameState>(new GameStateTryAgainMenu(engine)));
+    send(std::make_shared<CmdAddGameState>(new GameStateNotification(engine, "Your abdomen is hard and tender from the repeated blows. You give up the ghost.")));
 }

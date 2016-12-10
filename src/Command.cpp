@@ -168,13 +168,14 @@ void CmdAddGameState::run(GameState* g)
     g->engine->push_state(state_to_add);
 }
 
-CmdPopGameState::CmdPopGameState()
-    : Command(POP_GAMESTATE)
+CmdRemoveGameState::CmdRemoveGameState(GameState* state_to_remove_in)
+    : Command(REMOVE_GAMESTATE),
+    state_to_remove(state_to_remove_in)
 {}
 
-void CmdPopGameState::run(GameState* g)
+void CmdRemoveGameState::run(GameState* g)
 {
-    g->engine->game_states.back()->running = false;
+    state_to_remove->running = false;
 }
 
 CmdGo::CmdGo(std::string new_room_in)

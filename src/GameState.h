@@ -41,7 +41,7 @@ public:
     /* Executes a given command. */
     virtual void execute(cmd_ptr command);
 
-    /* Executes commands in the queue one at a time. */
+    /* Executes all commands on the queue in order. */
     virtual void execute_commands();
 
     /* Updates the gamestate with the given timestep. */

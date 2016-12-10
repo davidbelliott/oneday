@@ -58,7 +58,7 @@ public:
 
         SET_OBJECTIVE,
         ADD_GAMESTATE,
-        POP_GAMESTATE,
+        REMOVE_GAMESTATE,
         ADD_OBJECT,
         RM_OBJECT,
         WEAR,
@@ -185,10 +185,11 @@ class CmdAddGameState : public Command
         void run(GameState* g);
 };
 
-class CmdPopGameState : public Command
+class CmdRemoveGameState : public Command
 {
     public:
-        CmdPopGameState();
+        GameState* state_to_remove;
+        CmdRemoveGameState(GameState* state_to_remove_in);
         void run(GameState* g);
 };
 

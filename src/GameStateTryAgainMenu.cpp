@@ -33,7 +33,7 @@ void GameStateTryAgainMenu::notify(event_ptr event)
         arg_list args = {};
         if(matches(statement, "y", args))
         {
-            running = false;
+            send(std::make_shared<CmdRemoveGameState>(this));
             send(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
         }
         else if(matches(statement, "n", args))
