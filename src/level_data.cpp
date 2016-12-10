@@ -226,6 +226,7 @@ void execute()
             text->send_front(std::make_shared<CmdDisp>("Press any key to tense your abs and deflect their blows."));
             text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
+            world->set_flag("thug_fight_outcome", 1);
         }
         return true;
     };

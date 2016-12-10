@@ -10,6 +10,11 @@
 #include <fstream>
 #include <algorithm>
 
+int round(double a)
+{
+    return static_cast<int>((a + 0.5)/2);
+}
+
 GameStateThugFight::GameStateThugFight(Engine* engine_in)
     : GameState(engine_in)
 {
@@ -58,6 +63,8 @@ void GameStateThugFight::notify(event_ptr event)
                 abs.tense_ab = 2;
             else if(keycode == sf::Keyboard::F)
                 abs.tense_ab = 3;
+            else if(keycode == sf::Keyboard::Q)
+                lose();
         }
     }
     else if(event->type == Event::KEY_PRESSED && std::static_pointer_cast<EventKeyPressed>(event)->code == sf::Keyboard::Return)
@@ -163,7 +170,8 @@ void GameStateThugFight::update(sf::Time dt)
                               rand() % (config::N_COLORS - config::RED) + config::RED,
                               false});
             time_since_spawn = sf::seconds(0);
-            spawn_beats = static_cast<int>((total_time - time_alive) / (total_time) * 7.0 + 1);
+            spawn_beats = round(8.0 / (0.025 * time_alive.asSeconds() + 1.0) + 1.2);
+            beats_to_wait = rand() % spawn_beats + 1;
         }
 
         time_alive += dt;
@@ -198,8 +206,7 @@ void GameStateThugFight::draw(sf::RenderTarget* target)
         //terminal->set_color();
     }
     //terminal->set_color();
-    terminal->output(0, 0, "AB HEALTH:");
-    terminal->output(13, 0, "AB STAMINA: ");
+    terminal->output(0, 0, "TIME REMAINING: " + std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds()))));
     terminal->draw(target);
 }
 
@@ -213,7 +220,9 @@ void GameStateThugFight::lose()
 {
     send(std::make_shared<CmdRemoveGameState>(this));
     send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine,
-                    "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nTry again? (y/n)",
+                    "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nYou had "
+                    + std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds())))
+                    + " seconds remaining.\nTry again? (y/n)",
                     {{"y", {std::make_shared<CmdAddGameState>(new GameStateThugFight(engine))}},
                     {"n", {std::make_shared<CmdQuit>()}}})));
 }
