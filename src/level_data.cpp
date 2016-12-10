@@ -4,7 +4,7 @@
 #include "GameStateIntro.h"
 #include "GameStateText.h"
 #include "GameStateThugFight.h"
-#include "GameStateTryAgainMenu.h"
+#include "GameStateMenu.h"
 #include "Player.h"
 #include "World.h"
 

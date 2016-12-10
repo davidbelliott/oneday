@@ -1,5 +1,5 @@
 #include "GameStateThugFight.h"
-#include "GameStateTryAgainMenu.h"
+#include "GameStateMenu.h"
 #include "GameStateNotification.h"
 #include "Event.h"
 #include "Engine.h"
@@ -189,8 +189,7 @@ void GameStateThugFight::draw(sf::RenderTarget* target)
     for(int i = 0; i < fists.size(); i++)
     {
         //terminal->set_color(config::colors[fists[i].color_index]);
-        terminal->output((int)fists[i].x, (int)fists[i].y * ab_height, thug_fist);
-        //terminal->set_color();
+        terminal->output((int)fists[i].x, (int)fists[i].y * ab_height, thug_fist); //terminal->set_color();
     }
     for(int i = 0; i < fragments.size(); i++)
     {
@@ -213,6 +212,8 @@ void GameStateThugFight::win()
 void GameStateThugFight::lose()
 {
     send(std::make_shared<CmdRemoveGameState>(this));
-    send(std::make_shared<CmdAddGameState>(new GameStateTryAgainMenu(engine)));
-    send(std::make_shared<CmdAddGameState>(new GameStateNotification(engine, "Your abdomen is hard and tender from the repeated blows. You give up the ghost.")));
+    send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine,
+                    "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nTry again? (y/n)",
+                    {{"y", {std::make_shared<CmdAddGameState>(new GameStateThugFight(engine))}},
+                    {"n", {std::make_shared<CmdQuit>()}}})));
 }
