@@ -37,7 +37,7 @@ void GameStateMenu::notify(event_ptr event)
         bool found_option = false;
         for(auto it = options.begin(); it != options.end() && !found_option; ++it)
         {
-            if(matches(statement, it->first, args))
+            if(matches(tokenize(statement, ' '), it->first, args))
             {
                 found_option = true;
                 for(int i = 0; i < it->second.size(); i++)

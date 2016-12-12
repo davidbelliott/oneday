@@ -13,7 +13,7 @@ struct Fist
 struct Abs
 {
     int health;
-    int tense_ab;
+    sf::Time tense[4];
 };
 
 struct Fragment
@@ -24,15 +24,29 @@ struct Fragment
     bool dead;
 };
 
+enum FistState
+{
+    MISSED = -2,
+    BROKEN = -1,
+    NONE = 0,
+    UNBROKEN = 1
+};
+
+
 class GameStateThugFight: public GameState
 {
     public:
         // Resources
         Music* music;
 
+        sf::Time elapsed_time;
+        int total_beats;
+        double cur_beat;
+
+        std::vector<FistState> beats[4];
+
         // Entities
         Abs abs;
-        std::vector<Fist> fists;
         std::vector<Fragment> fragments;
         
         // Sprites
@@ -40,21 +54,18 @@ class GameStateThugFight: public GameState
         std::string abs_str;
         std::string abs_tense_str;
 
-        // Time counters
-        sf::Time time_alive;
-        sf::Time total_time;
-
-        // Difficulty
-        sf::Time time_since_spawn;
-        int spawn_beats;
-        int beats_to_wait;
-
         // Constants
         int ab_height;
         sf::Time beat;
 
         GameStateThugFight(Engine* engine_in);
         virtual ~GameStateThugFight();
+
+        int get_fist_x(int beat_offset);
+        void load_beats();
+        void break_fist(int index, int beat);
+        void try_to_break(int index);
+
 
         virtual void init();
         virtual void cleanup();

@@ -260,24 +260,6 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
         }
     }
 
-    if(o->has_component(Component::ROOM))
-    {
-        ComponentRoom* cr = (ComponentRoom*)(o->get_component(Component::ROOM));
-        for(int i = 0; i < DIRECTION_MAX; i++)
-        {
-            if(cr->directions[i] != "")
-            {
-                DirectionId dir_id = (DirectionId)i;
-                Object* dir_room = g->world->get_direct_child(cr->directions[i], 0);
-                if(dir_room && dir_room->pretty_name != "")
-                {
-                    std::string dir_reference = dir[dir_id].dir_reference;
-                    g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
-                }
-            }
-        }
-    }
-
     for (int j = 0; j < o->children.size(); j++)
     {
         // If it's a deep description, show all children.
@@ -286,6 +268,22 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
             (deep_describe || o->children[j]->discovered))
         {
             describe(g, o->children[j]);
+        }
+    }
+    if(c_room)
+    {
+        for(int i = 0; i < DIRECTION_MAX; i++)
+        {
+            if(c_room->directions[i] != "")
+            {
+                DirectionId dir_id = (DirectionId)i;
+                Object* dir_room = g->world->get_direct_child(c_room->directions[i], 0);
+                if(dir_room && dir_room->pretty_name != "")
+                {
+                    std::string dir_reference = dir[dir_id].dir_reference;
+                    g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                }
+            }
         }
     }
     o->discovered = true;
