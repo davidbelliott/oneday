@@ -75,7 +75,9 @@ Object* Object::get_direct_child(std::string name, int filter)
 	Object* child = NULL;
 	if (has_direct_child(name))
 		return children_hash[name][0];
-	else
+	else if(this->name == name || std::count(this->aliases.begin(), this->aliases.end(), name))
+        return this;
+    else
 		return NULL;
 }
 

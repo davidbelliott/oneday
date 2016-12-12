@@ -25,6 +25,12 @@ public:
     /* Inherited from Observer. */
     virtual void notify(event_ptr event);
 
+    /* Initializes the gamestate when it is pushed onto the engine. */
+    virtual void init();
+
+    /* Cleans up after the gamestate when it is removed from the engine. */
+    virtual void cleanup();
+
     /* Sends a command to the gamestate's queue. */
     virtual void send(cmd_ptr command);
 
@@ -35,7 +41,7 @@ public:
     /* Executes a given command. */
     virtual void execute(cmd_ptr command);
 
-    /* Executes commands in the queue one at a time. */
+    /* Executes all commands on the queue in order. */
     virtual void execute_commands();
 
     /* Updates the gamestate with the given timestep. */

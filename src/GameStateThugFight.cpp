@@ -1,4 +1,6 @@
 #include "GameStateThugFight.h"
+#include "GameStateMenu.h"
+#include "GameStateNotification.h"
 #include "Event.h"
 #include "Engine.h"
 #include "World.h"
@@ -8,155 +10,158 @@
 #include <fstream>
 #include <algorithm>
 
-GameStateThugFight::GameStateThugFight(Engine* engine_in)
-    : GameState(engine_in),
-    abs({ 5, 0}),
-    fists(),
-    fragments(),
-    thug_fist(""),
-    abs_str(),
-    abs_tense_str(),
-    time_alive(sf::seconds(0)),
-    total_time(sf::seconds(120)),
-    time_since_spawn(sf::seconds(100)),
-    beats_to_wait(0),
-    spawn_beats(8),
-    ab_height(6),
-    beat(sf::seconds(60.0 / 165.5 )),
-    music(std::make_shared<Music>("res/100kilos.ogg"))
+int round(double a)
 {
-    std::ifstream thug_fist_file;
+    return static_cast<int>((a + 0.5)/2);
+}
+
+void GameStateThugFight::load_beats()
+{
+    for(int i = 0; i < 4; i++)
+    {
+        beats[i].resize(total_beats, NONE);
+        for(int j = 8; j < total_beats; j++)
+        {
+            beats[i][j] = (rand() % int(4.0 * double(total_beats - j) / double(total_beats) + 4) == 0 ? UNBROKEN : NONE);
+        }
+    }
+}
+
+GameStateThugFight::GameStateThugFight(Engine* engine_in)
+    : GameState(engine_in)
+{
+}
+
+GameStateThugFight::~GameStateThugFight()
+{
+}
+
+void GameStateThugFight::init()
+{
+    cur_beat = 0;
+    total_beats = 330;
+    load_beats();
+    abs = {8, {sf::seconds(0.0), sf::seconds(0.0), sf::seconds(0.0), sf::seconds(0.0)}};
+    fragments = {};
+    ab_height = 6;
+    elapsed_time = sf::seconds(0.0);
+    beat = sf::seconds(60.0 / 165.5 );
+    music = new Music("res/100kilos.ogg");
     thug_fist = get_file_contents("fist.txt");
     abs_str = get_file_contents("abs.txt");
     abs_tense_str = get_file_contents("abs_tense.txt");
     send(std::make_shared<CmdPlayMusic>(music));
 }
 
-GameStateThugFight::~GameStateThugFight()
+void GameStateThugFight::cleanup()
 {
     std::make_shared<CmdStopMusic>(music)->run(this);
 }
 
 void GameStateThugFight::notify(event_ptr event)
 {
-    if(event->type == Event::KEY_PRESSED)
+    if(!paused)
     {
-        sf::Keyboard::Key keycode = std::static_pointer_cast<EventKeyPressed>(event)->code;
-        if(keycode == sf::Keyboard::A)
-            abs.tense_ab = 0;
-        else if(keycode == sf::Keyboard::S)
-            abs.tense_ab = 1;
-        else if(keycode == sf::Keyboard::D)
-            abs.tense_ab = 2;
-        else if(keycode == sf::Keyboard::F)
-            abs.tense_ab = 3;
+        if(event->type == Event::KEY_PRESSED)
+        {
+            sf::Keyboard::Key keycode = std::static_pointer_cast<EventKeyPressed>(event)->code;
+
+            int tense_index = -1;
+            if(keycode == sf::Keyboard::A)
+                tense_index = 0;
+            else if(keycode == sf::Keyboard::S)
+                tense_index = 1;
+            else if(keycode == sf::Keyboard::D)
+                tense_index = 2;
+            else if(keycode == sf::Keyboard::F)
+                tense_index = 3;
+            else if(keycode == sf::Keyboard::Q)
+                lose();
+
+            if(tense_index != -1)
+            {
+                abs.tense[tense_index] = sf::seconds(beat.asSeconds() / 4.0);
+                try_to_break(tense_index);
+            }
+        }
+    }
+    else if(event->type == Event::KEY_PRESSED && std::static_pointer_cast<EventKeyPressed>(event)->code == sf::Keyboard::Return)
+    {
+        paused = false;
+    }
+    terminal->notify(event);
+}
+
+void GameStateThugFight::break_fist(int index, int beat)
+{
+    if(index >= 0 && index < 4 && beat >= 0 && beat < total_beats)
+    {
+        beats[index][beat] = BROKEN;
+        for(int j = 0; j < 25; j++)
+        {
+            fragments.push_back({ static_cast<double>(abs.health),
+                                  static_cast<double>(rand() % 6) + index * ab_height,
+                                  static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 50.0,
+                                  static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
+                                  sf::seconds(0.5),
+                                  false});
+        }
+    }
+}
+
+void GameStateThugFight::try_to_break(int index)
+{
+    if(index >= 0 && index < 4)
+    {
+        if(beats[index][cur_beat] == UNBROKEN)
+        {
+            break_fist(index, cur_beat);
+        }
     }
 }
 
 void GameStateThugFight::update(sf::Time dt)
 {
-    for(int i = 0; i < fists.size(); )
+    if(!paused)
     {
-        if(fists[i].punching)
+        for(int i = 0; i < 4; i++)
         {
-            if(fists[i].x < abs.health)
+            if((int)cur_beat >= 1 && beats[i][(int)cur_beat - 1] == UNBROKEN)
             {
-                if(abs.tense_ab == fists[i].y)
+                abs.health--;
+                beats[i][(int)cur_beat - 1] = MISSED;
+                if(abs.health == 0)
                 {
-                    for(int j = 0; j < 25; j++)
-                    {
-                        fragments.push_back({ static_cast<double>(abs.health),
-                                              static_cast<double>(rand() % 6) + fists[i].y * ab_height,
-                                              static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 50.0,
-                                              static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
-                                              sf::seconds(0.5),
-                                              fists[i].color_index,
-                                              false});
-                    }
+                    lose();
                 }
-                else
-                {
-
-                    for(int j = 0; j < 50; j++)
-                    {
-                        fragments.push_back({ static_cast<double>(abs.health),
-                                              static_cast<double>(rand() % 6) + fists[i].y * ab_height,
-                                              static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
-                                              static_cast<double>(rand()) / static_cast<double>(RAND_MAX) * 100.0 - 50.0,
-                                              sf::seconds(0.5),
-                                              config::RED,
-                                              false});
-                    }
-                    abs.health--;
-                    if(abs.health == 0)
-                    {
-                        world->set_flag("thug_fight_outcome", -1);
-                        running = false;
-                    }
-                }
-                fists[i].dead = true;
             }
-            fists[i].x -= 2;
         }
-        else
+        for(int i = 0; i < fragments.size(); )
         {
-            fists[i].x -= (dt.asSeconds() / 2.0 * 13.0);
+            if(fragments[i].x < 0 || fragments[i].x > config::screen_w_chars
+               || fragments[i].y < 0 || fragments[i].y > config::screen_h_chars)
+                fragments[i].dead = true;
+            fragments[i].x += fragments[i].vx * dt.asSeconds();
+            fragments[i].y += fragments[i].vy * dt.asSeconds();
+            fragments[i].vy += 0.5;
+            fragments[i].remaining_time -= dt;
+            if(fragments[i].dead)
+                fragments.erase(fragments.begin() + i);
+            else
+                i++;
         }
-
-
-        if(fists[i].remaining_time.asSeconds() <= 0.25f && fists[i].color_index == config::BASE_6)
-          fists[i].color_index = rand() % (config::N_COLORS - config::RED) + config::RED;
-        if(fists[i].remaining_time.asSeconds() <= 0.0)
-            fists[i].punching = true;
-
-        fists[i].remaining_time -= dt;
-
-        if(fists[i].dead)
-            fists.erase(fists.begin() + i);
-        else
-            i++;
-    }
-    for(int i = 0; i < fragments.size(); )
-    {
-        if(fragments[i].x < 0 || fragments[i].x > config::screen_w_chars
-           || fragments[i].y < 0 || fragments[i].y > config::screen_h_chars)
-            fragments[i].dead = true;
-        fragments[i].x += fragments[i].vx * dt.asSeconds();
-        fragments[i].y += fragments[i].vy * dt.asSeconds();
-        fragments[i].remaining_time -= dt;
-        if(fragments[i].dead)
-            fragments.erase(fragments.begin() + i);
-        else
-            i++;
-    }
-    if(time_alive >= total_time)
-    {
-        if(fists.size() == 0)
+        if(cur_beat > total_beats)
         {
-            running = false;
-            world->set_flag("thug_fight_outcome", 1);
+            win();
         }
-
+        
+        for(int i = 0; i < 4; i++)
+        {
+            abs.tense[i] -= dt;
+        }
+        elapsed_time += dt;
+        cur_beat = (elapsed_time.asSeconds() / beat.asSeconds());
     }
-    else if(time_since_spawn.asSeconds() >= beats_to_wait * beat.asSeconds())
-    {
-        int rand_offset = rand() % 3;
-        if(!fists.empty() && rand_offset >= fists.back().y)
-            rand_offset++;
-        fists.push_back({ static_cast<double>(config::screen_w_chars - 1),
-                          static_cast<double>(rand_offset % 4),
-                          false,
-                          sf::seconds(2),
-                          rand() % (config::N_COLORS - config::RED) + config::RED,
-                          false});
-        time_since_spawn = sf::seconds(0);
-        spawn_beats = static_cast<int>((total_time - time_alive) / (total_time) * 7.0 + 1);
-        beats_to_wait = 1;//spawn_beats;
-    }
-
-    time_alive += dt;
-    
-    time_since_spawn += dt;
 }
 
 void GameStateThugFight::draw(sf::RenderTarget* target)
@@ -164,19 +169,32 @@ void GameStateThugFight::draw(sf::RenderTarget* target)
     terminal->clr();
     for(int i = 0; i < 4; i++)
     {
-        std::string ab_str_to_display = abs.tense_ab == i ? abs_tense_str : abs_str;
+        std::string ab_str_to_display = abs.tense[i].asSeconds() > 0.0 ? abs_tense_str : abs_str;
         /*if(abs.tense_ab == i)
             terminal->set_color(config::colors[config::ORANGE]);
         else
             terminal->set_color();*/
         terminal->output(abs.health - 5, i * ab_height, ab_str_to_display);
+        std::string key_str_to_display = "";
+        if(i == 0)
+            key_str_to_display = "A";
+        else if(i == 1)
+            key_str_to_display = "S";
+        else if(i == 2)
+            key_str_to_display = "D";
+        else if(i == 3)
+            key_str_to_display = "F";
+        terminal->output(0, i * ab_height + ab_height / 2, key_str_to_display);
     }
     //terminal->set_color();
-    for(int i = 0; i < fists.size(); i++)
+    for(int i = 0; i < 4; i++)
     {
-        //terminal->set_color(config::colors[fists[i].color_index]);
-        terminal->output((int)fists[i].x, (int)fists[i].y * ab_height, thug_fist);
-        //terminal->set_color();
+        for(int j = std::max(0, (int)cur_beat - 2); j <= std::min(total_beats, (int)cur_beat + 8); j++)
+        {
+            //terminal->set_color(config::colors[fists[i].color_index]);
+            if(beats[i][j] == UNBROKEN)
+                terminal->output(get_fist_x(j), i * ab_height, thug_fist); //terminal->set_color();
+        }
     }
     for(int i = 0; i < fragments.size(); i++)
     {
@@ -185,7 +203,37 @@ void GameStateThugFight::draw(sf::RenderTarget* target)
         //terminal->set_color();
     }
     //terminal->set_color();
-    terminal->output(0, 0, "AB HEALTH:");
-    terminal->output(13, 0, "AB STAMINA: ");
+    //terminal->output(0, 0, "TIME REMAINING: " + std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds()))));
     terminal->draw(target);
+}
+
+int GameStateThugFight::get_fist_x(int index)
+{
+    if(index <= cur_beat)
+    {
+        return abs.health;
+    }
+    else
+    {
+        double percent_screen_advancement = 1.0 - (double(index) - cur_beat) / 8.0;
+        double squared_offset = 1 - percent_screen_advancement * percent_screen_advancement * percent_screen_advancement;
+        return abs.health + int(squared_offset * (double(config::screen_w_chars) - abs.health)) + 1;
+    }
+}
+
+void GameStateThugFight::win()
+{
+    send_front(std::make_shared<CmdRemoveGameState>(this));
+    send_front(std::make_shared<CmdAddGameState>(new GameStateNotification(engine, "Cowed by your abdominal prowess, the thugs slink off.")));
+}
+
+void GameStateThugFight::lose()
+{
+    send(std::make_shared<CmdRemoveGameState>(this));
+    send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine,
+                    "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nYou had ",
+                    //+ std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds())))
+                    //+ " seconds remaining.\nTry again? (y/n)",
+                    {{"y", {std::make_shared<CmdAddGameState>(new GameStateThugFight(engine))}},
+                    {"n", {std::make_shared<CmdQuit>()}}})));
 }

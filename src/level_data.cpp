@@ -4,6 +4,7 @@
 #include "GameStateIntro.h"
 #include "GameStateText.h"
 #include "GameStateThugFight.h"
+#include "GameStateMenu.h"
 #include "Player.h"
 #include "World.h"
 
@@ -21,7 +22,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "temp_lane";
+	world->cur_room = "jamal_bedroom";
 
     Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
     player->clothing = "";
@@ -39,6 +40,12 @@ void execute()
 
     ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg");
     jamal_bedroom->add_component(c_music);
+    jamal_bedroom->pre_command = [=](Command* cmd)
+    {
+        if(cmd->type == Command::DESCRIBE)
+            text->send_front(std::make_shared<CmdPlayMusic>(c_music->music));
+        return true;
+    };
 
     Object* posters = new Object("posters");
     posters->aliases = { "poster", "wall", "walls" };
@@ -55,17 +62,13 @@ void execute()
     paper->add_component(new ComponentDescription("A crumpled sheet of paper lies on the floor."));
     paper->add_component(new ComponentText(paper_text));
     paper->add_component(new ComponentTakeable());
-    paper->pre_command = [=](Command* cmd)
-    {
-        text->send_front(std::make_shared<CmdPlayMusic>(c_music->music));
-        return true;
-    };
     jamal_bedroom->add_child(paper);
 
     world->add_child(jamal_bedroom);
 
     Object* jamal_bathroom = new Object("jamal_bathroom");
     jamal_bathroom->pretty_name = "Jamal's bathroom";
+    jamal_bathroom->add_component(c_music);
     jamal_bathroom->add_component(new ComponentDescription("This is where you defecate daily. This cesuo is a reeking pigsty.\nOne door leads to the north."));
     jamal_bathroom->add_component(new ComponentRoom({{NORTH, "jamal_bedroom"}}));
 
@@ -99,6 +102,7 @@ void execute()
     Object* jamal_corridor = new Object("jamal_corridor");
     jamal_corridor->pretty_name = "the Magick corridor";
     jamal_corridor->add_component(new ComponentDescription("This hallway is imbued with a strong Faerie Magick."));
+    jamal_corridor->add_component(new ComponentMusic("res/vulcan.ogg"));
     jamal_corridor->add_component(new ComponentRoom({
                 {NORTH, "jamal_house_block"},
                 {EAST, "jamal_staircase"},
@@ -225,29 +229,7 @@ void execute()
             text->send_front(std::make_shared<CmdDisp>("Press any key to tense your abs and deflect their blows."));
             text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
-            auto fn = [=](GameState* g)
-            {
-                if(g->world->get_flag("thug_fight_outcome") == 1)  // Won the fight
-                {
-                    g->send_front(std::make_shared<CmdDisp>("Cowed by your abdominal prowess, the thugs slink off."));
-                    g->send_front(std::make_shared<CmdPause>());
-                }
-                else
-                {
-                    g->send_front(std::make_shared<CmdDisp>("Your abdomen is hard and tender from the repeated blows. You give up the ghost."));
-                    g->send_front(std::make_shared<CmdPause>());
-                    g->send_front(std::make_shared<CmdDisp>("Try again? (y/n)"));
-                    auto quit_menu = [=](GameState* g)
-                    {
-                        if(text->line == "n")
-                            text->send_front(std::make_shared<CmdQuit>());
-                        else
-                            text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
-                    };
-                    g->send_front(std::make_shared<CmdCustom>(quit_menu));
-                }
-            };
-            text->send_front(std::make_shared<CmdCustom>(fn));
+            world->set_flag("thug_fight_outcome", 1);
         }
         return true;
     };

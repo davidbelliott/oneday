@@ -9,6 +9,15 @@ GameStateText::GameStateText(Engine* engine_in)
       parser(new Parser()),
       line("")
 {
+}
+
+GameStateText::~GameStateText()
+{
+    delete parser;
+}
+
+void GameStateText::init()
+{
     std::string title_string(get_file_contents("jamal.txt"));
     running = true;
     send(std::make_shared<CmdOutput>(0, 0, "One Day in the Life of"));
@@ -19,27 +28,13 @@ GameStateText::GameStateText(Engine* engine_in)
     send(std::make_shared<CmdDisp>("You wake."));
     send(std::make_shared<CmdDisp>("No canine utterances grace your ears,\nand you can smell no fresh bacon cooking in the kitchen."));
     send(std::make_shared<CmdDisp>("You should look around."));
+    send(std::make_shared<CmdInput>());
 }
 
-GameStateText::~GameStateText()
+void GameStateText::cleanup()
 {
-    delete parser;
+
 }
-/*
-void GameStateText::init()
-{
-    running = true;
-    send(std::make_shared<CmdOutput>(0, 0, "================================================================================"));
-    send(std::make_shared<CmdOutput>(0, 1, "One Day in the Life of"));
-    std::shared_ptr<CmdOutput> output = std::make_shared<CmdOutput>(0, 2, title_string);
-    output->spread = 100;
-    send(output);
-    send(std::make_shared<CmdOutput>(0, 9, "================================================================================"));
-    send(std::make_shared<CmdOutput>(0, 10, "Produced by moraine"));
-    parser = new Parser();
-	engine->get_world()->set_current_room(world->get_current_room()->name.word, this);
-    add_event(std::make_shared<CmdInput>());
-}*/
 
 void GameStateText::notify(event_ptr event)
 {

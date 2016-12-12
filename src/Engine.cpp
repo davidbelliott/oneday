@@ -26,6 +26,7 @@ Engine::~Engine()
 void Engine::push_state(GameState* state)
 {
     game_states.push_back(state);
+    state->init();
 }
 
 void Engine::pop_state()
@@ -34,6 +35,7 @@ void Engine::pop_state()
     {
         GameState* remove = game_states.back();
         game_states.pop_back();
+        remove->cleanup();
         delete remove;
         remove = nullptr;
     }
@@ -88,9 +90,16 @@ void Engine::draw()
 
 void Engine::prune()
 {
-    while(!game_states.empty() && !game_states.back()->running)
+    for(int i = 0; i < game_states.size(); )
     {
-        pop_state();
+        if(!game_states[i]->running)
+        {
+            game_states[i]->cleanup();
+            delete game_states[i];
+            game_states.erase(game_states.begin() + i);
+        }
+        else
+            i++;
     }
     if(game_states.empty())
         running = false;

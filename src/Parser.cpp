@@ -2,6 +2,7 @@
 #include "World.h"
 #include "Player.h"
 #include "GameState.h"
+#include "GameStateMenu.h"
 #include "Engine.h"
 #include "Command.h"
 #include <iostream>
@@ -20,10 +21,11 @@ Parser::~Parser()
 {
 }
 
-Object* get_object(token_list tokens, GameState* g)
+Object* get_object(token_list tokens, GameState* g, int* index)
 {
     Object* found_object = nullptr;
-    for(int i = 0; i < tokens.size() && !found_object; i++)
+    int i = 0;
+    for( ; i < tokens.size() && !found_object; i++)
     {
         found_object = g->world->get_current_room()->get_indirect_child(tokens[i], 0);
         if(found_object && (!found_object->active || !found_object->discovered))
@@ -35,6 +37,15 @@ Object* get_object(token_list tokens, GameState* g)
                 found_object = nullptr;
         }
     }
+    i--;
+    if(index)
+    {
+        if(!found_object)
+            *index = -1;
+        else
+            *index = i;
+    }
+        
     return found_object;
 }
 
@@ -47,9 +58,11 @@ std::string to_lower(std::string str)
     return lower_str;
 }
 
-token_list slice(token_list list, int start)
+token_list slice(token_list list, int start, int end)
 {
-    token_list slice_list(list.begin() + start, list.end());
+    if(end == -1)
+        end = list.size();
+    token_list slice_list(list.begin() + start, list.begin() + end);
     return slice_list;
 }
 
@@ -170,10 +183,10 @@ bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
     }
 }
 
-bool matches(std::string statement, std::string pattern, arg_list& args)
+bool matches(token_list statement, std::string pattern, arg_list& args)
 {
     args = {};
-    return match_token_lists(tokenize(statement, ' '), tokenize(pattern, ' '), &args);
+    return match_token_lists(statement, tokenize(pattern, ' '), &args);
 }
 
 std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
@@ -188,7 +201,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     bool found_object = false;
 
     //=== Entering an object
-    if(matches(statement, "go in #", args) || matches(statement, "enter #", args))
+    if(matches(tokens, "go in #", args) || matches(tokens, "enter #", args))
     {
         // Go into a portal object
 
@@ -204,7 +217,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Going in a direction
-    else if(matches(statement, "go #", args))
+    else if(matches(tokens, "go #", args))
     {
         DirectionId desired_direction = DIRECTION_MAX;
         if(args[0][0] == "north" || args[0][0] == "n")
@@ -248,7 +261,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Looking around
-    else if(matches(statement, "look around", args) || matches(statement, "look", args) || matches(statement, "l", args))
+    else if(matches(tokens, "look around", args) || matches(tokens, "look", args) || matches(tokens, "l", args))
     {
         std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
         describe->deep = true;
@@ -257,7 +270,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Examining something
-    else if(matches(statement, "examine #", args) || matches(statement, "look at #", args) || matches(statement, "look #", args))
+    else if(matches(tokens, "examine #", args) || matches(tokens, "look at #", args) || matches(tokens, "look #", args))
     {
         Object* obj = get_object(args[0], g);
         if(obj)
@@ -274,20 +287,25 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Quitting
-    else if(matches(statement, "quit", args) || matches(statement, "q", args) || matches(statement, "exit", args) || matches(statement, "bye bye", args))
+    else if(matches(tokens, "quit", args) || matches(tokens, "q", args) || matches(tokens, "exit", args) || matches(tokens, "bye bye", args))
     {
-        commands.push_back(std::make_shared<CmdQuit>());
+        GameStateMenu* menu = new GameStateMenu(
+                        g->engine,
+                        "Are you sure you want to quit? (y/n)",
+                        {{"y", {std::make_shared<CmdQuit>()}},
+                         {"n", {}}});
+        commands.push_back(std::make_shared<CmdAddGameState>(menu));
     }
 
     //=== Taking
-    else if(matches(statement, "take #", args)
-            || matches(statement, "get #", args)
-            || matches(statement, "pick up #", args)
-            || matches(statement, "pick # up", args)
-            || matches(statement, "grab #", args)
-            || matches(statement, "snatch #", args)
-            || matches(statement, "obtain #", args)
-            || matches(statement, "grasp #", args))
+    else if(matches(tokens, "take #", args)
+            || matches(tokens, "get #", args)
+            || matches(tokens, "pick up #", args)
+            || matches(tokens, "pick # up", args)
+            || matches(tokens, "grab #", args)
+            || matches(tokens, "snatch #", args)
+            || matches(tokens, "obtain #", args)
+            || matches(tokens, "grasp #", args))
     {
         Object* obj = get_object(args[0], g);
         if(!obj)
@@ -309,18 +327,18 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Obscenity
-    else if(matches(statement, "fuck", args)
-            || matches(statement, "shit", args)
-            || matches(statement, "damn", args)
-            || matches(statement, "fug", args))
+    else if(matches(tokens, "fuck", args)
+            || matches(tokens, "shit", args)
+            || matches(tokens, "damn", args)
+            || matches(tokens, "fug", args))
     {
         commands.push_back(std::make_shared<CmdDisp>("-keep it clean, nigga"));
     }
 
     //=== Reading
-    else if(matches(statement, "read #", args)
-        || matches(statement, "peruse #", args)
-        || matches(statement, "browse #", args))
+    else if(matches(tokens, "read #", args)
+        || matches(tokens, "peruse #", args)
+        || matches(tokens, "browse #", args))
     {
         Object* obj = get_object(args[0], g);
         if(obj)
@@ -336,13 +354,13 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Hitting
-    else if(matches(statement, "hit #", args)
-            || matches(statement, "flip #", args)
-            || matches(statement, "toggle #", args)
-            || matches(statement, "pull #", args)
-            || matches(statement, "push #", args)
-            || matches(statement, "yank #", args)
-            || matches(statement, "depress #", args))
+    else if(matches(tokens, "hit #", args)
+            || matches(tokens, "flip #", args)
+            || matches(tokens, "toggle #", args)
+            || matches(tokens, "pull #", args)
+            || matches(tokens, "push #", args)
+            || matches(tokens, "yank #", args)
+            || matches(tokens, "depress #", args))
     {
         Object* obj = get_object(args[0], g);
         if(obj)
@@ -367,11 +385,11 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Wearing
-    else if(matches(statement, "wear #", args)
-            || matches(statement, "put on #", args)
-            || matches(statement, "put # on", args)
-            || matches(statement, "don #", args)
-            || matches(statement, "dress in #", args))
+    else if(matches(tokens, "wear #", args)
+            || matches(tokens, "put on #", args)
+            || matches(tokens, "put # on", args)
+            || matches(tokens, "don #", args)
+            || matches(tokens, "dress in #", args))
     {
 
         Object* obj = get_object(args[0], g);
@@ -396,9 +414,9 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Talking to
-    else if(matches(statement, "talk to #", args)
-            || matches(statement, "talk with #", args)
-            || matches(statement, "converse with #", args))
+    else if(matches(tokens, "talk to #", args)
+            || matches(tokens, "talk with #", args)
+            || matches(tokens, "converse with #", args))
     {
 
         Object* obj = get_object(args[0], g);
@@ -425,9 +443,9 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Climbing
-    else if(matches(statement, "climb up #", args)
-            || matches(statement, "climb #", args)
-            || matches(statement, "get on #", args))
+    else if(matches(tokens, "climb up #", args)
+            || matches(tokens, "climb #", args)
+            || matches(tokens, "get on #", args))
     {
         Object* obj = get_object(args[0], g);
         if(obj)
@@ -459,6 +477,28 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         else
         {
             commands.push_back(std::make_shared<CmdDisp>("You can find no " + join(args[0], ' ') + " to climb here."));
+        }
+    }
+
+    //=== Unrecognized pattern
+    else
+    {
+        int index = -1;
+        Object* obj = get_object(tokens, g, &index);
+        if(obj)
+        {
+            token_list lhs = slice(tokens, 0, index);
+            token_list rhs = slice(tokens, index + 1);
+            std::string output = "";
+            if(lhs.size() == 0)
+                output = "I don't understand what you want to do to the " + obj->pretty_name + ".";
+            else
+                output = "I don't understand how to " + join(lhs, ' ') + " something" + (rhs.size() > 0 ? " " + join(rhs, ' ') : "") + ".";
+            commands.push_back(std::make_shared<CmdDisp>(output));
+        }
+        else
+        {
+            commands.push_back(std::make_shared<CmdDisp>("I don't understand what u talkin bout."));
         }
     }
 

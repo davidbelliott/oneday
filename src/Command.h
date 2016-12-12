@@ -58,6 +58,7 @@ public:
 
         SET_OBJECTIVE,
         ADD_GAMESTATE,
+        REMOVE_GAMESTATE,
         ADD_OBJECT,
         RM_OBJECT,
         WEAR,
@@ -133,24 +134,24 @@ class CmdInput : public Command
 class CmdPlayMusic : public Command
 {
     public:
-        std::shared_ptr<Music> music;
-        CmdPlayMusic(std::shared_ptr<Music> music_in);
+        Music* music;
+        CmdPlayMusic(Music* music_in);
         void run(GameState* g);
 };
 
 class CmdPauseMusic : public Command
 {
     public:
-        std::shared_ptr<Music> music;
-        CmdPauseMusic(std::shared_ptr<Music> music_in);
+        Music* music;
+        CmdPauseMusic(Music* music_in);
         void run(GameState* g);
 };
 
 class CmdStopMusic : public Command
 {
     public:
-        std::shared_ptr<Music> music;
-        CmdStopMusic(std::shared_ptr<Music> music_in);
+        Music* music;
+        CmdStopMusic(Music* music_in);
         void run(GameState* g);
 };
 
@@ -181,6 +182,14 @@ class CmdAddGameState : public Command
     public:
         GameState* state_to_add;
         CmdAddGameState(GameState* state_to_add_in);
+        void run(GameState* g);
+};
+
+class CmdRemoveGameState : public Command
+{
+    public:
+        GameState* state_to_remove;
+        CmdRemoveGameState(GameState* state_to_remove_in);
         void run(GameState* g);
 };
 
