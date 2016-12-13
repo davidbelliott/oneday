@@ -32,7 +32,8 @@ public:
         QUIT,
         // Model commands
         GO,
-        LOOK,
+        LOOK_AROUND,
+        EXAMINE,
         SAVE,
         RESTORE,
         RESTART,
@@ -62,7 +63,6 @@ public:
         ADD_OBJECT,
         RM_OBJECT,
         WEAR,
-        DESCRIBE,
         HIT,
         CUSTOM
     };
@@ -251,12 +251,19 @@ class CmdCustom : public Command
         void run(GameState* g);
 };
 
-class CmdDescribe : public Command
+void recursive_show(GameState* g, Object* o, bool show_children=false, bool description=false);
+
+class CmdLookAround : public Command
 {
     public:
-        bool deep;
-        CmdDescribe();
-        void describe(GameState* g, Object* o, bool deep_describe = false);
+        CmdLookAround();
+        void run(GameState* g);
+};
+
+class CmdExamine : public Command
+{
+    public:
+        CmdExamine();
         void run(GameState* g);
 };
 

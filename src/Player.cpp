@@ -6,6 +6,7 @@ Player::Player(std::string name_in, std::string description_in)
     objective(""),
     clothing("")
 {
+    add_component(new ComponentInventory());
 }
 
 Player::~Player()

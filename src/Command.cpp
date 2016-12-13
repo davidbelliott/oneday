@@ -197,10 +197,8 @@ void CmdGo::run(GameState* g)
             g->send_front(std::make_shared<CmdPlayMusic>(music_entering->music));
 
         //g->send_front(std::make_shared<CmdClear>());
-        std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
-        describe->deep = true;
-        describe->add_object(g->world->get_current_room());
-        g->send_front(describe);
+        std::shared_ptr<CmdLookAround> look_around = std::make_shared<CmdLookAround>();
+        g->send_front(look_around);
     }
     else
     {
@@ -231,84 +229,83 @@ void CmdCustom::run(GameState* g)
     fn(g);
 }
 
-CmdDescribe::CmdDescribe()
-    : Command(DESCRIBE),
-    deep(false)
+CmdLookAround::CmdLookAround()
+    : Command(LOOK_AROUND)
 {
 }
 
-void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
+void recursive_show(GameState* g, Object* o, bool show_children, bool description)
 {
-    ComponentRoom* c_room = (ComponentRoom*)o->get_component(Component::ROOM);
     ComponentDescription* c_desc = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
     ComponentText* c_text = (ComponentText*)o->get_component(Component::TEXT);
+    ComponentInventory* c_inv = (ComponentInventory*)o->get_component(Component::INVENTORY);
 
-    if(o->has_direct_child("player"))
+    if(c_desc && c_desc->current_appearance != "")
     {
-        g->engine->terminal->disp("You are in " + o->pretty_name + ".");
-        if(c_desc)
-            g->engine->terminal->disp(c_desc->current_appearance);
-    }
-    else if(c_desc)
-    {
-        if(deep_describe)
+        if(description)
         {
             if(c_desc->description != "")
-            {
                 g->engine->terminal->disp(c_desc->description);
-            }
-            else if(c_text)
-            {
-                std::shared_ptr<CmdRead> read = std::make_shared<CmdRead>();
-                read->add_object(o);
-                g->send_front(read);
-            }
-            else if(o->children.empty())
-            {
+            else if(o->children.size() == 0 && !c_text)
                 g->engine->terminal->disp("You see nothing special about the " + o->pretty_name + ".");
-            }
+            if(c_text)
+                g->engine->terminal->disp("The " + o->pretty_name + " reads:\n" + c_text->text);
         }
         else
-        {
             g->engine->terminal->disp(c_desc->current_appearance);
+    }
+
+    if(!c_inv)
+    {
+        for (int j = 0; j < o->children.size(); j++)
+        {
+            if(o->children[j]->active && (show_children || o->children[j]->discovered))
+                recursive_show(g, o->children[j]);
         }
     }
 
-    for (int j = 0; j < o->children.size(); j++)
+    o->discovered = true;
+}
+
+void CmdLookAround::run(GameState* g)
+{
+    Object* player = g->world->get_player();
+    if(player)
     {
-        // If it's a deep description, show all children.
-        // Otherwise, don't show the undiscovered children.
-        if(o->children[j]->active &&
-            (deep_describe || o->children[j]->discovered))
+        Object* room = player->parent;
+        if(room)
         {
-            describe(g, o->children[j]);
-        }
-    }
-    if(c_room)
-    {
-        for(int i = 0; i < DIRECTION_MAX; i++)
-        {
-            if(c_room->directions[i] != "")
+            g->engine->terminal->disp("You are in " + room->pretty_name + ".");
+            recursive_show(g, room, true, false);
+            ComponentRoom* c_room = (ComponentRoom*)room->get_component(Component::ROOM);
+            if(c_room)
             {
-                DirectionId dir_id = (DirectionId)i;
-                Object* dir_room = g->world->get_direct_child(c_room->directions[i], 0);
-                if(dir_room && dir_room->pretty_name != "")
+                for(int i = 0; i < DIRECTION_MAX; i++)
                 {
-                    std::string dir_reference = dir[dir_id].dir_reference;
-                    g->engine->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                    if(c_room->directions[i] != "")
+                    {
+                        DirectionId dir_id = (DirectionId)i;
+                        Object* dir_room = g->world->get_direct_child(c_room->directions[i], 0);
+                        if(dir_room && dir_room->pretty_name != "")
+                        {
+                            std::string dir_reference = dir[dir_id].dir_reference;
+                            g->engine->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                        }
+                    }
                 }
             }
         }
     }
-    o->discovered = true;
 }
 
-void CmdDescribe::run(GameState* g)
+CmdExamine::CmdExamine()
+    : Command(EXAMINE)
+{ }
+
+void CmdExamine::run(GameState* g)
 {
     for(int i = 0; i < objects.size(); i++)
-    {
-        describe(g, objects[i], deep);
-    }
+        recursive_show(g, objects[i], true, true);
 }
 
 CmdTake::CmdTake()

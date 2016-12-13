@@ -250,10 +250,8 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
     //=== Looking around
     else if(matches(tokens, "look around", args) || matches(tokens, "look", args) || matches(tokens, "l", args))
     {
-        std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
-        describe->deep = true;
-        describe->add_object(g->world->get_current_room());
-        commands.push_back(describe);
+        std::shared_ptr<CmdLookAround> look_around = std::make_shared<CmdLookAround>();
+        commands.push_back(look_around);
     }
 
     //=== Examining something
@@ -262,10 +260,9 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         Object* obj = get_object(args[0], g);
         if(obj)
         {
-            std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
-            describe->deep = true;
-            describe->add_object(obj);
-            commands.push_back(describe);
+            std::shared_ptr<CmdExamine> examine = std::make_shared<CmdExamine>();
+            examine->add_object(obj);
+            commands.push_back(examine);
         }
         else
         {

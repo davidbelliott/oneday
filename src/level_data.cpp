@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "garbage_alley";
+	world->cur_room = "jamal_bedroom";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -42,7 +42,7 @@ void execute()
     jamal_bedroom->add_component(c_music);
     jamal_bedroom->pre_command = [=](Command* cmd)
     {
-        if(cmd->type == Command::DESCRIBE)
+        if(cmd->type == Command::LOOK_AROUND)
             text->send_front(std::make_shared<CmdPlayMusic>(c_music->music));
         return true;
     };
@@ -222,7 +222,7 @@ void execute()
     temp_lane->add_component(new ComponentDescription("A temporary lane."));
     temp_lane->pre_command = [=](Command* cmd)
     {
-        if(cmd->type == Command::DESCRIBE && world->get_flag("thug_fight_outcome") == 0)
+        if(cmd->type == Command::LOOK_AROUND && world->get_flag("thug_fight_outcome") == 0)
         {
             text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!"));
             text->send_front(std::make_shared<CmdPause>());

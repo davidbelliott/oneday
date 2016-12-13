@@ -22,7 +22,8 @@ class Component
             TAKEABLE,
             CLIMBABLE,
             MUSIC,
-            OPEN_CLOSE
+            OPEN_CLOSE,
+            INVENTORY
         } type;
         Component(Type type_in)
             : type(type_in)
@@ -175,6 +176,16 @@ class ComponentMusic : public Component
             : Component(MUSIC),
             music(new Music(filename_in)),
             persistent(persistent_in)
+        {
+        }
+};
+
+class ComponentInventory : public Component
+{
+    public:
+        
+        ComponentInventory()
+            : Component(INVENTORY)
         {
         }
 };

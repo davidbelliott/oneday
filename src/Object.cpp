@@ -33,7 +33,6 @@ Object::Object(std::string name_in)
 Object::Object()
 	: Object("")
 {
-
 }
 
 Object::~Object()
