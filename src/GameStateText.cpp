@@ -20,6 +20,7 @@ void GameStateText::init()
 {
     std::string title_string(get_file_contents("jamal.txt"));
     running = true;
+    world->set_current_room(world->cur_room);
     send(std::make_shared<CmdOutput>(0, 0, "One Day in the Life of"));
     std::shared_ptr<CmdOutput> output = std::make_shared<CmdOutput>(0, 1, title_string);
     output->spread = 100;

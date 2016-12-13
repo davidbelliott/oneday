@@ -186,13 +186,27 @@ CmdGo::CmdGo(std::string new_room_in)
 
 void CmdGo::run(GameState* g)
 {
-    ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
-    g->world->set_current_room(new_room);
-    ComponentMusic* music_entering = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
-    if(music_leaving && !music_leaving->persistent)
-        g->send_front(std::make_shared<CmdPauseMusic>(music_leaving->music));
-    if(music_entering)
-        g->send_front(std::make_shared<CmdPlayMusic>(music_entering->music));
+    if(g->world->get_indirect_child(new_room, 0))
+    {
+        ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
+        g->world->set_current_room(new_room);
+        ComponentMusic* music_entering = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
+        if(music_leaving && !music_leaving->persistent)
+            g->send_front(std::make_shared<CmdPauseMusic>(music_leaving->music));
+        if(music_entering)
+            g->send_front(std::make_shared<CmdPlayMusic>(music_entering->music));
+
+        //g->send_front(std::make_shared<CmdClear>());
+        std::shared_ptr<CmdDescribe> describe = std::make_shared<CmdDescribe>();
+        describe->deep = true;
+        describe->add_object(g->world->get_current_room());
+        g->send_front(describe);
+    }
+    else
+    {
+        g->send_front(std::make_shared<CmdDisp>("Error: room " + new_room + " doesn't exist."));
+    }
+
     //g->world->get_current_room()->describe(g);
 }
 
@@ -229,7 +243,7 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
     ComponentDescription* c_desc = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
     ComponentText* c_text = (ComponentText*)o->get_component(Component::TEXT);
 
-    if(c_room)
+    if(o->has_direct_child("player"))
     {
         g->engine->terminal->disp("You are in " + o->pretty_name + ".");
         if(c_desc)

@@ -23,7 +23,8 @@ void execute()
 	};
 	world->cur_room = "garbage_alley";
 
-    Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
+    Player* player = new Player("player", "a sturdy creature fond of drink and industry");
+    player->pretty_name = "Jamal";
     player->clothing = "";
     world->add_child(player);
     world->set_player(player);
@@ -284,7 +285,7 @@ void execute()
     Object* garbage_cans = new Object("garbage cans");
     garbage_cans->aliases = {"cans", "garbage", "rubbish", "bins", "can", "bin"};
     garbage_cans->add_component(new ComponentDescription("Several cans huddle by the wall in a pool of sodium-vapor light."));
-    garbage_cans->add_component(new ComponentClimbable({{UP, "can_tops"}}));
+    garbage_cans->add_component(new ComponentClimbable({{UP, "garbage cans"}}));
     garbage_cans->add_component(new ComponentRoom({{DOWN, "garbage_alley"}}));
     garbage_alley->add_child(garbage_cans);
 
@@ -296,7 +297,7 @@ void execute()
 
     Object* roof = new Object("roof");
     roof->pretty_name = "the roof";
-    roof->add_component(new ComponentRoom({{DOWN, "can_tops"}}));
+    roof->add_component(new ComponentRoom({{DOWN, "garbage cans"}}));
     roof->add_component(new ComponentDescription("You hear the regular dripping of water. The roof is dark and tarry."));
     world->add_child(roof);
 
