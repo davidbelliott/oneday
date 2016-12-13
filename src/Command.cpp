@@ -54,7 +54,7 @@ CmdDisp::CmdDisp(std::string str_in, bool append_newline_in)
 
 void CmdDisp::run(GameState* g)
 {
-    g->terminal->disp(str, append_newline);
+    g->engine->terminal->disp(str, append_newline);
 }
 
 CmdOutput::CmdOutput(int x_in, int y_in, std::string str_in)
@@ -68,7 +68,7 @@ CmdOutput::CmdOutput(int x_in, int y_in, std::string str_in)
 
 void CmdOutput::run(GameState* g)
 {
-    g->terminal->output(x, y, str, spread);
+    g->engine->terminal->output(x, y, str, spread);
 }
 
 CmdClear::CmdClear()
@@ -77,7 +77,7 @@ CmdClear::CmdClear()
 
 void CmdClear::run(GameState* g)
 {
-    g->terminal->clr();
+    g->engine->terminal->clr();
 }
 
 CmdSetColor::CmdSetColor(sf::Color color_in)
@@ -88,7 +88,7 @@ CmdSetColor::CmdSetColor(sf::Color color_in)
 
 void CmdSetColor::run(GameState* g)
 {
-    g->terminal->set_color(color);
+    g->engine->terminal->set_color(color);
 }
 
 CmdInput::CmdInput()
@@ -97,7 +97,7 @@ CmdInput::CmdInput()
 
 void CmdInput::run(GameState* g)
 {
-    g->terminal->input_mode();
+    g->engine->terminal->input_mode();
 }
 
 CmdPlayMusic::CmdPlayMusic(Music* music_in)
@@ -231,9 +231,9 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
 
     if(c_room)
     {
-        g->terminal->disp("You are in " + o->pretty_name + ".");
+        g->engine->terminal->disp("You are in " + o->pretty_name + ".");
         if(c_desc)
-            g->terminal->disp(c_desc->current_appearance);
+            g->engine->terminal->disp(c_desc->current_appearance);
     }
     else if(c_desc)
     {
@@ -241,7 +241,7 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
         {
             if(c_desc->description != "")
             {
-                g->terminal->disp(c_desc->description);
+                g->engine->terminal->disp(c_desc->description);
             }
             else if(c_text)
             {
@@ -251,12 +251,12 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
             }
             else if(o->children.empty())
             {
-                g->terminal->disp("You see nothing special about the " + o->pretty_name + ".");
+                g->engine->terminal->disp("You see nothing special about the " + o->pretty_name + ".");
             }
         }
         else
         {
-            g->terminal->disp(c_desc->current_appearance);
+            g->engine->terminal->disp(c_desc->current_appearance);
         }
     }
 
@@ -281,7 +281,7 @@ void CmdDescribe::describe(GameState* g, Object* o, bool deep_describe)
                 if(dir_room && dir_room->pretty_name != "")
                 {
                     std::string dir_reference = dir[dir_id].dir_reference;
-                    g->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                    g->engine->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
                 }
             }
         }

@@ -58,7 +58,6 @@ void GameStateText::notify(event_ptr event)
         }
         send(std::make_shared<CmdInput>());
     }
-    terminal->notify(event);
 }
 
 void GameStateText::update(sf::Time dt)

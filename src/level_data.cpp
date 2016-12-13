@@ -1,6 +1,5 @@
 #include "level_data.h"
 #include "Engine.h"
-#include "Console.h"
 #include "GameStateIntro.h"
 #include "GameStateText.h"
 #include "GameStateThugFight.h"
@@ -22,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "garbage_alley";
 
     Player* player = new Player("Jamal", "a sturdy creature fond of drink and industry");
     player->clothing = "";
@@ -286,18 +285,14 @@ void execute()
     garbage_cans->aliases = {"cans", "garbage", "rubbish", "bins", "can", "bin"};
     garbage_cans->add_component(new ComponentDescription("Several cans huddle by the wall in a pool of sodium-vapor light."));
     garbage_cans->add_component(new ComponentClimbable({{UP, "can_tops"}}));
+    garbage_cans->add_component(new ComponentRoom({{DOWN, "garbage_alley"}}));
     garbage_alley->add_child(garbage_cans);
-
-    Object* can_tops = new Object("can_tops");
-    can_tops->pretty_name = "the top of the garbage cans.";
-    can_tops->add_component(new ComponentRoom({{DOWN, "garbage_alley"}}));
-    world->add_child(can_tops);
 
     Object* drain_pipe = new Object("drain pipe");
     drain_pipe->aliases = {"pipe", "drain"};
     drain_pipe->add_component(new ComponentDescription("A drain pipe runs down the wall on one side."));
     drain_pipe->add_component(new ComponentClimbable({{UP, "roof"}}));
-    can_tops->add_child(drain_pipe);
+    garbage_cans->add_child(drain_pipe);
 
     Object* roof = new Object("roof");
     roof->pretty_name = "the roof";

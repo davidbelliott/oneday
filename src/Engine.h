@@ -1,21 +1,21 @@
 #pragma once
 
 class GameState;
-class Console;
+class Terminal;
 class Audio;
 
 #include "Event.h"
 #include "Command.h"
+#include "Observer.h"
 
 #include <SFML/Graphics.hpp>
 #include <vector>
 
-class Engine
+class Engine : public Observer
 {
 public:
-    Console* console;
+    Terminal* terminal;
     Audio* audio;
-    sf::RenderWindow* window;
     std::vector<GameState*> game_states;
 	bool running;
 
@@ -25,7 +25,7 @@ public:
     void push_state(GameState* state);
     void pop_state();
 
-    void notify_gamestates(event_ptr event);
+    void notify(event_ptr event);
     void command_gamestates(cmd_ptr command);
 
     /* Gets input from the SFML window. */

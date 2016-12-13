@@ -1,13 +1,13 @@
 #include "Config.h"
-#include "GameState.h"
 #include "Terminal.h"
 #include "Engine.h"
 #include <iostream>
 
-Terminal::Terminal(GameState* owner_state_in)
+Terminal::Terminal(Engine* owner_engine_in)
 :   state({ 0, sf::Color::White, sf::Color::Black, OUTPUT }),
+    window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal")),
     buffer(new CharBuffer()),
-    owner_state(owner_state_in),
+    owner_engine(owner_engine_in),
     cur_user_string("")
 {
 }
@@ -137,11 +137,11 @@ void Terminal::set_bg_color(sf::Color color)
     state.background_color = color;
 }
 
-void Terminal::draw(sf::RenderTarget* target)
+void Terminal::display()
 {
-    target->clear(state.background_color);
+    window->clear(state.background_color);
 
-    buffer->draw(target);
+    buffer->draw(window);
 
     if(state.mode == INPUT && buffer->get_y(state.cursor_index) < config::screen_h_chars)
     {
@@ -149,7 +149,26 @@ void Terminal::draw(sf::RenderTarget* target)
         cursor_shape.setSize(sf::Vector2f(config::char_width, config::char_height));
         cursor_shape.setFillColor(state.foreground_color);
         cursor_shape.setPosition(buffer->get_x(state.cursor_index) * config::char_width + config::padding, buffer->get_y(state.cursor_index) * config::char_height);
-        target->draw(cursor_shape);
+        window->draw(cursor_shape);
+    }
+    window->display();
+}
+
+void Terminal::get_input()
+{
+    sf::Event sf_event;
+    while(window->pollEvent(sf_event))
+    {
+        event_ptr event = nullptr;
+        if(sf_event.type == sf::Event::KeyPressed)
+            event = std::make_shared<EventKeyPressed>(sf_event.key.code);
+        else if(sf_event.type == sf::Event::TextEntered)
+            event = std::make_shared<EventTextEntered>(static_cast<char>(sf_event.text.unicode));
+        if(event)
+        {
+            owner_engine->notify(event);
+            this->notify(event);
+        }
     }
 }
 
@@ -163,7 +182,7 @@ void Terminal::notify(event_ptr event)
             if(c == '\n' || c == '\r')
             {
                 disp("");
-                owner_state->notify(std::make_shared<EventUserLine>(cur_user_string));
+                owner_engine->notify(std::make_shared<EventUserLine>(cur_user_string));
                 cur_user_string = "";
                 output_mode();
             }

@@ -1,9 +1,10 @@
 #pragma once
 
-class GameState;
+class Engine;
+
+#include "Observer.h"
 #include "CharBuffer.h"
 #include "Config.h"
-#include "Observer.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
@@ -26,11 +27,17 @@ public:
         Mode mode;
     };
 
-	Terminal(GameState* owner_state_in);
+    Engine* owner_engine;
+    sf::RenderWindow* window;
+    State state;
+    std::string cur_user_string;
+    CharBuffer* buffer;
+
+	Terminal(Engine* owner_engine_in);
 	virtual ~Terminal();
 
-    /*Print's the terminal's buffer to the render target.*/
-    void draw(sf::RenderTarget* target);
+    /* Displays the terminal in its current state. */
+    void display();
 
     /* Outputs the specified string at the specified x and y values. Leaves x and y at the position following
      * the last modified character. */
@@ -60,13 +67,13 @@ public:
     /*Sets whether or not to display the cursor rectangle at the current cursor x and y.*/
     void set_disp_cursor(bool disp_cursor_in);
 
-    /* Inherited from Observer. */
+    /* Gets input from the window, packages as Events, and sends to the engine. */
+    void get_input();
+
+    /* Inherited from Observer. Terminal calls this on itself. */
     void notify(event_ptr event);
+
 
 //private:
 
-    GameState* owner_state;
-    State state;
-    CharBuffer* buffer;
-    std::string cur_user_string;
 };

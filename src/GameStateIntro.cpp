@@ -34,5 +34,4 @@ void GameStateIntro::update(sf::Time dt)
 
 void GameStateIntro::draw(sf::RenderTarget* target)
 {
-    terminal->draw(target);
 }

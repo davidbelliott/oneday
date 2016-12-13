@@ -1,10 +1,8 @@
 #include "GameState.h"
-#include "Terminal.h"
 #include "World.h"
 
 GameState::GameState(Engine* engine_in)
 :   Observer(),
-    terminal(new Terminal(this)),
     commands(),
     commands_priority(),
     last_command_result(""),
@@ -18,7 +16,6 @@ GameState::GameState(Engine* engine_in)
 
 GameState::~GameState()
 {
-    delete terminal;
     delete world;
 }
 
@@ -42,10 +39,6 @@ void GameState::notify(event_ptr event)
                 std::static_pointer_cast<EventKeyPressed>(event)->code == sf::Keyboard::Return)
             unpause();
     }
-    else
-    {
-        terminal->notify(event);
-    }
 }
 
 void GameState::send(cmd_ptr cmd)
@@ -63,9 +56,9 @@ void GameState::execute(cmd_ptr cmd)
     cmd->run_and_callback(this);
 }
 
-void GameState::execute_commands()
+bool GameState::execute_front_command()
 {
-    while(!paused && (!commands_priority.empty() || !commands.empty()))
+    if(!paused && (!commands_priority.empty() || !commands.empty()))
     {
         cmd_ptr cmd = nullptr;
         if(!commands_priority.empty())
@@ -80,6 +73,7 @@ void GameState::execute_commands()
         }
         execute(cmd);
     }
+    return (!paused && (!commands_priority.empty() || !commands.empty()));
 }
 
 void GameState::update(sf::Time dt)
@@ -87,9 +81,8 @@ void GameState::update(sf::Time dt)
 
 }
 
-void GameState::draw(sf::RenderTarget* target)
+void GameState::draw()
 {
-    terminal->draw(target);
 }
 
 void GameState::pause()

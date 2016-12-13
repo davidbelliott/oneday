@@ -1,16 +1,15 @@
 #include "Engine.h"
 #include "GameState.h"
+#include "Terminal.h"
 #include "common.h"
 #include "Event.h"
-#include "Console.h"
 #include "Audio.h"
 #include <iostream>
 
 Engine::Engine()
 :   running(true),
-    console(new Console(this)),
     audio(new Audio()),
-    window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal")),
+    terminal(new Terminal(this)),
     game_states()
 {
 }
@@ -18,9 +17,8 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-    delete console;
+    delete terminal;
     delete audio;
-    delete window;
 }
 
 void Engine::push_state(GameState* state)
@@ -41,7 +39,7 @@ void Engine::pop_state()
     }
 }
 
-void Engine::notify_gamestates(event_ptr event)
+void Engine::notify(event_ptr event)
 {
     if(!game_states.empty())
     {
@@ -59,15 +57,13 @@ void Engine::command_gamestates(cmd_ptr command)
 
 void Engine::get_input()
 {
-    console->get_input(window);
+    terminal->get_input();
 }
 
 void Engine::execute_commands()
 {
-    if(!game_states.empty())
-    {
-        game_states.back()->execute_commands();
-    }
+    while(!game_states.empty() && game_states.back()->execute_front_command())
+    { }
 }
 
 void Engine::update(sf::Time dt)
@@ -83,9 +79,9 @@ void Engine::draw()
 {
     if(!game_states.empty())
     {
-        game_states.back()->draw(window);
+        game_states.back()->draw();
     }
-    window->display();
+    terminal->display();
 }
 
 void Engine::prune()

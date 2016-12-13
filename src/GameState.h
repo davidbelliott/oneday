@@ -1,7 +1,6 @@
 #pragma once
 
 class Engine;
-class Terminal;
 class World;
 #include "Observer.h"
 #include "Command.h"
@@ -11,7 +10,6 @@ class GameState : public Observer
 {
 public:
 	Engine* engine;
-    Terminal* terminal;
     World* world;
     std::queue<cmd_ptr> commands;
     std::queue<cmd_ptr> commands_priority;
@@ -41,14 +39,14 @@ public:
     /* Executes a given command. */
     virtual void execute(cmd_ptr command);
 
-    /* Executes all commands on the queue in order. */
-    virtual void execute_commands();
+    /* Executes the front command on the queue. Returns false if no more commands.*/
+    virtual bool execute_front_command();
 
     /* Updates the gamestate with the given timestep. */
     virtual void update(sf::Time dt);
 
-    /* Draws the gamestate to the given target. */
-    virtual void draw(sf::RenderTarget* target);
+    /* Draws the gamestate. */
+    virtual void draw();
 
     /* Pause the gamestate. */
     virtual void pause();

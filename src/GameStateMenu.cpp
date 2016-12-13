@@ -54,5 +54,4 @@ void GameStateMenu::notify(event_ptr event)
             send(std::make_shared<CmdRemoveGameState>(this));
         }
     }
-    terminal->notify(event);
 }

@@ -89,7 +89,6 @@ void GameStateThugFight::notify(event_ptr event)
     {
         paused = false;
     }
-    terminal->notify(event);
 }
 
 void GameStateThugFight::break_fist(int index, int beat)
@@ -164,17 +163,17 @@ void GameStateThugFight::update(sf::Time dt)
     }
 }
 
-void GameStateThugFight::draw(sf::RenderTarget* target)
+void GameStateThugFight::draw()
 {
-    terminal->clr();
+    engine->terminal->clr();
     for(int i = 0; i < 4; i++)
     {
         std::string ab_str_to_display = abs.tense[i].asSeconds() > 0.0 ? abs_tense_str : abs_str;
         /*if(abs.tense_ab == i)
-            terminal->set_color(config::colors[config::ORANGE]);
+            engine->terminal->set_color(config::colors[config::ORANGE]);
         else
-            terminal->set_color();*/
-        terminal->output(abs.health - 5, i * ab_height, ab_str_to_display);
+            engine->terminal->set_color();*/
+        engine->terminal->output(abs.health - 5, i * ab_height, ab_str_to_display);
         std::string key_str_to_display = "";
         if(i == 0)
             key_str_to_display = "A";
@@ -184,27 +183,26 @@ void GameStateThugFight::draw(sf::RenderTarget* target)
             key_str_to_display = "D";
         else if(i == 3)
             key_str_to_display = "F";
-        terminal->output(0, i * ab_height + ab_height / 2, key_str_to_display);
+        engine->terminal->output(0, i * ab_height + ab_height / 2, key_str_to_display);
     }
-    //terminal->set_color();
+    //engine->terminal->set_color();
     for(int i = 0; i < 4; i++)
     {
         for(int j = std::max(0, (int)cur_beat - 2); j <= std::min(total_beats, (int)cur_beat + 8); j++)
         {
-            //terminal->set_color(config::colors[fists[i].color_index]);
+            //engine->terminal->set_color(config::colors[fists[i].color_index]);
             if(beats[i][j] == UNBROKEN)
-                terminal->output(get_fist_x(j), i * ab_height, thug_fist); //terminal->set_color();
+                engine->terminal->output(get_fist_x(j), i * ab_height, thug_fist); //engine->terminal->set_color();
         }
     }
     for(int i = 0; i < fragments.size(); i++)
     {
-        //terminal->set_color(config::colors[fragments[i].color_index]);
-        terminal->output((int)fragments[i].x, (int)fragments[i].y, "*");
-        //terminal->set_color();
+        //engine->terminal->set_color(config::colors[fragments[i].color_index]);
+        engine->terminal->output((int)fragments[i].x, (int)fragments[i].y, "*");
+        //engine->terminal->set_color();
     }
-    //terminal->set_color();
-    //terminal->output(0, 0, "TIME REMAINING: " + std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds()))));
-    terminal->draw(target);
+    //engine->terminal->set_color();
+    //engine->terminal->output(0, 0, "TIME REMAINING: " + std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds()))));
 }
 
 int GameStateThugFight::get_fist_x(int index)
@@ -224,12 +222,14 @@ int GameStateThugFight::get_fist_x(int index)
 void GameStateThugFight::win()
 {
     send_front(std::make_shared<CmdRemoveGameState>(this));
+    send_front(std::make_shared<CmdClear>());
     send_front(std::make_shared<CmdAddGameState>(new GameStateNotification(engine, "Cowed by your abdominal prowess, the thugs slink off.")));
 }
 
 void GameStateThugFight::lose()
 {
     send(std::make_shared<CmdRemoveGameState>(this));
+    send(std::make_shared<CmdClear>());
     send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine,
                     "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nYou had ",
                     //+ std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds())))

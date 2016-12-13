@@ -71,7 +71,7 @@ class GameStateThugFight: public GameState
         virtual void cleanup();
         virtual void notify(event_ptr event);
         virtual void update(sf::Time dt);
-        virtual void draw(sf::RenderTarget* target);
+        virtual void draw();
         virtual void win();
         virtual void lose();
 };
