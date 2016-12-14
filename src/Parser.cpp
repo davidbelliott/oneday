@@ -406,19 +406,9 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         Object* obj = get_object(args[0], g);
         if(obj)
         {
-            if(obj->has_component(Component::TALKABLE))
-            {
-                ComponentTalkable* ctalk = (ComponentTalkable*)obj->get_component(Component::TALKABLE);
-                for(int i = 0; i < ctalk->talkable_data.size(); i++)
-                {
-                    commands.push_back(std::make_shared<CmdDisp>(ctalk->talkable_data[i]));
-                    commands.push_back(std::make_shared<CmdPause>());
-                }
-            }
-            else
-            {
-                commands.push_back(std::make_shared<CmdDisp>("You can't talk to the " + obj->pretty_name + ", honey."));
-            }
+            auto talk_to = std::make_shared<CmdTalkTo>();
+            talk_to->add_object(obj);
+            commands.push_back(talk_to);
         }
         else
         {

@@ -440,3 +440,31 @@ void CmdMove::run(GameState* g)
     }
 }
 
+CmdTalkTo::CmdTalkTo()
+    : Command(TALK_TO)
+{ }
+
+void CmdTalkTo::run(GameState* g)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        ComponentTalkable* c_talk = (ComponentTalkable*)objects[i]->get_component(Component::TALKABLE);
+        if(c_talk)
+        {
+           for(auto j = c_talk->talkable_data.begin(); j != c_talk->talkable_data.end(); j++) 
+           {
+               bool other = (j->size() > 0 && (*j)[0] == '-');
+               std::string output_text = "("
+                   + (other ? objects[i]->pretty_name : g->world->get_player()->pretty_name)
+                   + ") "
+                   + (other ? j->substr(1, j->size() - 1) : *j);
+               g->send_front(std::make_shared<CmdDisp>(output_text));
+               g->send_front(std::make_shared<CmdPause>());
+           }
+        }
+        else
+        {
+            g->send_front(std::make_shared<CmdDisp>(">he thinks he can talk to a " + objects[i]->pretty_name));
+        }
+    }
+}

@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "sewer_west";
+	world->cur_room = "compton_street";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -300,19 +300,53 @@ void execute()
     compton_street->add_component(new ComponentDescription("This strip of gritty asphalt comes straight outta the dark and unknown reaches of the city of Compton."));
     world->add_child(compton_street);
 
+    int n_talks = 0;
     Object* urban_youth = new Object("urban youth");
     urban_youth->aliases = {"youth", "man", "person", "guy", "dude", "urban", "stranger", "him"};
     urban_youth->add_component(new ComponentDescription("An urban youth stands in the corner, his hands tucked inside hoodie pockets."));
-    urban_youth->add_component(new ComponentTalkable({">Why are you standing here?",
-                "-I'm here 4 da people, Jamal.",
-                ">W...what do you mean?",
-                "-The man has kept us down for 2 long, Jamal.",
+    ComponentTalkable* youth_c_talkable = new ComponentTalkable({"Why are you standing here?",
+                "-I'm here for the people, Jamal.",
+                "W...what do you mean?",
+                "-The man has kept us down for too long, Jamal.",
                 "-You must report our grievances 2 the president.",
-                ">But how?",
-                "-Viper will host a rap contest in the Club. The winner goes 2 the White House.",
-                "-You must challenge him, and emerge the victor.",
-                "Yet this is truly a great responsibility, you think--",
-                "-Go forth with faith, Jamal."}));
+                "But how?",
+                "-Viper will host a rap contest in the Club. The winner goes to the White House.",
+                "-You must challenge him, and emerge the victor."});
+    urban_youth->add_component(youth_c_talkable);
+    urban_youth->post_command = [&](Command* cmd) {
+        std::string output = "The youth looks at you ";
+        if(cmd->type == Command::TALK_TO)
+        {
+            n_talks = -1;
+            youth_c_talkable->talkable_data = {"-Ain't you done yet?"};
+        }
+        else
+        {
+            if(n_talks <= 3)
+            {
+                if(n_talks == -1)
+                    output += "encouragingly";
+                else if(n_talks == 0)
+                    output += "impassively";
+                else if(n_talks == 1)
+                    output += "quizzically";
+                else if(n_talks == 2)
+                    output += "indignantly";
+                else if(n_talks == 3)
+                    output += "furiously";
+                output += ".";
+                text->send_front(std::make_shared<CmdDisp>(output));
+            }
+            else
+            {
+                text->send_front(std::make_shared<CmdDisp>("The youth strikes out and delivers a fatal kick to your pancreas.\nYou die."));
+                text->send_front(std::make_shared<CmdPause>());
+                text->send_front(std::make_shared<CmdQuit>());
+            }
+            if(n_talks >= 0)
+                n_talks++;
+        }
+    };
     compton_street->add_child(urban_youth);
     
     Object* vacant_lot = new Object("vacant_lot");

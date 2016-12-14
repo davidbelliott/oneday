@@ -56,6 +56,7 @@ public:
         BLESSUP,
         DRINK,
         SMELL,
+        TALK_TO,
 
         SET_OBJECTIVE,
         ADD_GAMESTATE,
@@ -287,4 +288,3 @@ class CmdMove : public Command
         CmdMove();
         void run(GameState* g);
 };
-
