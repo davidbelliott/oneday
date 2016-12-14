@@ -482,6 +482,22 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         }
     }
 
+    //=== Moving an object
+    else if(matches(tokens, "move #", args))
+    {
+        Object* obj = get_object(args[0], g);
+        if(obj)
+        {
+            auto move = std::make_shared<CmdMove>();
+            move->add_object(obj);
+            commands.push_back(move);
+        }
+        else
+        {
+            commands.push_back(std::make_shared<CmdDisp>("You can find no " + join(args[0], ' ') + " to move here."));
+        }
+    }
+
     //=== Unrecognized pattern
     else
     {

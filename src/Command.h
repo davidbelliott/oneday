@@ -280,3 +280,11 @@ class CmdWear : public Command
         CmdWear();
         void run(GameState* g);
 };
+
+class CmdMove : public Command
+{
+    public:
+        CmdMove();
+        void run(GameState* g);
+};
+

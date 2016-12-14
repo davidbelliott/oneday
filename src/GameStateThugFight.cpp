@@ -77,6 +77,8 @@ void GameStateThugFight::notify(event_ptr event)
                 tense_index = 3;
             else if(keycode == sf::Keyboard::Q)
                 lose();
+            else if(keycode == sf::Keyboard::W)
+                win();
 
             if(tense_index != -1)
             {

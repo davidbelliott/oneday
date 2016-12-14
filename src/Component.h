@@ -5,6 +5,8 @@
 #include <memory>
 #include <set>
 
+class Object;
+
 class Component
 {
     public:
@@ -22,6 +24,7 @@ class Component
             PORTAL,
             TAKEABLE,
             CLIMBABLE,
+            MOVEABLE,
             MUSIC,
             OPEN_CLOSE,
             INVENTORY
@@ -161,6 +164,17 @@ class ComponentClimbable : public ComponentRoom
             : ComponentRoom(directions_in)
         {
             type = CLIMBABLE;
+        }
+};
+
+class ComponentMoveable : public Component
+{
+    public:
+        Object* new_parent;
+        ComponentMoveable(Object* new_parent_in=nullptr)
+            : Component(MOVEABLE),
+            new_parent(new_parent_in)
+        {
         }
 };
 

@@ -411,3 +411,32 @@ void CmdRead::run(GameState* g)
         }
     }
 }
+
+CmdMove::CmdMove()
+    : Command(MOVE)
+{ }
+
+void CmdMove::run(GameState* g)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        ComponentMoveable* c_move = (ComponentMoveable*)objects[i]->get_component(Component::MOVEABLE);
+        ComponentDescription* c_desc = (ComponentDescription*)objects[i]->get_component(Component::DESCRIPTION);
+        if(c_move)
+        {
+            if(c_move->new_parent)
+            {
+                objects[i]->parent->remove_child(objects[i]);
+                c_move->new_parent->add_child(objects[i]);
+            }
+            if(c_desc)
+                c_desc->current_appearance = "There is a " + objects[i]->pretty_name + " here.";
+            g->engine->terminal->disp("With considerable effort, you move the " + objects[i]->pretty_name + " aside.");
+        }
+        else
+        {
+            g->engine->terminal->disp("Try as you might, the " + objects[i]->pretty_name + " will not budge.");
+        }
+    }
+}
+

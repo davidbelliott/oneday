@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "garbage_alley";
+	world->cur_room = "sewer_west";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -219,32 +219,84 @@ void execute()
     lockers->add_child(hazmat);
 
     Object* sewer = new Object("sewer");
-    sewer->add_component(new ComponentRoom({{WEST, "temp_lane"}}));
+    sewer->pretty_name = "a sewer tunnel";
+    sewer->add_component(new ComponentRoom({{WEST, "sewer_west"},{EAST, "shaft"}}));
     sewer->add_component(new ComponentDescription("Filthy water flows around your ankles."));
     world->add_child(sewer);
 
-    Object* temp_lane = new Object("temp_lane");
-    temp_lane->pretty_name = "Temporary Lane";
-    temp_lane->add_component(new ComponentRoom({{NORTH, "compton_street"}}));
-    temp_lane->add_component(new ComponentDescription("A temporary lane."));
-    temp_lane->pre_command = [=](Command* cmd)
+    Object* sewer_west = new Object("sewer_west");
+    sewer_west->pretty_name = "a sewer tunnel";
+    sewer_west->add_component(new ComponentRoom({{EAST, "sewer"}, {WEST, "sewer_deadend"}}));
+    sewer_west->add_component(new ComponentDescription("A vertical tunnel joins the sewer from above."));
+    world->add_child(sewer_west);
+
+    Object* ladder = new Object("ladder");
+    ladder->add_component(new ComponentClimbable({{UP, "sewer_upper"}}));
+    ladder->add_component(new ComponentDescription("A metal ladder is mounted to the concrete wall of the vertical tunnel."));
+    sewer_west->add_child(ladder);
+
+    Object* sewer_upper = new Object("sewer_upper");
+    sewer_upper->pretty_name = "a sewer access manhole";
+    sewer_upper->add_component(new ComponentDescription("This is a vertical tunnel about a meter in diameter."));
+    ComponentRoom* sewer_upper_c_room = new ComponentRoom({{DOWN, "sewer_west"}});
+    sewer_upper->add_component(sewer_upper_c_room);
+    world->add_child(sewer_upper);
+
+    Object* ladder0 = new Object("ladder");
+    ladder0->add_component(new ComponentDescription("A metal ladder is mounted to the concrete wall of the vertical tunnel."));
+    sewer_upper->add_child(ladder0);
+
+    Object* del_mar = new Object("del_mar");
+
+    Object* manhole_cover = new Object("manhole cover");
+    manhole_cover->aliases = {"manhole", "cover", "lid"};
+    manhole_cover->add_component(new ComponentMoveable());
+    manhole_cover->add_component(new ComponentDescription("A heavy manhole cover blocks your exit above, but it looks like you could move it."));
+    manhole_cover->post_command = [=](Command* cmd) {
+        if(cmd->type == Command::MOVE)
+        {
+            sewer_upper_c_room->directions[UP] = "del_mar";
+            sewer_upper->remove_child(manhole_cover);
+            del_mar->add_child(manhole_cover);
+        }
+    };
+    sewer_upper->add_child(manhole_cover);
+
+    Object* sewer_deadend = new Object("sewer_deadend");
+    sewer_deadend->pretty_name = "a sewer tunnel";
+    sewer_deadend->add_component(new ComponentRoom({{EAST, "sewer_west"}}));
+    world->add_child(sewer_deadend);
+
+    Object* grate = new Object("grating");
+    grate->add_component(new ComponentDescription("The water here flows through a large grating, which blocks your way."));
+    sewer_deadend->add_child(grate);
+
+    del_mar->pretty_name = "Del Mar Boulevard";
+    del_mar->add_component(new ComponentRoom({{NORTH, "compton_street"}}));
+    del_mar->add_component(new ComponentDescription("A temporary lane."));
+    del_mar->pre_command = [=](Command* cmd)
     {
         if(cmd->type == Command::LOOK_AROUND && world->get_flag("thug_fight_outcome") == 0)
         {
             text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!"));
             text->send_front(std::make_shared<CmdPause>());
-            text->send_front(std::make_shared<CmdDisp>("Press any key to tense your abs and deflect their blows."));
+            text->send_front(std::make_shared<CmdDisp>("Press A, S, D, or F in rhythm with the punches to deflect their blows."));
             text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
             world->set_flag("thug_fight_outcome", 1);
         }
         return true;
     };
-    world->add_child(temp_lane);
+    world->add_child(del_mar);
+
+    Object* manhole = new Object("manhole");
+    manhole->add_component(new ComponentDescription("A manhole gapes open in the middle of the street."));
+    manhole->add_component(new ComponentPortal("sewer_upper"));
+    del_mar->add_child(manhole);
 
     Object* compton_street = new Object("compton_street");
     compton_street->pretty_name = "Compton Street";
-    compton_street->add_component(new ComponentRoom({{NORTH, "lil_wayne_front"}, {EAST, "magdalene_lane"}, {SOUTH, "temp_lane"}, {WEST, "vacant_lot"}}));
+    compton_street->add_component(new ComponentRoom({{NORTH, "lil_wayne_front"}, {EAST, "magdalene_lane"}, {SOUTH, "del_mar"}, {WEST, "vacant_lot"}}));
     compton_street->add_component(new ComponentDescription("This strip of gritty asphalt comes straight outta the dark and unknown reaches of the city of Compton."));
     world->add_child(compton_street);
 
@@ -324,8 +376,12 @@ void execute()
     kolob_street->pretty_name = "Kolob Street";
     kolob_street->add_component(new ComponentRoom({{SOUTH, "jamal_corridor"}, {WEST, "magdalene_lane"}}));
     world->add_child(kolob_street);
-
-
+    
+    Object* shaft = new Object("shaft");
+    shaft->pretty_name = "a ledge overlooking a deep shaft";
+    shaft->add_component(new ComponentRoom({{WEST, "sewer"}}));
+    shaft->add_component(new ComponentDescription("You see sunlight filtering down from a grate high above your head.\nRumbling and clanking sounds drift up from the darkness below."));
+    world->add_child(shaft);
     
     /*cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());
