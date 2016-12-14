@@ -12,7 +12,7 @@
 
 int round(double a)
 {
-    return static_cast<int>((a + 0.5)/2);
+    return static_cast<int>(a + 0.5);
 }
 
 void GameStateThugFight::load_beats()
@@ -119,6 +119,11 @@ void GameStateThugFight::try_to_break(int index)
     }
 }
 
+int GameStateThugFight::get_seconds_remaining()
+{
+    return std::max(0, round((total_beats - cur_beat) * beat.asSeconds()));
+}
+
 void GameStateThugFight::update(sf::Time dt)
 {
     if(!paused)
@@ -202,7 +207,7 @@ void GameStateThugFight::draw()
         //engine->terminal->set_color();
     }
     //engine->terminal->set_color();
-    //engine->terminal->output(0, 0, "TIME REMAINING: " + std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds()))));
+    engine->terminal->output(0, 0, "TIME REMAINING: " + std::to_string(get_seconds_remaining()));
 }
 
 int GameStateThugFight::get_fist_x(int index)
@@ -231,9 +236,9 @@ void GameStateThugFight::lose()
     send(std::make_shared<CmdRemoveGameState>(this));
     send(std::make_shared<CmdClear>());
     send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine,
-                    "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nYou had ",
-                    //+ std::to_string(std::max(0, int(total_time.asSeconds() - time_alive.asSeconds())))
-                    //+ " seconds remaining.\nTry again? (y/n)",
+                    "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nYou had "
+                    + std::to_string(get_seconds_remaining())
+                    + " seconds remaining.\nTry again? (y/n)",
                     {{"y", {std::make_shared<CmdAddGameState>(new GameStateThugFight(engine))}},
                     {"n", {std::make_shared<CmdQuit>()}}})));
 }

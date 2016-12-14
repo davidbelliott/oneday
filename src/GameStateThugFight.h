@@ -65,6 +65,7 @@ class GameStateThugFight: public GameState
         void load_beats();
         void break_fist(int index, int beat);
         void try_to_break(int index);
+        int get_seconds_remaining();
 
 
         virtual void init();
