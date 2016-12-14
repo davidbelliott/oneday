@@ -426,8 +426,30 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         }
     }
 
-    //=== Climbing
+    //=== Climbing (general movement)
+    else if(matches(tokens, "climb", args))
+    {
+        commands.push_back(std::make_shared<CmdDisp>("Climb up or down?"));
+    }
+    else if(matches(tokens, "climb up", args)
+            || matches(tokens, "climb down", args))
+    {
+        if(Object* room = g->world->get_current_room())
+        {
+            ComponentRoom* room_component = (ComponentRoom*)room->get_component(Component::ROOM);
+            DirectionId desired_direction = (matches(tokens, "climb up", args) ? UP : DOWN);
+            if(room_component && room_component->directions[desired_direction] != "")
+            {
+                commands.push_back(std::make_shared<CmdGo>(room_component->directions[desired_direction]));
+            }
+            else
+                commands.push_back(std::make_shared<CmdDisp>("You can't go " + dir[desired_direction].name + " from here, baka!"));
+        }
+    }
+
+    //=== Climbing an object
     else if(matches(tokens, "climb up #", args)
+            || matches(tokens, "climb down #", args)
             || matches(tokens, "climb #", args)
             || matches(tokens, "get on #", args))
     {
@@ -437,11 +459,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
             if(obj->has_component(Component::CLIMBABLE))
             {
                 ComponentClimbable* cclimb = (ComponentClimbable*)obj->get_component(Component::CLIMBABLE);
-                DirectionId desired_direction = UP;
-                //if(matched_pattern == 0 || matched_pattern == 3)
-                    desired_direction = UP;
-                //else if(matched_pattern == 1)
-                //    desired_direction = DOWN;
+                DirectionId desired_direction = (matches(tokens, "climb down #", args) ? DOWN : UP);
 
                 if(cclimb->directions[desired_direction] != "")
                 {

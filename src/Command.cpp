@@ -17,21 +17,30 @@ Command::~Command()
 
 void Command::run_and_callback(GameState* g)
 {
-    bool run_this = true;
-    std::vector<Object*> callback_list = objects;
-
-    for(int i = 0; i < callback_list.size() && run_this; i++)
+    Object* object = objects.size() > 0 ? objects[0] : g->world->get_player();
+    std::vector<Object*> callback_list;
+    if(object)
     {
-        if(callback_list[i]->pre_command && !callback_list[i]->pre_command(this))
+        while(object)
+        {
+            callback_list.push_back(object);
+            object = object->parent;
+        }
+    }
+
+    bool run_this = true;
+    for(auto it = callback_list.rbegin(); it != callback_list.rend() && run_this; ++it)
+    {
+        if((*it)->pre_command && !(*it)->pre_command(this))
             run_this = false;
     }
     if(run_this)
     {
         run(g);
-        for(int i = 0; i < callback_list.size(); i++)
+        for(auto it = callback_list.rbegin(); it != callback_list.rend(); ++it)
         {
-            if(callback_list[i]->post_command)
-                callback_list[i]->post_command(this);
+            if((*it)->post_command)
+                (*it)->post_command(this);
         }
     }
 }
@@ -275,23 +284,50 @@ void CmdLookAround::run(GameState* g)
         Object* room = player->parent;
         if(room)
         {
-            g->engine->terminal->disp("You are in " + room->pretty_name + ".");
+            g->engine->terminal->disp("Your location: " + room->pretty_name + ".");
             recursive_show(g, room, true, false);
             ComponentRoom* c_room = (ComponentRoom*)room->get_component(Component::ROOM);
             if(c_room)
             {
+                std::vector<DirectionId> unexplored_exits = {};
+                bool explored_exits_exist = false;
                 for(int i = 0; i < DIRECTION_MAX; i++)
                 {
-                    if(c_room->directions[i] != "")
+                    DirectionId dir_id = (DirectionId)i;
+                    if(c_room->directions.count(dir_id) > 0 && c_room->hidden.count(dir_id) == 0)
                     {
-                        DirectionId dir_id = (DirectionId)i;
-                        Object* dir_room = g->world->get_direct_child(c_room->directions[i], 0);
-                        if(dir_room && dir_room->pretty_name != "")
+                        Object* dir_room = g->world->get_direct_child(c_room->directions[dir_id], 0);
+                        if(dir_room)
                         {
                             std::string dir_reference = dir[dir_id].dir_reference;
-                            g->engine->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                            if(dir_room->discovered)
+                            {
+                                explored_exits_exist = true;
+                                g->engine->terminal->disp(dir_reference + " is " + dir_room->pretty_name + ".");
+                            }
+                            else
+                                unexplored_exits.push_back(dir_id);
                         }
                     }
+                }
+                if(unexplored_exits.size() > 0)
+                {
+                    std::string output = "You can " + std::string(explored_exits_exist ? "also " : "") + "go ";
+                    for(int i = 0; i < unexplored_exits.size(); i++)
+                    {
+                        output += dir[unexplored_exits[i]].name;
+                        if(i < (int)unexplored_exits.size() - 2)
+                            output += ", ";
+                        else if(i == unexplored_exits.size() - 2)
+                        {
+                            if(unexplored_exits.size() == 2)
+                                output += " or ";
+                            else
+                                output += ", or ";
+                        }
+                    }
+                    output += ".";
+                    g->engine->terminal->disp(output);
                 }
             }
         }

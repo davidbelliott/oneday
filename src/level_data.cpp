@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "garbage_alley";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -31,12 +31,11 @@ void execute()
     Object* jamal_bedroom = new Object("jamal_bedroom");
     jamal_bedroom->pretty_name = "Jamal's bedroom";
 
-    ComponentDescription* c_description = new ComponentDescription( "It's a wretched hovel.");
+    ComponentDescription* c_description = new ComponentDescription("This bedroom is a wretched hovel.");
     jamal_bedroom->add_component(c_description);
-    jamal_bedroom->add_component(new ComponentRoom({
-                {EAST, "jamal_corridor"},
-                {SOUTH, "jamal_bathroom"}
-                }));
+    jamal_bedroom->add_component(new ComponentRoom(
+                {{EAST, "jamal_corridor"},
+                {SOUTH, "jamal_bathroom"}}));
 
     ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg");
     jamal_bedroom->add_component(c_music);
@@ -155,15 +154,23 @@ void execute()
     Object* secret_switch = new Object("switch");
     secret_switch->active = false;
     secret_switch->add_component(new ComponentDescription("A secret switch is snug in the cuddly nook where a book used to be."));
-    secret_switch->add_component(new ComponentHittable());
+    ComponentHittable* c_hit = new ComponentHittable();
+    secret_switch->add_component(c_hit);
+    secret_switch->pre_command = [=](Command* cmd) {
+        if(cmd->type == Command::HIT && c_hit->flipped)
+        {
+            text->send_front(std::make_shared<CmdDisp>("Hitting the switch again has no effect."));
+            return false;
+        }
+        return true;
+    };
     secret_switch->post_command = [=](Command* cmd) {
         if(cmd->type == Command::HIT)
         {
-            text->send_front(std::make_shared<CmdDisp>("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
-            c_desc->initial_appearance = "A massive bookshelf is slid to one side of the west wall.";
-            c_room->directions[WEST] = "lab";
+                text->send_front(std::make_shared<CmdDisp>("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
+                c_desc->initial_appearance = "A massive bookshelf is slid to one side of the west wall.";
+                c_room->directions[WEST] = "lab";
         }
-        return true;
     };
     shelf->add_child(secret_switch);
 
@@ -278,26 +285,33 @@ void execute()
     world->add_child(magdalene_lane);
 
     Object* garbage_alley = new Object("garbage_alley");
-    garbage_alley->pretty_name = "a dim alley overflowing with garbage.";
-    garbage_alley->add_component(new ComponentRoom({{SOUTH, "magdalene_lane"}}));
+    garbage_alley->pretty_name = "a dim alley overflowing with garbage";
+    garbage_alley->add_component(new ComponentRoom(
+                {{SOUTH, "magdalene_lane"}})),
     world->add_child(garbage_alley);
 
     Object* garbage_cans = new Object("garbage cans");
     garbage_cans->aliases = {"cans", "garbage", "rubbish", "bins", "can", "bin"};
     garbage_cans->add_component(new ComponentDescription("Several cans huddle by the wall in a pool of sodium-vapor light."));
-    garbage_cans->add_component(new ComponentClimbable({{UP, "garbage cans"}}));
-    garbage_cans->add_component(new ComponentRoom({{DOWN, "garbage_alley"}}));
+    garbage_cans->add_component(new ComponentClimbable({{UP, "can tops"}}));
     garbage_alley->add_child(garbage_cans);
+
+    Object* can_tops = new Object("can tops");
+    can_tops->pretty_name = "the top of the garbage cans";
+    can_tops->add_component(new ComponentDescription("They wobble precariously beneath your feet."));
+    can_tops->add_component(new ComponentRoom(
+                {{DOWN, "garbage_alley"}}));
+    world->add_child(can_tops);
 
     Object* drain_pipe = new Object("drain pipe");
     drain_pipe->aliases = {"pipe", "drain"};
     drain_pipe->add_component(new ComponentDescription("A drain pipe runs down the wall on one side."));
     drain_pipe->add_component(new ComponentClimbable({{UP, "roof"}}));
-    garbage_cans->add_child(drain_pipe);
+    can_tops->add_child(drain_pipe);
 
     Object* roof = new Object("roof");
     roof->pretty_name = "the roof";
-    roof->add_component(new ComponentRoom({{DOWN, "garbage cans"}}));
+    roof->add_component(new ComponentRoom({{DOWN, "can tops"}}));
     roof->add_component(new ComponentDescription("You hear the regular dripping of water. The roof is dark and tarry."));
     world->add_child(roof);
 

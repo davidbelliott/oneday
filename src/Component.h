@@ -3,6 +3,7 @@
 #include "Audio.h"
 #include <SFML/Audio.hpp>
 #include <memory>
+#include <set>
 
 class Component
 {
@@ -123,15 +124,13 @@ class ComponentTalkable : public Component
 class ComponentRoom : public Component
 {
     public:
-        std::string directions[DIRECTION_MAX];
-        ComponentRoom(std::map<DirectionId, std::string> directions_in)
+        std::map<DirectionId, std::string> directions;
+        std::set<DirectionId> hidden;
+        ComponentRoom(std::map<DirectionId, std::string> directions_in, std::set<DirectionId> hidden_in = {})
             : Component(ROOM),
-            directions()
+            directions(directions_in),
+            hidden(hidden_in)
     {
-        for(int i = 0; i < DIRECTION_MAX; i++)
-            directions[i] = "";
-        for(auto it = directions_in.begin(); it != directions_in.end(); ++it)
-            directions[int(it->first)] = it->second;
     }
 };
 
