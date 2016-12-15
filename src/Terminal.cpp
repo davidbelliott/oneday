@@ -2,6 +2,35 @@
 #include "Terminal.h"
 #include "Engine.h"
 #include <iostream>
+#include <cstdlib>
+#include <string>
+#include <functional>
+
+std::string word_wrap(std::string s, int width)
+{
+	for (int i = 1; i <= s.length() ; i++) 
+	{ 
+		if ((i % width) == 0) 
+		{ 
+			int spaceCount = 0; 
+			if (s[i - 1] != ' ') 
+			{ 
+				for (int j = i - 1; j > -1 ; j--)
+				{
+					if (s[j] == ' ')
+					{
+						s.insert(j, spaceCount, ' ');
+						break;
+					}
+					else spaceCount++;
+				}
+			}
+		}
+	}
+
+    return s;
+ }
+
 
 Terminal::Terminal(Engine* owner_engine_in)
 :   state({ 0, sf::Color::White, sf::Color::Black, OUTPUT }),
@@ -65,45 +94,46 @@ void Terminal::disp(std::string str, bool newline)
     int y = buffer->get_y(state.cursor_index);
     if(newline)
         str += "\n";
+    str = word_wrap(str, config::screen_w_chars);
     state.cursor_index = buffer->get_index(x, y);
 	for (int i = 0; i < str.size(); i++)
 	{
-        if (x >= config::screen_w_chars)
+        if(str[i] == '\n')
         {
             x = 0;
             y++;
         }
-		while (y >= config::screen_h_chars)
-		{
-			buffer->add_line();
-			y--;
-		}
-		int index = buffer->get_index(x, y);
-        if (index < buffer->contents.size() && str[i] != '\0' && str[i] != '\n')
+        else
         {
-            Char c = Char(str[i]);
-            c.fg = state.foreground_color;
-            c.bg = state.background_color;
-            buffer->setChar(index, c);
-        }
-		if (str[i] == '\n')
-		{
-			x = 0;
-			y++;
-		}
-		else
-		{
-			x++;
-		}
-        if (x == config::screen_w_chars && state.mode == INPUT)
-        {
-            x = 0;
-            y++;
-        }
-        while (y >= config::screen_h_chars && state.mode == INPUT)
-        {
-            buffer->add_line();
-            y--;
+            if (x >= config::screen_w_chars)
+            {
+                x = 0;
+                y++;
+            }
+            while (y >= config::screen_h_chars)
+            {
+                buffer->add_line();
+                y--;
+            }
+            int index = buffer->get_index(x, y);
+            if (index < buffer->contents.size() && str[i] != '\0')
+            {
+                Char c = Char(str[i]);
+                c.fg = state.foreground_color;
+                c.bg = state.background_color;
+                buffer->setChar(index, c);
+            }
+            x++;
+            if (x == config::screen_w_chars && state.mode == INPUT)
+            {
+                x = 0;
+                y++;
+            }
+            while (y >= config::screen_h_chars && state.mode == INPUT)
+            {
+                buffer->add_line();
+                y--;
+            }
         }
 	}
     state.cursor_index = buffer->get_index(x, y);

@@ -9,6 +9,8 @@ class Engine;
 #include <string>
 #include <vector>
 
+std::string word_wrap(std::string str, int width);
+
 class Terminal : public Observer
 {
 public:

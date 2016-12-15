@@ -27,7 +27,7 @@ void GameStateText::init()
     send(output);
     send(std::make_shared<CmdDisp>("\n\n\n\n\n\n\n"));
     send(std::make_shared<CmdDisp>("You wake."));
-    send(std::make_shared<CmdDisp>("No canine utterances grace your ears,\nand you can smell no fresh bacon cooking in the kitchen."));
+    send(std::make_shared<CmdDisp>("No canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen."));
     send(std::make_shared<CmdDisp>("You should look around."));
     send(std::make_shared<CmdInput>());
 }
