@@ -67,8 +67,10 @@ void execute()
 
     Object* jamal_bathroom = new Object("jamal_bathroom");
     jamal_bathroom->pretty_name = "Jamal's bathroom";
-    jamal_bathroom->add_component(c_music);
-    jamal_bathroom->add_component(new ComponentDescription("This is where you defecate daily. This cesuo is a reeking pigsty.\nOne door leads to the north."));
+    ComponentMusic* music_hard = new ComponentMusic("res/hard.ogg");
+    music_hard->music->initial_offset = sf::seconds(60.0);
+    jamal_bathroom->add_component(music_hard);
+    jamal_bathroom->add_component(new ComponentDescription("This is where you defecate daily. This cesuo is a reeking pigsty."));
     jamal_bathroom->add_component(new ComponentRoom({{NORTH, "jamal_bedroom"}}));
 
     Object* hole = new Object("hole");
@@ -237,12 +239,14 @@ void execute()
 
     Object* sewer = new Object("sewer");
     sewer->pretty_name = "a sewer tunnel";
+    sewer->add_component(music_hard);
     sewer->add_component(new ComponentRoom({{WEST, "sewer_west"},{EAST, "shaft"}}));
     sewer->add_component(new ComponentDescription("Filthy water flows around your ankles."));
     world->add_child(sewer);
 
     Object* sewer_west = new Object("sewer_west");
     sewer_west->pretty_name = "a sewer tunnel";
+    sewer_west->add_component(music_hard);
     sewer_west->add_component(new ComponentRoom({{EAST, "sewer"}, {WEST, "sewer_deadend"}}));
     sewer_west->add_component(new ComponentDescription("A vertical tunnel joins the sewer from above."));
     world->add_child(sewer_west);
@@ -281,6 +285,7 @@ void execute()
 
     Object* sewer_deadend = new Object("sewer_deadend");
     sewer_deadend->pretty_name = "a sewer tunnel";
+    sewer_deadend->add_component(music_hard);
     sewer_deadend->add_component(new ComponentRoom({{EAST, "sewer_west"}}));
     world->add_child(sewer_deadend);
 

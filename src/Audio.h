@@ -15,6 +15,7 @@ class Music
     double cur_volume;
     double target_volume;
     double volume_step;
+    sf::Time initial_offset;
 
     sf::Music music;
 
@@ -23,7 +24,8 @@ class Music
         fade(NONE),
         cur_volume(0),
         target_volume(0),
-        volume_step(0)
+        volume_step(0),
+        initial_offset(sf::seconds(0.0))
     {
         music.openFromFile(filename_in);
         music.setLoop(true);

@@ -6,7 +6,15 @@ void Music::set_fade(Fade fade_in)
         if(fade == PLAY)
         {
             if(music.getStatus() != sf::Sound::Playing)
-                music.play();
+            {
+                if(music.getStatus() == sf::Sound::Stopped)
+                {
+                    music.play();
+                    music.setPlayingOffset(initial_offset);
+                }
+                else
+                    music.play();
+            }
             target_volume = 100;
             volume_step = 50;
         }
