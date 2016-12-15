@@ -247,6 +247,40 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         }
     }
 
+    //=== Going in a direction (shorthand)
+    else if(matches(tokens, "n", args)
+            || matches(tokens, "e", args)
+            || matches(tokens, "s", args)
+            || matches(tokens, "w", args)
+            || matches(tokens, "u", args)
+            || matches(tokens, "d", args))
+    {
+        DirectionId desired_direction = DIRECTION_MAX;
+        if(matches(tokens, "n", args))
+            desired_direction = NORTH;
+        else if(matches(tokens, "e", args))
+            desired_direction = EAST;
+        else if(matches(tokens, "s", args))
+            desired_direction = SOUTH;
+        else if(matches(tokens, "w", args))
+            desired_direction = WEST;
+        else if(matches(tokens, "u", args))
+            desired_direction = UP;
+        else if(matches(tokens, "d", args))
+            desired_direction = DOWN;
+
+        if(Object* room = g->world->get_current_room())
+        {
+            ComponentRoom* room_component = (ComponentRoom*)room->get_component(Component::ROOM);
+            if(room_component && room_component->directions[desired_direction] != "")
+            {
+                commands.push_back(std::make_shared<CmdGo>(room_component->directions[desired_direction]));
+            }
+            else
+                commands.push_back(std::make_shared<CmdDisp>("You can't go " + args[0][0] + " from here, baka!"));
+        }
+    }
+
     //=== Looking around
     else if(matches(tokens, "look around", args) || matches(tokens, "look", args) || matches(tokens, "l", args))
     {
