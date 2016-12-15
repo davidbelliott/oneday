@@ -309,3 +309,13 @@ class CmdFeed : public Command
 
         void run(GameState* g);
 };
+
+class CmdOpen : public Command
+{
+    public:
+        Object* obj;
+
+        CmdOpen(Object* obj_in);
+
+        void run(GameState* g);
+};

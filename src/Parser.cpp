@@ -539,6 +539,13 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         commands.push_back(std::make_shared<CmdFeed>(food, actor));
     }
 
+    //=== Opening something
+    else if(matches(tokens, "open #", args))
+    {
+        Object* obj = get_object(args[0], g);
+        commands.push_back(std::make_shared<CmdOpen>(obj));
+    }
+
 
     //=== Unrecognized pattern
     else

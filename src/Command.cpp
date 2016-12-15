@@ -252,6 +252,7 @@ void recursive_show(GameState* g, Object* o, bool show_children, bool descriptio
     ComponentDescription* c_desc = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
     ComponentText* c_text = (ComponentText*)o->get_component(Component::TEXT);
     ComponentInventory* c_inv = (ComponentInventory*)o->get_component(Component::INVENTORY);
+    ComponentOpenClose* c_open = (ComponentOpenClose*)o->get_component(Component::OPEN_CLOSE);
 
     if(c_desc && c_desc->current_appearance != "")
     {
@@ -259,16 +260,18 @@ void recursive_show(GameState* g, Object* o, bool show_children, bool descriptio
         {
             if(c_desc->description != "")
                 g->engine->terminal->disp(c_desc->description);
-            else if(o->children.size() == 0 && !c_text)
-                g->engine->terminal->disp("You see nothing special about the " + o->pretty_name + ".");
             if(c_text)
                 g->engine->terminal->disp("The " + o->pretty_name + " reads:\n" + c_text->text);
+            if(c_open)
+                g->engine->terminal->disp(std::string("It is ") + (c_open->open ? "open" : "closed") + ".");
+            if(o->children.size() == 0 && !c_text && !c_open)
+                g->engine->terminal->disp("You see nothing special about the " + o->pretty_name + ".");
         }
         else
             g->engine->terminal->disp(c_desc->current_appearance);
     }
 
-    if(!c_inv)
+    if(!c_inv && (!c_open || c_open->open))
     {
         for (int j = 0; j < o->children.size(); j++)
         {
@@ -532,5 +535,38 @@ void CmdFeed::run(GameState* g)
         if(food->parent)
             food->parent->remove_child(food);
         food->active = false;
+    }
+}
+
+CmdOpen::CmdOpen(Object* obj_in)
+    : Command(OPEN),
+    obj(obj_in)
+{
+    objects.push_back(obj);
+}
+
+void CmdOpen::run(GameState* g)
+{
+    if(!obj)
+    {
+        g->send_front(std::make_shared<CmdDisp>("No object to open"));
+    }
+    else
+    {
+       ComponentOpenClose* c_open_close = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
+       
+        if(!c_open_close)
+        {
+            g->send_front(std::make_shared<CmdDisp>("You can't open the " + obj->pretty_name + "!"));
+        }
+        else if(c_open_close->open)
+        {
+            g->send_front(std::make_shared<CmdDisp>("The " + obj->pretty_name + " is already open."));
+        }
+        else
+        {
+            c_open_close->open = true;
+            g->send_front(std::make_shared<CmdDisp>("You open the " + obj->pretty_name + "."));
+        }
     }
 }

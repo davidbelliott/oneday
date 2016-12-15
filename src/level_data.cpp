@@ -215,7 +215,7 @@ void execute()
     lab->pretty_name = "Thomas Pynchon's lab";
     lab->add_component(new ComponentDescription("This is the underground lab where Pynchon does his stuff."));
     lab->add_component(new ComponentRoom({{EAST, "library"}}));
-    lab->add_component(new ComponentMusic("res/100kilos.ogg"));
+    lab->add_component(new ComponentMusic("res/dope.ogg"));
     world->add_child(lab);
 
     Object* table = new Object("table");
@@ -228,6 +228,7 @@ void execute()
 
     Object* lockers = new Object("lockers");
     lockers->add_component(new ComponentDescription("Three metal lockers line the wall."));
+    lockers->add_component(new ComponentOpenClose(false));
     lab->add_child(lockers);
 
     Object* hazmat = new Object("hazmat suit");

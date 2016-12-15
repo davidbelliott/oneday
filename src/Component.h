@@ -203,4 +203,16 @@ class ComponentInventory : public Component
         }
 };
 
+class ComponentOpenClose : public Component
+{
+    public:
+        bool open;
+
+        ComponentOpenClose(bool open_in = false)
+            : Component(OPEN_CLOSE),
+            open(open_in)
+        {
+        }
+};
+
 typedef std::shared_ptr<Component> ComponentPtr;
