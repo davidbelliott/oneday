@@ -21,7 +21,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "compton_street";
+	world->cur_room = "jamal_bedroom";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -74,10 +74,10 @@ void execute()
     Object* hole = new Object("hole");
     hole->add_component(new ComponentDescription("A dark hole gapes in the floor, presumably where a toilet used to be."));
     hole->add_component(new ComponentPortal("sewer"));
-    hole->pre_command = [=](Command* cmd)
+    jamal_bathroom->pre_command = [=](Command* cmd)
     {
         bool execute = true;
-        if(cmd->type == Command::GO)
+        if(cmd->type == Command::GO && static_cast<CmdGo*>(cmd)->new_room == "sewer")
         {
             if(((Player*)world->get_player())->clothing == "hazmat suit")
             {
@@ -126,8 +126,25 @@ void execute()
     stove->add_child(pan);
 
     Object* pellets = new Object("pellets");
+    pellets->aliases = {"pellet"};
     pellets->add_component(new ComponentDescription("Several brown pellets are in the pan. They do not contain pork."));
     pellets->add_component(new ComponentTakeable());
+    pellets->add_component(new ComponentEdible());
+    bool tasted_pellets = false;
+    pellets->pre_command = [&](Command* cmd) {
+        if(cmd->type == Command::EAT)
+        {
+            if(tasted_pellets)
+                text->send_front(std::make_shared<CmdDisp>("The pellets are gross. You don't want to eat any more."));
+            else
+            {
+                text->send_front(std::make_shared<CmdDisp>("You tentatively nibble at one of the pellets. It's absolutely disgusting. Maybe it's medicine?"));
+                tasted_pellets = true;
+            }
+            return false;
+        }
+        return true;
+    };
     pan->add_child(pellets);
 
     Object* staircase = new Object("jamal_staircase");
@@ -296,7 +313,7 @@ void execute()
 
     Object* compton_street = new Object("compton_street");
     compton_street->pretty_name = "Compton Street";
-    compton_street->add_component(new ComponentRoom({{NORTH, "lil_wayne_front"}, {EAST, "magdalene_lane"}, {SOUTH, "del_mar"}, {WEST, "vacant_lot"}}));
+    compton_street->add_component(new ComponentRoom({{NORTH, "compton_street_north"}, {EAST, "magdalene_lane"}, {SOUTH, "del_mar"}, {WEST, "club_front"}}));
     compton_street->add_component(new ComponentDescription("This strip of gritty asphalt comes straight outta the dark and unknown reaches of the city of Compton."));
     world->add_child(compton_street);
 
@@ -348,7 +365,113 @@ void execute()
         }
     };
     compton_street->add_child(urban_youth);
+
+    Object* compton_street_north = new Object("compton_street_north");
+    compton_street_north->pretty_name = "Compton Street";
+    compton_street_north->add_component(new ComponentRoom({{NORTH, "lil_wayne_front"}, {WEST, "vacant_lot"}}));
+    compton_street_north->add_component(new ComponentDescription("This road runs from north to south."));
+    world->add_child(compton_street_north);
+
+
+    Object* lil_wayne_front = new Object("lil_wayne_front");
+    lil_wayne_front->pretty_name = "the front of Lil Wayne's home";
+    lil_wayne_front->add_component(new ComponentDescription("You face the edifice within which young Tunechi dwells."));
+    lil_wayne_front->add_component(new ComponentRoom({{NORTH, "lil_wayne_inside"}, {SOUTH, "compton_street_north"}}));
+    enum LilWayneStatus {
+        SEIZURE,
+        ANGRY,
+        DEAD
+    } lil_wayne_status = SEIZURE;
+    lil_wayne_front->pre_command = [&](Command* cmd) {
+        if(cmd->type == Command::GO)
+        {
+            if(static_cast<CmdGo*>(cmd)->new_room == "lil_wayne_inside" && lil_wayne_status == ANGRY)
+            {
+                if(player->has_direct_child("hedge clippers"))
+                {
+                    text->send_front(std::make_shared<CmdDisp>("Hedge clippers in hand, you creep stealthily into the domain of Birdman Jr."));
+                }
+                else
+                {
+                    text->send_front(std::make_shared<CmdDisp>("Lil Wayne is bretty mad :-DD best not go in here unarmed."));
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+    lil_wayne_front->post_command = [&](Command* cmd) {
+        if(cmd->type == Command::LOOK_AROUND)
+        {
+            if(lil_wayne_status == SEIZURE)
+                text->send_front(std::make_shared<CmdDisp>("You hear loud, convulsive fits from within the house. Mr. Crazy Flow could be in trouble!"));
+            else if(lil_wayne_status == ANGRY)
+            {
+                if(rand() % 3 == 0)
+                {
+                    int choice = rand() % 5;
+                    std::string output = "Lil Wayne shouts at you from the window:\n(Lil Wayne) Get the %#@$ out, you ";
+                    if(choice == 0)
+                        output += "varlot";
+                    else if(choice == 1)
+                        output += "rank tickle-brained fustilarian";
+                    else if(choice == 2)
+                        output += "b!tch a$s n!gga";
+                    else if(choice == 3)
+                        output += "lewdster";
+                    else if(choice == 4)
+                        output += "baka gaijin";
+                    text->send_front(std::make_shared<CmdDisp>(output));
+                }
+            }
+        }
+    };
+    world->add_child(lil_wayne_front);
+
+
+    Object* lil_wayne_inside = new Object("lil_wayne_inside");
+    lil_wayne_inside->pretty_name = "the inside of Lil Wayne's humble abode";
+    lil_wayne_inside->add_component(new ComponentRoom({{SOUTH, "lil_wayne_front"}}));
+    lil_wayne_inside->add_component(new ComponentDescription("It bears a vague resemblance to a wigwam."));
+    world->add_child(lil_wayne_inside);
+
+    Object* lil_wayne = new Object("Lil Wayne");
+    lil_wayne->aliases = {"lil", "wayne", "him", "he" };
+    lil_wayne->add_component(new ComponentDescription("Lil Wayne is having a seizure! His muscles are rigid, and he experiences brief losses of consciousness."));
+    lil_wayne->add_component(new ComponentTalkable({"-hnnng..."}));
+    int lil_wayne_interaction_counter = 0;
+    lil_wayne->post_command = [&](Command* cmd) {
+        if(lil_wayne_status == SEIZURE)
+        {
+            if(cmd->type == Command::FEED && static_cast<CmdFeed*>(cmd)->food->name == "pellets")
+            {
+                lil_wayne_status = ANGRY;
+                text->send_front(std::make_shared<CmdDisp>("Lil Wayne recovers from his seizure!\nIt's A Christmas miracle."));
+                text->send_front(std::make_shared<CmdPause>());
+                text->send_front(std::make_shared<CmdDisp>("Yet as he clambers up from the ground, he suddenly turns hostile:"));
+                lil_wayne->add_component(new ComponentTalkable({"-ayy wat u doin in my house boi",
+                            "i just saved ur tush from a seizure",
+                            "-n!gga u better scram 'fore ah goes flop-bott on u like i did to ur mum!"}));
+                auto talk = std::make_shared<CmdTalkTo>();
+                talk->add_object(lil_wayne);
+                text->send_front(talk);
+                text->send_front(std::make_shared<CmdDisp>("Lil Wayne lunges for you, and you barely escape out the door."));
+                text->send_front(std::make_shared<CmdPause>());
+                text->send_front(std::make_shared<CmdGo>("lil_wayne_front"));
+            }
+            else
+            {
+                if(lil_wayne_interaction_counter % 2 == 0)
+                    text->send_front(std::make_shared<CmdDisp>("Lil Wayne writhes on the ground like a monsta."));
+                else
+                    text->send_front(std::make_shared<CmdDisp>("Perhaps if you feed medicine to Lil Wayne he'll get better."));
+                lil_wayne_interaction_counter++;
+            }
+        }
+    };
+    lil_wayne_inside->add_child(lil_wayne);
     
+
     Object* vacant_lot = new Object("vacant_lot");
     vacant_lot->pretty_name = "a Vacant Lot";
     vacant_lot->add_component(new ComponentRoom({{EAST, "compton_street"}}));

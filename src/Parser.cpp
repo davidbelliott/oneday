@@ -28,7 +28,9 @@ Object* get_object(token_list tokens, GameState* g, int* index)
     for( ; i < tokens.size() && !found_object; i++)
     {
         found_object = g->world->get_current_room()->get_indirect_child(tokens[i], 0);
-        if(found_object && (!found_object->active || !found_object->discovered))
+        if(found_object &&
+                (!found_object->active ||
+                 !(found_object->discovered || found_object->parent == g->world->get_player())))
             found_object = nullptr;
         if(!found_object)
         {
@@ -243,7 +245,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
                 commands.push_back(std::make_shared<CmdGo>(room_component->directions[desired_direction]));
             }
             else
-                commands.push_back(std::make_shared<CmdDisp>("You can't go " + args[0][0] + " from here, baka!"));
+                commands.push_back(std::make_shared<CmdDisp>("You can't go " + dir[desired_direction].name + " from here, baka!"));
         }
     }
 
@@ -277,7 +279,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
                 commands.push_back(std::make_shared<CmdGo>(room_component->directions[desired_direction]));
             }
             else
-                commands.push_back(std::make_shared<CmdDisp>("You can't go " + args[0][0] + " from here, baka!"));
+                commands.push_back(std::make_shared<CmdDisp>("You can't go " + dir[desired_direction].name + " from here, baka!"));
         }
     }
 
@@ -522,6 +524,22 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         }
     }
 
+    //=== Eating an object
+    else if(matches(tokens, "eat #", args))
+    {
+        Object* obj = get_object(args[0], g);
+        commands.push_back(std::make_shared<CmdEat>(obj));
+    }
+
+    //=== Feeding an object to an actor
+    else if(matches(tokens, "feed # to #", args))
+    {
+        Object* food = get_object(args[0], g);
+        Object* actor = get_object(args[1], g);
+        commands.push_back(std::make_shared<CmdFeed>(food, actor));
+    }
+
+
     //=== Unrecognized pattern
     else
     {
@@ -535,7 +553,7 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
             if(lhs.size() == 0)
                 output = "I don't understand what you want to do to the " + obj->pretty_name + ".";
             else
-                output = "I don't understand how to " + join(lhs, ' ') + " something" + (rhs.size() > 0 ? " " + join(rhs, ' ') : "") + ".";
+                output = "I don't understand how to " + join(lhs, ' ') + " something.";
             commands.push_back(std::make_shared<CmdDisp>(output));
         }
         else

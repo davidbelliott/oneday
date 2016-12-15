@@ -5,6 +5,7 @@
 #include "World.h"
 #include "Directions.h"
 #include "Player.h"
+#include <set>
 
 Command::Command(CommandType type_in)
     : type(type_in)
@@ -17,14 +18,17 @@ Command::~Command()
 
 void Command::run_and_callback(GameState* g)
 {
-    Object* object = objects.size() > 0 ? objects[0] : g->world->get_player();
-    std::vector<Object*> callback_list;
-    if(object)
+    std::set<Object*> callback_list;
+    for(int i = 0; i < std::max(1, int(objects.size())); i++)
     {
-        while(object)
+        Object* object = objects.size() > i ? objects[i] : g->world->get_player();
+        if(object)
         {
-            callback_list.push_back(object);
-            object = object->parent;
+            while(object)
+            {
+                callback_list.insert(object);
+                object = object->parent;
+            }
         }
     }
 
@@ -466,5 +470,67 @@ void CmdTalkTo::run(GameState* g)
         {
             g->send_front(std::make_shared<CmdDisp>(">he thinks he can talk to a " + objects[i]->pretty_name));
         }
+    }
+}
+
+CmdEat::CmdEat(Object* food_in)
+    : Command(EAT),
+    food(food_in)
+{
+    objects.push_back(food);
+}
+
+void CmdEat::run(GameState* g)
+{
+    if(!food)
+    {
+        g->send_front(std::make_shared<CmdDisp>("Eat what?"));
+    }
+    else if(!food->has_component(Component::EDIBLE))
+    {
+        g->send_front(std::make_shared<CmdDisp>("The " + food->pretty_name + " isn't edible."));
+    }
+    else
+    {
+        g->send_front(std::make_shared<CmdDisp>("You eat the " + food->pretty_name + " and find it most satisfactory."));
+        if(food->parent)
+            food->parent->remove_child(food);
+        food->active = false;
+    }
+}
+
+CmdFeed::CmdFeed(Object* food_in, Object* actor_in)
+    : Command(FEED),
+    food(food_in),
+    actor(actor_in)
+{
+    objects.push_back(food);
+    objects.push_back(actor);
+}
+
+void CmdFeed::run(GameState* g)
+{
+    if(!food)
+    {
+        g->send_front(std::make_shared<CmdDisp>("Food not found."));
+    }
+    else if(!actor)
+    {
+        g->send_front(std::make_shared<CmdDisp>("Actor not found."));
+    }
+    else if(!food->has_component(Component::EDIBLE))
+    {
+        g->send_front(std::make_shared<CmdDisp>("A " + food->pretty_name + " isn't edible."));
+    }
+    else if(!actor->has_component(Component::TALKABLE))
+    {
+        g->send_front(std::make_shared<CmdDisp>(">implying one can feed a " + food->pretty_name + " to a " + actor->pretty_name));
+    }
+    else
+    {
+        g->send_front(std::make_shared<CmdDisp>("You feed the " + food->pretty_name + " to " + actor->pretty_name + "."));
+        if(food->parent)
+            food->parent->remove_child(food);
+        food->active = false;
     }
 }
