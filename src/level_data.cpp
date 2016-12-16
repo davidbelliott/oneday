@@ -140,7 +140,7 @@ void execute()
                 text->send_front(std::make_shared<CmdDisp>("The pellets are gross. You don't want to eat any more."));
             else
             {
-                text->send_front(std::make_shared<CmdDisp>("You tentatively nibble at one of the pellets. It's absolutely disgusting. Maybe it's medicine?"));
+                text->send_front(std::make_shared<CmdDisp>("You tentatively nibble at one of the mysterious pellets. It's absolutely disgusting, but has medicinal properties."));
                 tasted_pellets = true;
             }
             return false;
