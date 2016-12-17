@@ -6,6 +6,7 @@
 #include "GameStateMenu.h"
 #include "Player.h"
 #include "World.h"
+#include "Terminal.h"
 
 void execute()
 {
@@ -52,8 +53,17 @@ void execute()
     jamal_bedroom->add_child(posters);
 
     Object* window = new Object("window");
-    window->add_component(new ComponentDescription("A single smeared window to the north suffuses the room in dim light.", "Looking through the window, you notice a gang of thugs gathered in front of your house."));
+    window->add_component(new ComponentDescription("A single smeared window to the north suffuses the room in dim light."));
     jamal_bedroom->add_child(window);
+
+    Object* thugs = new Object("thugs");
+    thugs->aliases = {"thug"};
+    thugs->add_component(new ComponentDescription("You notice a gang of thugs gathered in front of your house."));
+    thugs->pre_command = [&](Command* cmd) {
+        text->engine->terminal->disp("The thugs are too far away.");
+        return false;
+    };
+    window->add_child(thugs);
 
     Object* paper = new Object("paper");
     paper->aliases = { "sheet" };

@@ -54,10 +54,18 @@ Object* get_object(token_list tokens, GameState* g, int* index)
 
 std::string to_lower(std::string str)
 {
-    std::string lower_str;
+    std::string lower_str = "";
     for(int i = 0; i < str.size(); i++)
         lower_str.push_back(std::tolower(str[i]));
     return lower_str;
+}
+
+std::string to_upper(std::string str)
+{
+    std::string upper_str = "";
+    for(int i = 0; i < str.size(); i++)
+        upper_str.push_back(std::toupper(str[i]));
+    return upper_str;
 }
 
 token_list slice(token_list list, int start, int end)
@@ -329,7 +337,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             }
             else
             {
-                errors.push_back("Why would you want to pick up a " + obj->pretty_name + ".");
+                errors.push_back("Why would you want to pick up a " + obj->pretty_name + "?");
             }
         }
     }
@@ -505,14 +513,19 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Yelling
-    if(matches(tokens, "yell", args) || matches(tokens, "yell at #", args))
+    if(matches(tokens, "yell", args)
+            || matches(tokens, "shout", args)
+            || matches(tokens, "holler", args)
+            || matches(tokens, "scream", args))
     {
         commands.push_back(std::make_shared<CmdDisp>("(Jamal) SHEEEIT!"));
     }
-
-    if(matches(tokens, "yell #", args))
+    else if(matches(tokens, "yell #", args)
+            || matches(tokens, "shout #", args)
+            || matches(tokens, "holler #", args)
+            || matches(tokens, "scream #", args))
     {
-        commands.push_back(std::make_shared<CmdDisp>("(Jamal) " + join(args[0], ' ') + "!"));
+        commands.push_back(std::make_shared<CmdDisp>("(Jamal) " + to_upper(join(args[0], ' ')) + "!"));
     }
 
     cmd_ptr command = nullptr;

@@ -9,6 +9,9 @@ class World;
 // Converts a string to lower case
 std::string to_lower(std::string str);
 
+// Converts a string to upper case
+std::string to_upper(std::string str);
+
 // Converts a string to a series of tokens
 token_list tokenize(std::string str, char delim);
 
