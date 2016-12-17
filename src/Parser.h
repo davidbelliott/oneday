@@ -2,6 +2,7 @@
 class World;
 #include "Token.h"
 #include "Command.h"
+#include "Directions.h"
 #include <string>
 #include <vector>
 
@@ -35,6 +36,8 @@ bool matches(token_list statement, std::string pattern, arg_list& args);
 // to the index of the token corresponding to the object (or -1 if object not found).
 Object* get_object(token_list tokens, GameState* g, int* index = nullptr);
 
+void try_to_go(DirectionId dir, GameState* g, std::vector<cmd_ptr>* commands, std::vector<std::string>* errors);
+
 enum ParseOutcome
 {
     SUCCESS,
@@ -51,6 +54,5 @@ public:
 	Parser();
 	virtual ~Parser();
 
-    std::vector<cmd_ptr> parse(std::string statement, GameState* g);
+    cmd_ptr parse(std::string statement, GameState* g);
 };
-

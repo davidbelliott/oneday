@@ -23,7 +23,6 @@ class Component
             ROOM,
             PORTAL,
             TAKEABLE,
-            CLIMBABLE,
             MOVEABLE,
             MUSIC,
             OPEN_CLOSE,
@@ -155,16 +154,6 @@ class ComponentTakeable : public Component
             : Component(TAKEABLE),
             mass(1)
     { }
-};
-
-class ComponentClimbable : public ComponentRoom
-{
-    public:
-        ComponentClimbable(std::map<DirectionId, std::string> directions_in)
-            : ComponentRoom(directions_in)
-        {
-            type = CLIMBABLE;
-        }
 };
 
 class ComponentMoveable : public Component

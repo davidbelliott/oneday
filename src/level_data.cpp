@@ -250,12 +250,11 @@ void execute()
     Object* sewer_west = new Object("sewer_west");
     sewer_west->pretty_name = "a sewer tunnel";
     sewer_west->add_component(music_hard);
-    sewer_west->add_component(new ComponentRoom({{EAST, "sewer"}, {WEST, "sewer_deadend"}}));
+    sewer_west->add_component(new ComponentRoom({{EAST, "sewer"}, {WEST, "sewer_deadend"}, {UP, "sewer_upper"}}));
     sewer_west->add_component(new ComponentDescription("A vertical tunnel joins the sewer from above."));
     world->add_child(sewer_west);
 
     Object* ladder = new Object("ladder");
-    ladder->add_component(new ComponentClimbable({{UP, "sewer_upper"}}));
     ladder->add_component(new ComponentDescription("A metal ladder is mounted to the concrete wall of the vertical tunnel."));
     sewer_west->add_child(ladder);
 
@@ -504,26 +503,26 @@ void execute()
     Object* garbage_alley = new Object("garbage_alley");
     garbage_alley->pretty_name = "a dim alley overflowing with garbage";
     garbage_alley->add_component(new ComponentRoom(
-                {{SOUTH, "magdalene_lane"}})),
+                {{SOUTH, "magdalene_lane"},
+                {UP, "can_tops"}})),
     world->add_child(garbage_alley);
 
     Object* garbage_cans = new Object("garbage cans");
     garbage_cans->aliases = {"cans", "garbage", "rubbish", "bins", "can", "bin"};
     garbage_cans->add_component(new ComponentDescription("Several cans huddle by the wall in a pool of sodium-vapor light."));
-    garbage_cans->add_component(new ComponentClimbable({{UP, "can tops"}}));
     garbage_alley->add_child(garbage_cans);
 
     Object* can_tops = new Object("can tops");
     can_tops->pretty_name = "the top of the garbage cans";
     can_tops->add_component(new ComponentDescription("They wobble precariously beneath your feet."));
     can_tops->add_component(new ComponentRoom(
-                {{DOWN, "garbage_alley"}}));
+                {{DOWN, "garbage_alley"},
+                {UP, "roof"}}));
     world->add_child(can_tops);
 
     Object* drain_pipe = new Object("drain pipe");
     drain_pipe->aliases = {"pipe", "drain"};
     drain_pipe->add_component(new ComponentDescription("A drain pipe runs down the wall on one side."));
-    drain_pipe->add_component(new ComponentClimbable({{UP, "roof"}}));
     can_tops->add_child(drain_pipe);
 
     Object* roof = new Object("roof");

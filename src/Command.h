@@ -21,7 +21,6 @@ public:
         DISP,
         OUTPUT,
         CLEAR,
-        SETCOLOR,
         PLAY_MUSIC,
         PAUSE_MUSIC,
         STOP_MUSIC,
@@ -59,7 +58,6 @@ public:
         SMELL,
         TALK_TO,
 
-        SET_OBJECTIVE,
         ADD_GAMESTATE,
         REMOVE_GAMESTATE,
         ADD_OBJECT,
@@ -96,6 +94,7 @@ class CmdDisp : public Command
         int spread;
 
         CmdDisp(std::string str_in, bool append_newline_in = true);
+
         void run(GameState* g);
 };
 
@@ -108,21 +107,15 @@ class CmdOutput : public Command
         std::string str;
 
         CmdOutput(int x_in, int y_in, std::string str_in);
+
         void run(GameState* g);
 };
 
 class CmdClear : public Command
 {
     public:
-        CmdClear();
-        void run(GameState* g);
-};
 
-class CmdSetColor : public Command
-{
-    public:
-        sf::Color color;
-        CmdSetColor(sf::Color color_in = config::colors[config::color_default_fg]);
+        CmdClear();
         void run(GameState* g);
 };
 
@@ -168,14 +161,6 @@ class CmdUnpause : public Command
 {
     public:
         CmdUnpause();
-        void run(GameState* g);
-};
-
-class CmdSetObjective : public Command
-{
-    public:
-        std::string objective;
-        CmdSetObjective(std::string objective_in);
         void run(GameState* g);
 };
 
@@ -294,8 +279,8 @@ class CmdEat : public Command
 {
     public:
         Object* food;
-        CmdEat(Object* food_in);
 
+        CmdEat(Object* food_in);
         void run(GameState* g);
 };
 
@@ -306,7 +291,6 @@ class CmdFeed : public Command
         Object* actor;
 
         CmdFeed(Object* food_in, Object* actor_in);
-
         void run(GameState* g);
 };
 
@@ -316,6 +300,5 @@ class CmdOpen : public Command
         Object* obj;
 
         CmdOpen(Object* obj_in);
-
         void run(GameState* g);
 };

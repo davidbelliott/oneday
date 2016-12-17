@@ -93,17 +93,6 @@ void CmdClear::run(GameState* g)
     g->engine->terminal->clr();
 }
 
-CmdSetColor::CmdSetColor(sf::Color color_in)
-    : Command(SETCOLOR),
-      color(color_in)
-{
-}
-
-void CmdSetColor::run(GameState* g)
-{
-    g->engine->terminal->set_color(color);
-}
-
 CmdInput::CmdInput()
     : Command(INPUT)
 {}
@@ -161,16 +150,6 @@ void CmdUnpause::run(GameState* g)
     g->unpause();
 }
 
-CmdSetObjective::CmdSetObjective(std::string objective_in)
-    : Command(SET_OBJECTIVE),
-      objective(objective_in)
-{}
-
-void CmdSetObjective::run(GameState* g)
-{
-
-}
-
 CmdAddGameState::CmdAddGameState(GameState* state_to_add_in)
     : Command(ADD_GAMESTATE),
       state_to_add(state_to_add_in)
@@ -209,7 +188,6 @@ void CmdGo::run(GameState* g)
         if(music_entering)
             g->send_front(std::make_shared<CmdPlayMusic>(music_entering->music));
 
-        //g->send_front(std::make_shared<CmdClear>());
         std::shared_ptr<CmdLookAround> look_around = std::make_shared<CmdLookAround>();
         g->send_front(look_around);
     }
@@ -217,8 +195,6 @@ void CmdGo::run(GameState* g)
     {
         g->send_front(std::make_shared<CmdDisp>("Error: room " + new_room + " doesn't exist."));
     }
-
-    //g->world->get_current_room()->describe(g);
 }
 
 CmdQuit::CmdQuit()
@@ -363,6 +339,7 @@ void CmdTake::run(GameState* g)
             objects[i]->parent->remove_child(objects[i]);
         if(g->world->get_player())
             g->world->get_player()->add_child(objects[i]);
+        g->engine->terminal->disp("You take the " + objects[i]->pretty_name + ".");
     }
 }
 
@@ -395,6 +372,7 @@ void CmdWear::run(GameState* g)
             g->world->get_player()->add_child(objects[i]);
             ((Player*)g->world->get_player())->clothing = objects[i]->name;
         }
+        g->engine->terminal->disp("You put on the " + objects[i]->pretty_name + ".");
     }
 }
 
