@@ -229,6 +229,8 @@ void recursive_show(GameState* g, Object* o, bool show_children, bool descriptio
     ComponentText* c_text = (ComponentText*)o->get_component(Component::TEXT);
     ComponentInventory* c_inv = (ComponentInventory*)o->get_component(Component::INVENTORY);
     ComponentOpenClose* c_open = (ComponentOpenClose*)o->get_component(Component::OPEN_CLOSE);
+    ComponentTie* c_tie = (ComponentTie*)o->get_component(Component::TIE);
+    ComponentTieTo* c_tie_to = (ComponentTieTo*)o->get_component(Component::TIE_TO);
 
     if(c_desc && c_desc->current_appearance != "")
     {
@@ -545,6 +547,38 @@ void CmdOpen::run(GameState* g)
         {
             c_open_close->open = true;
             g->send_front(std::make_shared<CmdDisp>("You open the " + obj->pretty_name + "."));
+        }
+    }
+}
+
+CmdTieTo::CmdTieTo(Object* tie_in, Object* tie_to_in)
+    : Command(TIE_TO),
+    tie(tie_in),
+    tie_to(tie_to_in)
+{
+}
+
+void CmdTieTo::run(GameState* g)
+{
+    if(tie && tie_to)
+    {
+        if(tie->pre_command(this) && tie_to->pre_command(this))
+        {
+            ComponentTie* c_tie = (ComponentTie*)tie->get_component(Component::TIE);
+            ComponentTieTo* c_tie_to = (ComponentTieTo*)tie_to->get_component(Component::TIE_TO);
+            ComponentDescription* c_desc = (ComponentDescription*)tie->get_component(Component::DESCRIPTION);
+
+            if(c_tie && c_tie_to)
+            {
+                c_tie->tie_to.push_back(tie_to);
+                c_tie_to->tie.push_back(tie);
+                if(tie->parent)
+                    tie->parent->remove_child(tie);
+                tie_to->add_child(tie);
+                if(c_desc)
+                    c_desc->current_appearance = "There is a " + tie->pretty_name + " tied to the " + tie_to->pretty_name + ".";
+                g->engine->terminal->disp("You tie the " + tie->pretty_name + " to the " + tie_to->pretty_name + ".");
+            }
         }
     }
 }

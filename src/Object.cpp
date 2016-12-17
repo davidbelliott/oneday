@@ -25,8 +25,8 @@ Object::Object(std::string name_in)
       components(),
       active(true),
       discovered(false),
-      pre_command(nullptr),
-      post_command(nullptr)
+      pre_command([](Command* cmd) { return true; } ),
+      post_command([](Command* cmd) { } )
 {
 }
 

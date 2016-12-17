@@ -22,7 +22,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "kolob_street_east";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -301,9 +301,9 @@ void execute()
     sewer_deadend->add_component(new ComponentRoom({{EAST, "sewer_west"}}));
     world->add_child(sewer_deadend);
 
-    Object* grate = new Object("grating");
-    grate->add_component(new ComponentDescription("The water here flows through a large grating, which blocks your way."));
-    sewer_deadend->add_child(grate);
+    Object* grating = new Object("grating");
+    grating->add_component(new ComponentDescription("The water here flows through a large grating, which blocks your way."));
+    sewer_deadend->add_child(grating);
 
     del_mar->pretty_name = "Del Mar Boulevard";
     del_mar->add_component(new ComponentRoom({{NORTH, "compton_street"}}));
@@ -424,8 +424,6 @@ void execute()
                 text->send_front(std::make_shared<CmdDisp>("You hear loud, convulsive fits from within the house. Mr. Crazy Flow could be in trouble!"));
             else if(lil_wayne_status == ANGRY)
             {
-                if(rand() % 3 == 0)
-                {
                     int choice = rand() % 5;
                     std::string output = "Lil Wayne shouts at you from the window:\n(Lil Wayne) Get the %#@$ out, you ";
                     if(choice == 0)
@@ -439,7 +437,6 @@ void execute()
                     else if(choice == 4)
                         output += "baka gaijin";
                     text->send_front(std::make_shared<CmdDisp>(output));
-                }
             }
         }
     };
@@ -514,7 +511,7 @@ void execute()
     garbage_alley->pretty_name = "a dim alley overflowing with garbage";
     garbage_alley->add_component(new ComponentRoom(
                 {{SOUTH, "magdalene_lane"},
-                {UP, "can_tops"}})),
+                {UP, "can tops"}})),
     world->add_child(garbage_alley);
 
     Object* garbage_cans = new Object("garbage cans");
@@ -543,19 +540,52 @@ void execute()
 
     Object* rope = new Object("rope");
     rope->add_component(new ComponentTakeable());
+    rope->add_component(new ComponentTie());
     rope->add_component(new ComponentDescription("A coil of rope lies to one side."));
-    roof->add_child(rope);
+    player->add_child(rope);
 
     Object* kolob_street = new Object("kolob_street");
     kolob_street->pretty_name = "Kolob Street";
-    kolob_street->add_component(new ComponentRoom({{SOUTH, "jamal_corridor"}, {WEST, "magdalene_lane"}}));
+    kolob_street->add_component(new ComponentRoom({{EAST, "kolob_street_east"},
+                {SOUTH, "jamal_front"},
+                {WEST, "magdalene_lane"}}));
     world->add_child(kolob_street);
-    
+
+    Object* jamal_front = new Object("jamal_front");
+    jamal_front->pretty_name = "the front of Jamal's house";
+    jamal_front->add_component(new ComponentRoom({{NORTH, "kolob_street_east"},
+                {SOUTH, "jamal_corridor"}}));
+    world->add_child(jamal_front);
+
+    Object* kolob_street_east = new Object("kolob_street_east");
+    kolob_street_east->pretty_name = "East Kolob Street";
+    kolob_street_east->add_component(new ComponentRoom({{WEST, "kolob_street"}}));
+    world->add_child(kolob_street_east);
+
     Object* shaft = new Object("shaft");
     shaft->pretty_name = "a ledge overlooking a deep shaft";
     shaft->add_component(new ComponentRoom({{WEST, "sewer"}}));
     shaft->add_component(new ComponentDescription("You see sunlight filtering down from a grate high above your head.\nRumbling and clanking sounds drift up from the darkness below."));
     world->add_child(shaft);
+
+    Object* grate = new Object("grate");
+    grate->add_component(new ComponentDescription("A heavy grate is inset in the road.", "You could tie something around its bars..."));
+    grate->add_component(new ComponentTieTo());
+    grate->pre_command = [&](Command* cmd) {
+        if(cmd->type == Command::TIE_TO)
+        {
+            static_cast<ComponentRoom*>(shaft->get_component(Component::ROOM))->
+                directions[DOWN] = "subway_shaft";
+            static_cast<ComponentDescription*>(shaft->get_component(Component::DESCRIPTION))->
+                current_appearance += "\nA rope dangles down from the grate into the shaft.";
+        }
+        return true;
+    };
+    kolob_street_east->add_child(grate);
+
+    Object* shaft_view = new Object("shaft");
+    shaft_view->add_component(new ComponentDescription("Beneath the grate is a deep shaft going into the ground. Rumbling and clanking sounds drift up from the darkness below."));
+    grate->add_child(shaft_view);
     
     /*cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());

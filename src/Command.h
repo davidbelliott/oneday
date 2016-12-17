@@ -57,6 +57,7 @@ public:
         DRINK,
         SMELL,
         TALK_TO,
+        TIE_TO,
 
         ADD_GAMESTATE,
         REMOVE_GAMESTATE,
@@ -300,5 +301,15 @@ class CmdOpen : public Command
         Object* obj;
 
         CmdOpen(Object* obj_in);
+        void run(GameState* g);
+};
+
+class CmdTieTo : public Command
+{
+    public:
+        Object* tie;
+        Object* tie_to;
+
+        CmdTieTo(Object* tie_in, Object* tie_to_in);
         void run(GameState* g);
 };

@@ -331,9 +331,15 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         {
             if(obj->has_component(Component::TAKEABLE))
             {
-                cmd_ptr cmd_take = std::make_shared<CmdTake>();
-                cmd_take->add_object(obj);
-                commands.push_back(cmd_take);
+                ComponentTie* c_tie = (ComponentTie*)obj->get_component(Component::TIE);
+                if(c_tie && c_tie->tie_to.size() > 0)
+                    errors.push_back("The " + obj->pretty_name + " is tied to the " + c_tie->tie_to[0]->pretty_name + ".");
+                else
+                {
+                    cmd_ptr cmd_take = std::make_shared<CmdTake>();
+                    cmd_take->add_object(obj);
+                    commands.push_back(cmd_take);
+                }
             }
             else
             {
@@ -527,6 +533,36 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
     {
         commands.push_back(std::make_shared<CmdDisp>("(Jamal) " + to_upper(join(args[0], ' ')) + "!"));
     }
+
+    //=== Tieing
+    if(matches(tokens, "tie # to #", args)
+            || matches(tokens, "attach # to #", args)
+            || matches(tokens, "fasten # to #", args)
+            || matches(tokens, "mount # to #", args))
+    {
+        Object* tie = get_object(args[0], g);
+        Object* tie_to = get_object(args[1], g);
+        if(tie_to)
+        {
+            if(tie_to->has_component(Component::TIE_TO))
+            {
+                if(tie)
+                {
+                    if(tie->has_component(Component::TIE))
+                        commands.push_back(std::make_shared<CmdTieTo>(tie, tie_to));
+                    else
+                        errors.push_back("The " + tie->pretty_name + " can't be tied.");
+                }
+                else
+                    errors.push_back("There's no " + join(args[0], ' ') + " for you to tie.");
+            }
+            else
+                errors.push_back("Nothing can be tied to the " + tie_to->pretty_name + ".");
+        }
+        else
+            errors.push_back("There's no " + join(args[1], ' ') + " for you to tie something to.");
+    }
+
 
     cmd_ptr command = nullptr;
 

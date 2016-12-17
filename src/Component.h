@@ -26,7 +26,9 @@ class Component
             MOVEABLE,
             MUSIC,
             OPEN_CLOSE,
-            INVENTORY
+            INVENTORY,
+            TIE,
+            TIE_TO
         } type;
         Component(Type type_in)
             : type(type_in)
@@ -202,6 +204,28 @@ class ComponentOpenClose : public Component
             open(open_in)
         {
         }
+};
+
+class ComponentTie : public Component
+{
+    public:
+        std::vector<Object*> tie_to;
+        
+        ComponentTie(std::vector<Object*> tie_to_in={})
+            : Component(TIE),
+            tie_to(tie_to_in)
+        { }
+};
+
+class ComponentTieTo : public Component
+{
+    public:
+        std::vector<Object*> tie;
+
+        ComponentTieTo(std::vector<Object*> tie_in={})
+            : Component(TIE_TO),
+            tie(tie_in)
+        { }
 };
 
 typedef std::shared_ptr<Component> ComponentPtr;
