@@ -196,6 +196,7 @@ void execute()
     Object* book = new Object("book");
     book->add_component(new ComponentDescription("One book protrudes farther than the rest."));
     book->add_component(new ComponentTakeable());
+    book->add_component(new ComponentText("This page intentionally left blank."));
     book->post_command = [=](Command* cmd)
     {
         if(cmd->type == Command::TAKE)
@@ -227,6 +228,7 @@ void execute()
     table->add_child(instruments);
 
     Object* lockers = new Object("lockers");
+    lockers->aliases = {"locker"};
     lockers->add_component(new ComponentDescription("Three metal lockers line the wall."));
     lockers->add_component(new ComponentOpenClose(false));
     lab->add_child(lockers);

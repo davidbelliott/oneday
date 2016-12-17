@@ -191,6 +191,39 @@ bool matches(token_list statement, std::string pattern, arg_list& args)
     return match_token_lists(statement, tokenize(pattern, ' '), &args);
 }
 
+cmd_ptr Parser::parse(std::string statement, GameState* g)
+{
+    std::vector<cmd_ptr> error_free_matches = {};
+    std::vector<std::pair<cmd_ptr, std::string>> error_matches = {};
+    for(int i = 0; i < cmd_table.size(); i++)
+    {
+        std::string this_error = "";
+        if(cmd_table[i]->parse(statement, g, &this_error))
+        {
+            if(this_error == "")
+                error_free_matches.push_back(cmd_table[i]);
+            else
+                error_matches.push_back({cmd_table[i], this_error});
+        }
+    }
+    if(error_free_matches.size() == 1)
+    {
+        return error_free_matches[0];
+    }
+    else if(error_free_matches.size() > 1)
+    {
+        return std::make_shared<CmdDisp>("Your statement was ambiguous.");
+    }
+    else if(error_matches.size() == 1)
+    {
+        return std::make_shared<CmdDisp>(error_matches[0].second);
+    }
+    else
+    {
+        return std::make_shared<CmdDisp>("-wat u talkin bout boi");
+    }
+}
+
 std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
 {
     statement = to_lower(statement);
@@ -546,6 +579,16 @@ std::vector<cmd_ptr> Parser::parse(std::string statement, GameState* g)
         commands.push_back(std::make_shared<CmdOpen>(obj));
     }
 
+    //=== Yelling
+    else if(matches(tokens, "yell", args) || matches(tokens, "yell at #", args))
+    {
+        commands.push_back(std::make_shared<CmdDisp>("(Jamal) SHEEEIT!"));
+    }
+
+    else if(matches(tokens, "yell #", args))
+    {
+        commands.push_back(std::make_shared<CmdDisp>("(Jamal) " + join(args[0], ' ') + "!"));
+    }
 
     //=== Unrecognized pattern
     else
