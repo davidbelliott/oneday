@@ -34,7 +34,7 @@ std::string word_wrap(std::string s, int width)
 
 Terminal::Terminal(Engine* owner_engine_in)
 :   state({ 0, sf::Color::White, sf::Color::Black, OUTPUT }),
-    window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal")),
+    window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal", sf::Style::None)),
     buffer(new CharBuffer()),
     owner_engine(owner_engine_in),
     cur_user_string("")
