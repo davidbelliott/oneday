@@ -223,7 +223,7 @@ CmdLookAround::CmdLookAround()
 {
 }
 
-void recursive_show(GameState* g, Object* o, bool show_children, bool description)
+void recursive_show(GameState* g, Object* o, bool show_children, bool appearance, bool description)
 {
     ComponentDescription* c_desc = (ComponentDescription*)o->get_component(Component::DESCRIPTION);
     ComponentText* c_text = (ComponentText*)o->get_component(Component::TEXT);
@@ -234,6 +234,8 @@ void recursive_show(GameState* g, Object* o, bool show_children, bool descriptio
 
     if(c_desc && c_desc->current_appearance != "")
     {
+        if(appearance)
+            g->engine->terminal->disp(c_desc->current_appearance);
         if(description)
         {
             if(c_desc->description != "")
@@ -245,8 +247,6 @@ void recursive_show(GameState* g, Object* o, bool show_children, bool descriptio
             if(o->children.size() == 0 && !c_text && !c_open)
                 g->engine->terminal->disp("You see nothing special about the " + o->pretty_name + ".");
         }
-        else
-            g->engine->terminal->disp(c_desc->current_appearance);
     }
 
     if(!c_inv && (!c_open || c_open->open))
@@ -254,7 +254,7 @@ void recursive_show(GameState* g, Object* o, bool show_children, bool descriptio
         for (int j = 0; j < o->children.size(); j++)
         {
             if(o->children[j]->active && (show_children || o->children[j]->discovered))
-                recursive_show(g, o->children[j]);
+                recursive_show(g, o->children[j], false, true, false);
         }
     }
 
@@ -270,7 +270,7 @@ void CmdLookAround::run(GameState* g)
         if(room)
         {
             g->engine->terminal->disp("Your location: " + room->pretty_name + ".");
-            recursive_show(g, room, true, false);
+            recursive_show(g, room, true, true, false);
             ComponentRoom* c_room = (ComponentRoom*)room->get_component(Component::ROOM);
             if(c_room)
             {
@@ -326,7 +326,7 @@ CmdExamine::CmdExamine()
 void CmdExamine::run(GameState* g)
 {
     for(int i = 0; i < objects.size(); i++)
-        recursive_show(g, objects[i], true, true);
+        recursive_show(g, objects[i], true, false, true);
 }
 
 CmdTake::CmdTake()
@@ -546,7 +546,8 @@ void CmdOpen::run(GameState* g)
         else
         {
             c_open_close->open = true;
-            g->send_front(std::make_shared<CmdDisp>("You open the " + obj->pretty_name + "."));
+            g->engine->terminal->disp("You open the " + obj->pretty_name + ".");
+            recursive_show(g, obj, true, false, false);
         }
     }
 }
@@ -579,6 +580,29 @@ void CmdTieTo::run(GameState* g)
                     c_desc->current_appearance = "There is a " + tie->pretty_name + " tied to the " + tie_to->pretty_name + ".";
                 g->engine->terminal->disp("You tie the " + tie->pretty_name + " to the " + tie_to->pretty_name + ".");
             }
+        }
+    }
+}
+
+CmdInv::CmdInv(Object* player_in)
+    : Command(INVENTORY),
+    player(player_in)
+{
+}
+
+void CmdInv::run(GameState* g)
+{
+    if(player && player->has_component(Component::INVENTORY))
+    {
+        std::string clothing_name = ((Player*)player)->clothing;
+        g->engine->terminal->disp(std::string("You are carrying")
+                + (player->children.size() > 0 ? ":" : " nothing."));
+        for(int i = 0; i < player->children.size(); i++)
+        {
+            std::string output = " * " + player->children[i]->pretty_name
+                + ((clothing_name != "" && clothing_name == player->children[i]->name) ?
+                        " (wearing)" : "");
+            g->engine->terminal->disp(output);
         }
     }
 }

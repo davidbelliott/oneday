@@ -239,7 +239,7 @@ class CmdCustom : public Command
         void run(GameState* g);
 };
 
-void recursive_show(GameState* g, Object* o, bool show_children=false, bool description=false);
+void recursive_show(GameState* g, Object* o, bool show_children, bool appearance, bool description);
 
 class CmdLookAround : public Command
 {
@@ -311,5 +311,14 @@ class CmdTieTo : public Command
         Object* tie_to;
 
         CmdTieTo(Object* tie_in, Object* tie_to_in);
+        void run(GameState* g);
+};
+
+class CmdInv : public Command
+{
+    public:
+        Object* player;
+
+        CmdInv(Object* player_in);
         void run(GameState* g);
 };

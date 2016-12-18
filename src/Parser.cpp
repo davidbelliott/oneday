@@ -534,8 +534,9 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         commands.push_back(std::make_shared<CmdDisp>("(Jamal) " + to_upper(join(args[0], ' ')) + "!"));
     }
 
-    //=== Tieing
+    //=== Tying
     if(matches(tokens, "tie # to #", args)
+            || matches(tokens, "tie # around #", args)
             || matches(tokens, "attach # to #", args)
             || matches(tokens, "fasten # to #", args)
             || matches(tokens, "mount # to #", args))
@@ -562,6 +563,25 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         else
             errors.push_back("There's no " + join(args[1], ' ') + " for you to tie something to.");
     }
+
+
+    //=== Inventory
+    if(matches(tokens, "i", args)
+            || matches(tokens, "inv", args)
+            || matches(tokens, "inventory", args))
+    {
+        Object* player = g->world->get_player();
+        if(player)
+        {
+            if(player->has_component(Component::INVENTORY))
+                commands.push_back(std::make_shared<CmdInv>(player));
+            else
+                errors.push_back(player->pretty_name + " has no inventory.");
+        }
+        else
+            errors.push_back("There is no player.");
+    }
+
 
 
     cmd_ptr command = nullptr;
