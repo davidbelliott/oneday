@@ -48,7 +48,7 @@ public:
         PUT,
         MOVE,
         EAT,
-        FEED,
+        GIVE,
         SHOUT,
         CLOSE,
         BREAK,
@@ -285,13 +285,13 @@ class CmdEat : public Command
         void run(GameState* g);
 };
 
-class CmdFeed : public Command
+class CmdGive : public Command
 {
     public:
-        Object* food;
+        Object* obj;
         Object* actor;
 
-        CmdFeed(Object* food_in, Object* actor_in);
+        CmdGive(Object* obj_in, Object* actor_in);
         void run(GameState* g);
 };
 

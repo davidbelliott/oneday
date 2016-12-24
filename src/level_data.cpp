@@ -22,7 +22,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "kolob_street_east";
+	world->cur_room = "jamal_bedroom";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -132,14 +132,15 @@ void execute()
     stove->add_component(new ComponentDescription("An electric stove leans against one wall."));
     kitchen->add_child(stove);
 
-    Object* pan = new Object("pan");
-    pan->add_component(new ComponentDescription("There's an aluminum pan on one burner."));
-    pan->add_component(new ComponentTakeable());
-    stove->add_child(pan);
+    Object* jar = new Object("jar");
+    jar->add_component(new ComponentDescription("There's a clear glass jar on top of the stove."));
+    jar->add_component(new ComponentTakeable());
+    jar->add_component(new ComponentOpenClose());
+    stove->add_child(jar);
 
     Object* pellets = new Object("pellets");
     pellets->aliases = {"pellet"};
-    pellets->add_component(new ComponentDescription("Several brown pellets are in the pan. They do not contain pork."));
+    pellets->add_component(new ComponentDescription("Several brown pellets are in the jar. They do not contain pork."));
     pellets->add_component(new ComponentTakeable());
     pellets->add_component(new ComponentEdible());
     bool tasted_pellets = false;
@@ -157,7 +158,8 @@ void execute()
         }
         return true;
     };
-    pan->add_child(pellets);
+    pellets->discovered = true;
+    jar->add_child(pellets);
 
     Object* staircase = new Object("jamal_staircase");
     staircase->pretty_name = "the staircase";
@@ -457,7 +459,7 @@ void execute()
     lil_wayne->post_command = [&](Command* cmd) {
         if(lil_wayne_status == SEIZURE)
         {
-            if(cmd->type == Command::FEED && static_cast<CmdFeed*>(cmd)->food->name == "pellets")
+            if(cmd->type == Command::GIVE && static_cast<CmdGive*>(cmd)->obj->name == "pellets")
             {
                 lil_wayne_status = ANGRY;
                 text->send_front(std::make_shared<CmdDisp>("Lil Wayne recovers from his seizure!\nIt's A Christmas miracle."));

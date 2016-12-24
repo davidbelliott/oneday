@@ -471,30 +471,31 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             errors.push_back("There is no " + join(args[0], ' ') + " here.");
     }
             
-    //=== Feeding an object to an actor
-    if(matches(tokens, "feed # to #", args))
+    //=== Giving an object to an actor
+    if(matches(tokens, "give # to #", args)
+        || matches(tokens, "feed # to #", args))
     {
-        Object* food = get_object(args[0], g);
+        Object* obj = get_object(args[0], g);
         Object* actor = get_object(args[1], g);
         if(actor)
         {
             if(actor->has_component(Component::TALKABLE))
             {
-                if(food)
+                if(obj)
                 {
-                    if(food->has_component(Component::EDIBLE))
-                        commands.push_back(std::make_shared<CmdFeed>(food, actor));
+                    if(obj->has_component(Component::TAKEABLE))
+                        commands.push_back(std::make_shared<CmdGive>(obj, actor));
                     else
-                        errors.push_back("The " + food->pretty_name + " isn't edible.");
+                        errors.push_back("The " + obj->pretty_name + " can't be taken.");
                 }
                 else
-                    errors.push_back("There is no " + join(args[1], ' ') + " here.");
+                    errors.push_back("There is no " + join(args[0], ' ') + " here.");
             }
             else
-                errors.push_back(">He thinks he can feed something to a " + actor->pretty_name);
+                errors.push_back(">He thinks he can give something to a " + actor->pretty_name);
         }
         else
-            errors.push_back("There is no " + join(args[0], ' ') + "here.");
+            errors.push_back("There is no " + join(args[1], ' ') + "here.");
     }
 
     //=== Opening something
