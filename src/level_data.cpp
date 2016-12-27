@@ -3,6 +3,7 @@
 #include "GameStateIntro.h"
 #include "GameStateText.h"
 #include "GameStateThugFight.h"
+#include "GameStateSubway.h"
 #include "GameStateMenu.h"
 #include "Player.h"
 #include "World.h"
@@ -22,7 +23,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "kolob_street_east";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -588,13 +589,16 @@ void execute()
     Object* shaft_view = new Object("shaft");
     shaft_view->add_component(new ComponentDescription("Beneath the grate is a deep shaft going into the ground. Rumbling and clanking sounds drift up from the darkness below."));
     grate->add_child(shaft_view);
+
+    Object* subway_shaft = new Object("A subway shaft.");
     
     /*cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());
     text->send(describe);*/
     //world->get_current_room()->describe(text);
     text->send(std::make_shared<CmdInput>());
-    engine->push_state(text);
+    //engine->push_state(text);
+    engine->push_state(new GameStateSubway(engine));
 
     sf::Clock clock;
     sf::Time dt;

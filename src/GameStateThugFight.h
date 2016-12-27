@@ -2,6 +2,8 @@
 #include "GameState.h"
 #include "Audio.h"
 
+int round(double);
+
 struct Fist
 {
     double x, y;

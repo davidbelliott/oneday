@@ -39,7 +39,7 @@ GameStateThugFight::~GameStateThugFight()
 void GameStateThugFight::init()
 {
     cur_beat = 0;
-    total_beats = 330;
+    total_beats = 150;
     load_beats();
     abs = {8, {sf::seconds(0.0), sf::seconds(0.0), sf::seconds(0.0), sf::seconds(0.0)}};
     fragments = {};
