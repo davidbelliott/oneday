@@ -51,11 +51,13 @@ void GameStateThugFight::init()
     abs_str = get_file_contents("abs.txt");
     abs_tense_str = get_file_contents("abs_tense.txt");
     send(std::make_shared<CmdPlayMusic>(music));
+    engine->terminal->window->setKeyRepeatEnabled(false);
 }
 
 void GameStateThugFight::cleanup()
 {
     std::make_shared<CmdStopMusic>(music)->run(this);
+    engine->terminal->window->setKeyRepeatEnabled(true);
 }
 
 void GameStateThugFight::notify(event_ptr event)

@@ -8,8 +8,8 @@ class GameStateSubway : public GameState
         enum Terrain
         {
             NORMAL = 0,
-            LOW_CEILING = 1,
-            NO_FLOOR = 2
+            NO_FLOOR,
+            LOW_CEILING
         };
 
         int total_beats;
@@ -21,9 +21,18 @@ class GameStateSubway : public GameState
 
         struct Player
         {
+            enum State
+            {
+                NORMAL,
+                JUMP,
+                DUCK,
+                FALL
+            } state;
             float y;
             float vy;
             std::string sprite;
+            std::string sprite_1;
+            int n_draws;
         } player;
 
         sf::Time beat;
@@ -43,6 +52,8 @@ class GameStateSubway : public GameState
         virtual void notify(event_ptr event);
         virtual void update(sf::Time dt);
         virtual void draw();
+        virtual void jump();
+        virtual void duck();
         virtual void win();
         virtual void lose();
 };

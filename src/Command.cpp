@@ -21,7 +21,7 @@ void Command::run_and_callback(GameState* g)
     std::set<Object*> callback_list;
     for(int i = 0; i < std::max(1, int(objects.size())); i++)
     {
-        Object* object = objects.size() > i ? objects[i] : g->world->get_player();
+        Object* object = objects.size() > i ? objects[i] : (g->world ? g->world->get_player() : nullptr);
         if(object)
         {
             while(object)

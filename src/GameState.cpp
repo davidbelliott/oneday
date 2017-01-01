@@ -9,14 +9,13 @@ GameState::GameState(Engine* engine_in)
     engine(engine_in),
     paused(false),
     running(true),
-    world(new World())
+    world(nullptr)
 {
 }
 
 
 GameState::~GameState()
 {
-    delete world;
 }
 
 void GameState::init()

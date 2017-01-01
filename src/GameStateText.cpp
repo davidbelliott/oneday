@@ -20,6 +20,7 @@ void GameStateText::init()
 {
     std::string title_string(get_file_contents("jamal.txt"));
     running = true;
+    world = new World();
     world->set_current_room(world->cur_room);
     send(std::make_shared<CmdOutput>(0, 0, "One Day in the Life of"));
     std::shared_ptr<CmdOutput> output = std::make_shared<CmdOutput>(0, 1, title_string);
@@ -34,7 +35,7 @@ void GameStateText::init()
 
 void GameStateText::cleanup()
 {
-
+    delete world;
 }
 
 void GameStateText::notify(event_ptr event)

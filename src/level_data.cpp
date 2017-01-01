@@ -15,7 +15,8 @@ void execute()
     GameStateText* text = new GameStateText(engine);
 
     // Generate the world
-	World* world = text->world;
+	World* world = new World();
+    text->world = world;
 
 	world->flags =
 	{
