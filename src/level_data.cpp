@@ -15,8 +15,7 @@ void execute()
     GameStateText* text = new GameStateText(engine);
 
     // Generate the world
-	World* world = new World();
-    text->world = world;
+    World* world = new World();
 
 	world->flags =
 	{
@@ -24,13 +23,14 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "kolob_street_east";
+	world->cur_room = "subway_station";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
     player->clothing = "";
     world->add_child(player);
     world->set_player(player);
+
     Object* jamal_bedroom = new Object("jamal_bedroom");
     jamal_bedroom->pretty_name = "Jamal's bedroom";
 
@@ -336,6 +336,8 @@ void execute()
     compton_street->pretty_name = "Compton Street";
     compton_street->add_component(new ComponentRoom({{NORTH, "compton_street_north"}, {EAST, "magdalene_lane"}, {SOUTH, "del_mar"}, {WEST, "club_front"}}));
     compton_street->add_component(new ComponentDescription("This strip of gritty asphalt comes straight outta the dark and unknown reaches of the city of Compton."));
+    ComponentMusic* music_lucini = new ComponentMusic("res/lucini.ogg");
+    compton_street->add_component(music_lucini);
     world->add_child(compton_street);
 
     int n_talks = 0;
@@ -388,9 +390,10 @@ void execute()
     compton_street->add_child(urban_youth);
 
     Object* compton_street_north = new Object("compton_street_north");
-    compton_street_north->pretty_name = "Compton Street";
-    compton_street_north->add_component(new ComponentRoom({{NORTH, "lil_wayne_front"}, {WEST, "vacant_lot"}}));
+    compton_street_north->pretty_name = "North Compton Street";
+    compton_street_north->add_component(new ComponentRoom({{NORTH, "lil_wayne_front"}, {SOUTH, "compton_street"}, {WEST, "vacant_lot"}}));
     compton_street_north->add_component(new ComponentDescription("This road runs from north to south."));
+    compton_street_north->add_component(music_lucini);
     world->add_child(compton_street_north);
 
 
@@ -492,7 +495,7 @@ void execute()
 
     Object* vacant_lot = new Object("vacant_lot");
     vacant_lot->pretty_name = "a Vacant Lot";
-    vacant_lot->add_component(new ComponentRoom({{EAST, "compton_street"}}));
+    vacant_lot->add_component(new ComponentRoom({{EAST, "compton_street_north"}}));
     vacant_lot->add_component(new ComponentDescription("This lot is empty."));
     world->add_child(vacant_lot);
 
@@ -509,6 +512,7 @@ void execute()
     magdalene_lane->pretty_name = "Magdalene Lane";
     magdalene_lane->add_component(new ComponentRoom({{WEST, "compton_street"}, {NORTH, "garbage_alley"}, {EAST, "kolob_street"}}));
     magdalene_lane->add_component(new ComponentDescription("The red-light domain where everybody's soul is for sale."));
+    magdalene_lane->add_component(music_lucini);
     world->add_child(magdalene_lane);
 
     Object* garbage_alley = new Object("garbage_alley");
@@ -516,6 +520,7 @@ void execute()
     garbage_alley->add_component(new ComponentRoom(
                 {{SOUTH, "magdalene_lane"},
                 {UP, "can tops"}})),
+    garbage_alley->add_component(music_lucini);
     world->add_child(garbage_alley);
 
     Object* garbage_cans = new Object("garbage cans");
@@ -575,15 +580,15 @@ void execute()
     Object* grate = new Object("grate");
     grate->add_component(new ComponentDescription("A heavy grate is inset in the road.", "You could tie something around its bars..."));
     grate->add_component(new ComponentTieTo());
-    grate->pre_command = [&](Command* cmd) {
+    grate->post_command = [&](Command* cmd) {
         if(cmd->type == Command::TIE_TO)
         {
             static_cast<ComponentRoom*>(shaft->get_component(Component::ROOM))->
-                directions[DOWN] = "subway_shaft";
+                directions[DOWN] = "subway_tunnel";
             static_cast<ComponentDescription*>(shaft->get_component(Component::DESCRIPTION))->
                 current_appearance += "\nA rope dangles down from the grate into the shaft.";
+            text->send_front(std::make_shared<CmdDisp>("The rope dangles down into the dark shaft."));
         }
-        return true;
     };
     kolob_street_east->add_child(grate);
 
@@ -591,15 +596,76 @@ void execute()
     shaft_view->add_component(new ComponentDescription("Beneath the grate is a deep shaft going into the ground. Rumbling and clanking sounds drift up from the darkness below."));
     grate->add_child(shaft_view);
 
-    Object* subway_shaft = new Object("A subway shaft.");
+    Object* subway_tunnel = new Object("subway_tunnel");
+    subway_tunnel->pre_command = [&](Command* cmd) {
+        if(cmd->type == Command::LOOK_AROUND && world->get_flag("subway_outcome") == 0)
+        {
+            text->send_front(std::make_shared<CmdDisp>("You drop into the subway and land atop a moving train."));
+            text->send_front(std::make_shared<CmdPause>());
+            text->send_front(std::make_shared<CmdDisp>("Press the up key to jump gaps between cars and down to duck beneath low ceilings."));
+            text->send_front(std::make_shared<CmdPause>());
+            text->send_front(std::make_shared<CmdAddGameState>(new GameStateSubway(engine)));
+            world->set_flag("subway_outcome", 1);
+            world->set_current_room("subway_station");
+        }
+        return true;
+    };
+    world->add_child(subway_tunnel);
+
+    Object* subway_station = new Object("subway_station");
+    ComponentMusic* weeb_music = new ComponentMusic("res/shoujo.ogg");
+    subway_station->pretty_name = "Sakura Street Subway Station";
+    subway_station->add_component(new ComponentDescription("This deserted station reeks of stale urine and the ubiquitous cherry blossoms."));
+    subway_station->add_component(new ComponentRoom({{NORTH, "sakura_park"}}));
+    subway_station->add_component(weeb_music);
+    subway_station->pre_command = [=](Command* cmd)
+    {
+        if(cmd->type == Command::LOOK_AROUND)
+            text->send_front(std::make_shared<CmdPlayMusic>(weeb_music->music));
+        return true;
+    };
+    world->add_child(subway_station);
+
+    Object* sakura_park = new Object("sakura_park");
+    sakura_park->pretty_name = "Sakura Park";
+    sakura_park->add_component(new ComponentDescription("The cherry blossom tree is truly a sight to behold, especially when it is in full riotous bloom. There are several varieties of the cherry blossom tree, and while most of them produce flowering branches full of small pinkish-hued flowers, some of them produce actual cherries."));
+    sakura_park->add_component(weeb_music);
+    sakura_park->add_component(new ComponentRoom({{SOUTH, "subway_station"},
+                                                  {NORTH, "california_boulevard"},
+                                                  {EAST, "barber_shoppe"},
+                                                  {WEST, "hobby_lobby_floor_1"}}));
+    world->add_child(sakura_park);
+
+    Object* hobby_lobby_floor_1 = new Object("hobby_lobby_floor_1");
+    hobby_lobby_floor_1->pretty_name = "Hobby Lobby: 1st floor";
+    hobby_lobby_floor_1->add_component(new ComponentDescription("It exceeds the wildest imaginination of the hobby rocketeer and the budding Japanophile."));
+    hobby_lobby_floor_1->add_component(weeb_music);
+    hobby_lobby_floor_1->add_component(new ComponentRoom({{EAST, "sakura_park"}}));
+    world->add_child(hobby_lobby_floor_1);
+
+    Object* barber_shoppe = new Object("barber_shoppe");
+    barber_shoppe->pretty_name = "Frank's Barber Shoppe";
+    barber_shoppe->add_component(new ComponentDescription("The shoppe is a dingy, sparsely-furnished room."));
+    ComponentMusic* italian_music = new ComponentMusic("res/italian.ogg");
+    barber_shoppe->add_component(italian_music);
+    barber_shoppe->add_component(new ComponentRoom({{WEST, "sakura_park"}}));
+    world->add_child(barber_shoppe);
+
+    Object* frank = new Object("frank");
+    frank->aliases = {"barber", "man", "him", "he"};
+    frank->add_component(new ComponentDescription("Frank reclines in a chair, ingesting pizza & pasta while playing the accordian"));
+    frank->add_component(new ComponentTalkable({"I believe in my bloodclart barber",
+                "There's levels to this ting and when manna trim they level affi set",
+                "Yo, It's barely been a week and I wanna go and get a trim again",
+                "-You want the haircut, no?"}));
+    barber_shoppe->add_child(frank);
     
     /*cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());
     text->send(describe);*/
     //world->get_current_room()->describe(text);
-    text->send(std::make_shared<CmdInput>());
-    //engine->push_state(text);
-    engine->push_state(new GameStateSubway(engine));
+    text->world = world;
+    engine->push_state(text);
 
     sf::Clock clock;
     sf::Time dt;

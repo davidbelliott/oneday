@@ -192,6 +192,8 @@ void Terminal::get_input()
         event_ptr event = nullptr;
         if(sf_event.type == sf::Event::KeyPressed)
             event = std::make_shared<EventKeyPressed>(sf_event.key.code);
+        else if(sf_event.type == sf::Event::KeyReleased)
+            event = std::make_shared<EventKeyReleased>(sf_event.key.code);
         else if(sf_event.type == sf::Event::TextEntered)
             event = std::make_shared<EventTextEntered>(static_cast<char>(sf_event.text.unicode));
         if(event)

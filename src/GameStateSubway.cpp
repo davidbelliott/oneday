@@ -1,6 +1,7 @@
 #include "GameStateSubway.h"
 #include "GameStateThugFight.h"
 #include "GameStateMenu.h"
+#include "GameStateNotification.h"
 #include "File.h"
 #include "Audio.h"
 #include "Engine.h"
@@ -70,7 +71,7 @@ void GameStateSubway::notify(event_ptr event)
         {
             sf::Keyboard::Key keycode = std::static_pointer_cast<EventKeyPressed>(event)->code;
 
-            if(keycode == sf::Keyboard::A)
+            if(keycode == sf::Keyboard::Up)
                 jump();
             else if(keycode == sf::Keyboard::Down)
                 duck();
@@ -78,6 +79,13 @@ void GameStateSubway::notify(event_ptr event)
                 lose();
             else if(keycode == sf::Keyboard::W)
                 win();
+        }
+        if(event->type == Event::KEY_RELEASED)
+        {
+            sf::Keyboard::Key keycode = std::static_pointer_cast<EventKeyReleased>(event)->code;
+
+            if(keycode == sf::Keyboard::Up && player.state == Player::JUMP)
+                player.vy = 0.0;
         }
     }
     else if(event->type == Event::KEY_PRESSED && std::static_pointer_cast<EventKeyPressed>(event)->code == sf::Keyboard::Return)
@@ -171,6 +179,8 @@ void GameStateSubway::draw()
 
     // Draw player
     engine->terminal->output(20, (int)player.y - 3, (int(player.n_draws++ / 5) % 2 == 0 ? player.sprite : player.sprite_1));
+
+    engine->terminal->output(0, 0, "TIME REMAINING: " + std::to_string(get_seconds_remaining()));
 }
 
 void GameStateSubway::jump()
@@ -190,7 +200,9 @@ void GameStateSubway::duck()
 
 void GameStateSubway::win()
 {
-
+    send_front(std::make_shared<CmdRemoveGameState>(this));
+    send_front(std::make_shared<CmdClear>());
+    send_front(std::make_shared<CmdAddGameState>(new GameStateNotification(engine, "At last, the subway rumbles into the station, and you disembark safely.")));
 }
 
 void GameStateSubway::lose()

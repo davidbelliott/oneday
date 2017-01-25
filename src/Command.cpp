@@ -580,6 +580,8 @@ void CmdTieTo::run(GameState* g)
                     c_desc->current_appearance = "There is a " + tie->pretty_name + " tied to the " + tie_to->pretty_name + ".";
                 g->engine->terminal->disp("You tie the " + tie->pretty_name + " to the " + tie_to->pretty_name + ".");
             }
+            tie->post_command(this);
+            tie_to->post_command(this);
         }
     }
 }

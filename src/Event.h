@@ -11,6 +11,7 @@ public:
         UPDATE,         // The engine is updating
         DRAW,           // The engine is drawing
         KEY_PRESSED,
+        KEY_RELEASED,
         TEXT_ENTERED,
         USER_LINE,
         PRE_COMMAND,   // A command will be executed on this object
@@ -57,6 +58,17 @@ class EventKeyPressed : public Event
 
         EventKeyPressed(sf::Keyboard::Key code_in)
             : Event(KEY_PRESSED),
+              code(code_in)
+        {}
+};
+
+class EventKeyReleased : public Event
+{
+    public:
+        sf::Keyboard::Key code;
+
+        EventKeyReleased(sf::Keyboard::Key code_in)
+            : Event(KEY_RELEASED),
               code(code_in)
         {}
 };

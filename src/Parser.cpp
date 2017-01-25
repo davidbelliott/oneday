@@ -258,7 +258,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
     {
         try_to_go(UP, g, &commands, &errors);
     }
-    else if(matches(tokens, "go down", args)
+    if(matches(tokens, "go down", args)
             || matches(tokens, "climb down", args)
             || matches(tokens, "climb down #", args)
             || matches(tokens, "down", args)
