@@ -20,26 +20,17 @@ GameStateSubway::~GameStateSubway()
 void GameStateSubway::load_beats()
 {
     terrain.clear();
-    Terrain last_terrain = NORMAL;
     Terrain this_terrain = NORMAL;
     for(int i = 0; i < total_beats; i++)
     {
-        if(i < 2)
-            this_terrain = NORMAL;
-        else
+        if(i > 4)
         {
-            if(last_terrain == NORMAL)
+            if(terrain[i - 1] == NORMAL || terrain[i - 2] == NORMAL)
                 this_terrain = (Terrain)(rand() % 2);
             else
-            {
-                if(i >= 2 && terrain[i - 2] == NO_FLOOR)
-                    this_terrain = NORMAL;
-                else
-                    this_terrain = (rand() % 2 == 0 ? NORMAL : NO_FLOOR);
-            }
+                this_terrain = NORMAL;
         }
         terrain.push_back(this_terrain);
-        last_terrain = this_terrain;
     }
 }
 
@@ -81,7 +72,7 @@ void GameStateSubway::notify(event_ptr event)
         {
             sf::Keyboard::Key keycode = std::static_pointer_cast<EventKeyReleased>(event)->code;
 
-            if(keycode == sf::Keyboard::Up && player.state == Player::JUMP)
+            if(keycode == sf::Keyboard::Up && player.vy < 0.0)
                 player.vy = 0.0;
         }
     }
@@ -106,7 +97,6 @@ void GameStateSubway::update(sf::Time dt)
 {
     if(!paused)
     {
-
         if(cur_beat > total_beats)
         {
             win();
@@ -126,9 +116,9 @@ void GameStateSubway::update(sf::Time dt)
             lose();
         else
         {
-            player.state = Player::FALL;
             player.vy += dt.asSeconds() * gravity;
             player.y += player.vy * dt.asSeconds();
+            player.state = Player::FALL;
         }
         
         elapsed_time += dt;
@@ -144,25 +134,8 @@ void GameStateSubway::draw()
     for(int x, y, i = std::max(0, (int)cur_beat - 2); i < std::min(total_beats, (int)cur_beat + 7); i++)
     {
         x = get_x(i);
-        std::string top;
-        std::string bot;
-        if(terrain[i] == NORMAL)
-        {
-            top = "";
-            bot = "##########";
-        }
-        else if(terrain[i] = NO_FLOOR)
-        {
-            top = "";
-            bot = "";
-        }
-        for(int j = 0; j < config::screen_h_chars; j++)
-        {
-            if(j < 10)
-                engine->terminal->output(x, config::screen_h_chars - j - 1, bot);
-            else if(j > 12)
-                engine->terminal->output(x, config::screen_h_chars - j - 1, top);
-        }
+        std::string bot = (terrain[i] == NORMAL ? "##########" : "");
+        engine->terminal->output(x, config::screen_h_chars - 10, bot);
     }
 
     // Draw player

@@ -329,7 +329,8 @@ void execute()
         {
             text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!"));
             text->send_front(std::make_shared<CmdPause>());
-            text->send_front(std::make_shared<CmdDisp>("Press A, S, D, or F in rhythm with the punches to deflect their blows."));
+            text->send_front(std::make_shared<CmdDisp>("Each time a fist hits you, hit A, S, D, or F to tense the corresponding ab and deflect the blow."));
+            text->send_front(std::make_shared<CmdDisp>("Undeflected blows will push your abs back until you perish."));
             text->send_front(std::make_shared<CmdPause>());
             text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
             world->set_flag("thug_fight_outcome", 1);
@@ -733,4 +734,5 @@ void execute()
 
     delete text;
 	delete engine;
+    delete world;
 }
