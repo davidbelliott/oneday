@@ -23,7 +23,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "subway_station";
+	world->cur_room = "subway_tunnel";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -38,7 +38,7 @@ void execute()
     jamal_bedroom->add_component(c_description);
     jamal_bedroom->add_component(new ComponentRoom(
                 {{EAST, "jamal_corridor"},
-                {SOUTH, "jamal_bathroom"}}));
+                {NORTH, "jamal_bathroom"}}));
 
     ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg");
     jamal_bedroom->add_component(c_music);
@@ -79,14 +79,13 @@ void execute()
 
     Object* jamal_bathroom = new Object("jamal_bathroom");
     jamal_bathroom->pretty_name = "Jamal's bathroom";
-    ComponentMusic* music_hard = new ComponentMusic("res/hard.ogg");
-    music_hard->music->initial_offset = sf::seconds(60.0);
+    ComponentMusic* music_hard = new ComponentMusic("res/hypnotize.ogg", sf::seconds(10.0));
     jamal_bathroom->add_component(music_hard);
     jamal_bathroom->add_component(new ComponentDescription("This is where you defecate daily. This cesuo is a reeking pigsty."));
-    jamal_bathroom->add_component(new ComponentRoom({{NORTH, "jamal_bedroom"}}));
+    jamal_bathroom->add_component(new ComponentRoom({{SOUTH, "jamal_bedroom"}}));
 
     Object* hole = new Object("hole");
-    hole->add_component(new ComponentDescription("A dark hole gapes in the floor, presumably where a toilet used to be."));
+    hole->add_component(new ComponentDescription("A dark hole gapes in the floor, presumably where a toilet used to be.", "The hole looks big enough for a nigga."));
     hole->add_component(new ComponentPortal("sewer"));
     jamal_bathroom->pre_command = [=](Command* cmd)
     {
@@ -117,17 +116,27 @@ void execute()
     jamal_corridor->add_component(new ComponentDescription("This hallway is imbued with a strong Faerie Magick."));
     jamal_corridor->add_component(new ComponentMusic("res/vulcan.ogg"));
     jamal_corridor->add_component(new ComponentRoom({
-                {NORTH, "jamal_house_block"},
+                {NORTH, "jamal_front"},
                 {EAST, "jamal_staircase"},
                 {WEST, "jamal_bedroom"},
                 {SOUTH, "jamal_kitchen"},
                 }));
+    jamal_corridor->pre_command = [&](Command* cmd) {
+        if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "jamal_front" && world->get_flag("thug_fight_outcome") == 0)
+        {
+            engine->terminal->disp("You hear the intense rustling of thugs outside your door. You'd best not go out this way.");
+            return false;
+        }
+        return true;
+    };
+
     world->add_child(jamal_corridor);
 
     Object* kitchen = new Object("jamal_kitchen");
     kitchen->pretty_name = "the kitchen";
     kitchen->add_component(new ComponentDescription("This rickety cookery would make Martha Stewart turn over in her grave."));
     kitchen->add_component(new ComponentRoom({{NORTH, "jamal_corridor"}}));
+    kitchen->add_component(c_music);
     world->add_child(kitchen);
 
     Object* stove = new Object("stove");
@@ -141,7 +150,7 @@ void execute()
     stove->add_child(jar);
 
     Object* pellets = new Object("pellets");
-    pellets->aliases = {"pellet"};
+    pellets->aliases = {"pellet", "medicine", "pill"};
     pellets->add_component(new ComponentDescription("Several brown pellets are in the jar. They do not contain pork."));
     pellets->add_component(new ComponentTakeable());
     pellets->add_component(new ComponentEdible());
@@ -153,7 +162,7 @@ void execute()
                 text->send_front(std::make_shared<CmdDisp>("The pellets are gross. You don't want to eat any more."));
             else
             {
-                text->send_front(std::make_shared<CmdDisp>("You tentatively nibble at one of the mysterious pellets. It's absolutely disgusting, but has medicinal properties."));
+                text->send_front(std::make_shared<CmdDisp>("You tentatively nibble at one of the mysterious pellets. It tastes like momma's medicine."));
                 tasted_pellets = true;
             }
             return false;
@@ -170,6 +179,7 @@ void execute()
                 {UP, "jamal_corridor"},
                 {DOWN, "library"}
                 }));
+    staircase->add_component(new ComponentMusic("res/dope.ogg"));
     world->add_child(staircase);
 
     Object* library = new Object("library");
@@ -177,6 +187,7 @@ void execute()
     library->add_component(new ComponentDescription("This subterranean den is where the father of realism does his stuff.\nHe is beginning to feel like a rap god."));
     ComponentRoom* c_room = new ComponentRoom({{NORTH, "jamal_staircase"}});
     library->add_component(c_room);
+    library->add_component(new ComponentMusic("res/dope.ogg"));
 
     Object* shelf = new Object("bookshelf");
     shelf->aliases = { "shelf" };
@@ -401,6 +412,7 @@ void execute()
     lil_wayne_front->pretty_name = "the front of Lil Wayne's home";
     lil_wayne_front->add_component(new ComponentDescription("You face the edifice within which young Tunechi dwells."));
     lil_wayne_front->add_component(new ComponentRoom({{NORTH, "lil_wayne_inside"}, {SOUTH, "compton_street_north"}}));
+    lil_wayne_front->add_component(new ComponentMusic("res/6foot.ogg"));
     enum LilWayneStatus {
         SEIZURE,
         ANGRY,
@@ -454,6 +466,7 @@ void execute()
     lil_wayne_inside->pretty_name = "the inside of Lil Wayne's humble abode";
     lil_wayne_inside->add_component(new ComponentRoom({{SOUTH, "lil_wayne_front"}}));
     lil_wayne_inside->add_component(new ComponentDescription("It bears a vague resemblance to a wigwam."));
+    lil_wayne_inside->add_component(new ComponentMusic("res/6foot.ogg"));
     world->add_child(lil_wayne_inside);
 
     Object* lil_wayne = new Object("Lil Wayne");
@@ -617,11 +630,11 @@ void execute()
     subway_station->pretty_name = "Sakura Street Subway Station";
     subway_station->add_component(new ComponentDescription("This deserted station reeks of stale urine and the ubiquitous cherry blossoms."));
     subway_station->add_component(new ComponentRoom({{NORTH, "sakura_park"}}));
-    subway_station->add_component(weeb_music);
+    subway_station->add_component(new ComponentMusic("res/blackandyellow.ogg"));
     subway_station->pre_command = [=](Command* cmd)
     {
         if(cmd->type == Command::LOOK_AROUND)
-            text->send_front(std::make_shared<CmdPlayMusic>(weeb_music->music));
+            text->send_front(std::make_shared<CmdPlayMusic>("res/blackandyellow.ogg"));
         return true;
     };
     world->add_child(subway_station);
@@ -629,7 +642,7 @@ void execute()
     Object* sakura_park = new Object("sakura_park");
     sakura_park->pretty_name = "Sakura Park";
     sakura_park->add_component(new ComponentDescription("The cherry blossom tree is truly a sight to behold, especially when it is in full riotous bloom. There are several varieties of the cherry blossom tree, and while most of them produce flowering branches full of small pinkish-hued flowers, some of them produce actual cherries."));
-    sakura_park->add_component(weeb_music);
+    sakura_park->add_component(new ComponentMusic("res/blackandyellow.ogg"));
     sakura_park->add_component(new ComponentRoom({{SOUTH, "subway_station"},
                                                   {NORTH, "california_boulevard"},
                                                   {EAST, "barber_shoppe"},
@@ -654,11 +667,37 @@ void execute()
     Object* frank = new Object("frank");
     frank->aliases = {"barber", "man", "him", "he"};
     frank->add_component(new ComponentDescription("Frank reclines in a chair, ingesting pizza & pasta while playing the accordian"));
-    frank->add_component(new ComponentTalkable({"I believe in my bloodclart barber",
+    ComponentTalkable* frank_talk = new ComponentTalkable({"I believe in my bloodclart barber",
                 "There's levels to this ting and when manna trim they level affi set",
                 "Yo, It's barely been a week and I wanna go and get a trim again",
-                "-You want the haircut, no?"}));
+                "-You want the haircut?",
+                "not really mane.",
+                });
+    frank->add_component(frank_talk);
     barber_shoppe->add_child(frank);
+
+    Object* clippers = new Object("clippers");
+    clippers->aliases = {"hedge clippers", "hedge", "scissors"};
+    clippers->add_component(new ComponentDescription("Frank is holding a pair of shiny hedge clippers."));
+    clippers->add_component(new ComponentTakeable());
+    clippers->pre_command = [&](Command* cmd) {
+        if(cmd->type == Command::TAKE)
+        {
+            engine->terminal->disp("Frank is startled by your gall.");
+            frank_talk->talkable_data = {"-I'm startled by your gall, boy.",
+                "i din do nuffin",
+                "-If you want the clippers, at least pay the price.",
+                "How many shekels?",
+                "-Shekels cannot buy these adamantine blades.",
+                "-They can only be purchased with blank media."};
+            std::shared_ptr<CmdTalkTo> talk_to = std::make_shared<CmdTalkTo>();
+            talk_to->add_object(frank);
+            text->send_front(talk_to);
+            return false;
+        }
+        return true;
+    };
+    frank->add_child(clippers);
     
     /*cmd_ptr describe = std::make_shared<CmdDescribe>();
     describe->add_object((Object*)engine->world->get_current_room());

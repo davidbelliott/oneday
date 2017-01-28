@@ -8,8 +8,7 @@ class GameStateSubway : public GameState
         enum Terrain
         {
             NORMAL = 0,
-            NO_FLOOR,
-            LOW_CEILING
+            NO_FLOOR
         };
 
         int total_beats;
@@ -36,7 +35,6 @@ class GameStateSubway : public GameState
         } player;
 
         sf::Time beat;
-        Music* music;
 
     public:
 

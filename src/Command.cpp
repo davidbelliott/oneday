@@ -5,6 +5,7 @@
 #include "World.h"
 #include "Directions.h"
 #include "Player.h"
+#include "Audio.h"
 #include <set>
 
 Command::Command(CommandType type_in)
@@ -102,7 +103,7 @@ void CmdInput::run(GameState* g)
     g->engine->terminal->input_mode();
 }
 
-CmdPlayMusic::CmdPlayMusic(Music* music_in)
+CmdPlayMusic::CmdPlayMusic(std::string music_in)
     : Command(PLAY_MUSIC),
       music(music_in)
 {}
@@ -112,24 +113,25 @@ void CmdPlayMusic::run(GameState* g)
     g->engine->audio->play_music(music);
 }
 
-CmdPauseMusic::CmdPauseMusic(Music* music_in)
+CmdPauseMusic::CmdPauseMusic(std::string music_in)
     : Command(PAUSE_MUSIC),
     music(music_in)
 {}
 
 void CmdPauseMusic::run(GameState* g)
 {
-    music->set_fade(Music::PAUSE);
+    //music->set_fade(Music::PAUSE);
 }
 
-CmdStopMusic::CmdStopMusic(Music* music_in)
+CmdStopMusic::CmdStopMusic(std::string music_in)
     : Command(STOP_MUSIC),
     music(music_in)
 {}
 
 void CmdStopMusic::run(GameState* g)
 {
-    music->set_fade(Music::STOP);
+    g->engine->audio->stop_music(music);
+    //music->set_fade(Music::STOP);
 }
 
 CmdPause::CmdPause()
@@ -183,10 +185,10 @@ void CmdGo::run(GameState* g)
         ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
         g->world->set_current_room(new_room);
         ComponentMusic* music_entering = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
-        if(music_leaving && !music_leaving->persistent)
-            g->send_front(std::make_shared<CmdPauseMusic>(music_leaving->music));
+        if(music_leaving)
+            g->engine->audio->pause_music(music_leaving->music);
         if(music_entering)
-            g->send_front(std::make_shared<CmdPlayMusic>(music_entering->music));
+            g->engine->audio->play_music(music_entering->music, music_entering->start_time);
 
         std::shared_ptr<CmdLookAround> look_around = std::make_shared<CmdLookAround>();
         g->send_front(look_around);

@@ -1,6 +1,5 @@
 #pragma once
 #include "Directions.h"
-#include "Audio.h"
 #include <SFML/Audio.hpp>
 #include <memory>
 #include <set>
@@ -173,12 +172,14 @@ class ComponentMusic : public Component
 {
     public:
 
-        Music* music;
+        std::string music;
         bool persistent;
+        sf::Time start_time;
 
-        ComponentMusic(std::string filename_in, bool persistent_in = false)
+        ComponentMusic(std::string filename_in, sf::Time start_time_in = sf::seconds(0.0), bool persistent_in = false)
             : Component(MUSIC),
-            music(new Music(filename_in)),
+            music(filename_in),
+            start_time(start_time_in),
             persistent(persistent_in)
         {
         }

@@ -1,6 +1,5 @@
 #pragma once
 #include "GameState.h"
-#include "Audio.h"
 
 int round(double);
 
@@ -38,9 +37,6 @@ enum FistState
 class GameStateThugFight: public GameState
 {
     public:
-        // Resources
-        Music* music;
-
         sf::Time elapsed_time;
         int total_beats;
         double cur_beat;

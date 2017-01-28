@@ -343,7 +343,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             }
             else
             {
-                errors.push_back("Why would you want to pick up a " + obj->pretty_name + "?");
+                errors.push_back("You can't pick up the " + obj->pretty_name + ".");
             }
         }
     }

@@ -2,11 +2,11 @@
 
 class GameState;
 class Terminal;
-class Audio;
 
 #include "Event.h"
 #include "Command.h"
 #include "Observer.h"
+#include "Audio.h"
 
 #include <SFML/Graphics.hpp>
 #include <vector>

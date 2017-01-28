@@ -2,7 +2,6 @@
 
 class Object;
 class GameState;
-class Music;
 
 #include "Config.h"
 #include <SFML/Graphics.hpp>
@@ -130,24 +129,24 @@ class CmdInput : public Command
 class CmdPlayMusic : public Command
 {
     public:
-        Music* music;
-        CmdPlayMusic(Music* music_in);
+        std::string music;
+        CmdPlayMusic(std::string music_in);
         void run(GameState* g);
 };
 
 class CmdPauseMusic : public Command
 {
     public:
-        Music* music;
-        CmdPauseMusic(Music* music_in);
+        std::string music;
+        CmdPauseMusic(std::string music_in);
         void run(GameState* g);
 };
 
 class CmdStopMusic : public Command
 {
     public:
-        Music* music;
-        CmdStopMusic(Music* music_in);
+        std::string music;
+        CmdStopMusic(std::string music_in);
         void run(GameState* g);
 };
 

@@ -7,6 +7,7 @@
 #include "Terminal.h"
 #include "Parser.h"
 #include "File.h"
+#include "Audio.h"
 #include <fstream>
 #include <algorithm>
 
@@ -46,17 +47,16 @@ void GameStateThugFight::init()
     ab_height = 6;
     elapsed_time = sf::seconds(0.0);
     beat = sf::seconds(60.0 / 165.5 );
-    music = new Music("res/100kilos.ogg");
+    engine->audio->play_music("res/100kilos.ogg");
     thug_fist = get_file_contents("fist.txt");
     abs_str = get_file_contents("abs.txt");
     abs_tense_str = get_file_contents("abs_tense.txt");
-    send(std::make_shared<CmdPlayMusic>(music));
     engine->terminal->window->setKeyRepeatEnabled(false);
 }
 
 void GameStateThugFight::cleanup()
 {
-    std::make_shared<CmdStopMusic>(music)->run(this);
+    engine->audio->stop_music("res/100kilos.ogg");
     engine->terminal->window->setKeyRepeatEnabled(true);
 }
 

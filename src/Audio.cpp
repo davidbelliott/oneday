@@ -9,8 +9,9 @@ void Music::set_fade(Fade fade_in)
             {
                 if(music.getStatus() == sf::Sound::Stopped)
                 {
-                    music.play();
+                    music.setVolume(0);
                     music.setPlayingOffset(initial_offset);
+                    music.play();
                 }
                 else
                     music.play();
@@ -43,35 +44,43 @@ void Music::update(sf::Time dt)
 }
 
 Audio::Audio()
-    : playing()
 {
 }
 
 Audio::~Audio()
 {
+    for(auto it = musics.begin(); it != musics.end(); ++it)
+        delete it->second;
 }
 
 void Audio::update(sf::Time dt)
 {
-    for(int i = 0; i < playing.size(); )
-    {
-        playing[i]->update(dt);
-        if(playing[i]->music.getStatus() != sf::Music::Playing)
-            playing.erase(playing.begin() + i);
-        else
-            i++;
-    }
+    for(auto it = musics.begin(); it != musics.end(); ++it)
+        it->second->update(dt);
 }
 
-void Audio::play_music(Music* music)
+void Audio::play_music(std::string music, sf::Time start_time)
 {
-    music->set_fade(Music::PLAY);
-    if(std::count(playing.begin(), playing.end(), music) == 0)
+    for(auto it = musics.begin(); it != musics.end(); ++it)
+        it->second->set_fade(Music::PAUSE);
+    if(musics.count(music) == 0)
     {
-        for(int i = 0; i < playing.size(); i++)
-        {
-            playing[i]->set_fade(Music::PAUSE);
-        }
-        playing.push_back(music);
+        musics[music] = new Music(music);
+        musics[music]->set_fade(Music::PLAY);
+        musics[music]->music.setPlayingOffset(start_time);
     }
+    else
+        musics[music]->set_fade(Music::PLAY);
+}
+
+void Audio::pause_music(std::string music)
+{
+    if(musics.count(music) > 0)
+        musics[music]->set_fade(Music::PAUSE);
+}
+
+void Audio::stop_music(std::string music)
+{
+    if(musics.count(music) > 0)
+        musics[music]->set_fade(Music::STOP);
 }

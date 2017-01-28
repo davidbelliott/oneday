@@ -24,15 +24,13 @@ void GameStateSubway::load_beats()
     Terrain this_terrain = NORMAL;
     for(int i = 0; i < total_beats; i++)
     {
-        if(i < 5)
+        if(i < 2)
             this_terrain = NORMAL;
         else
         {
             if(last_terrain == NORMAL)
-                this_terrain = (Terrain)(rand() % 3);
-            else if(last_terrain == LOW_CEILING)
-                this_terrain = (rand() % 2 == 0 ? NORMAL : LOW_CEILING);
-            else if(last_terrain == NO_FLOOR)
+                this_terrain = (Terrain)(rand() % 2);
+            else
             {
                 if(i >= 2 && terrain[i - 2] == NO_FLOOR)
                     this_terrain = NORMAL;
@@ -53,14 +51,13 @@ void GameStateSubway::init()
     load_beats();
     beat = sf::seconds(60.0 / 165.5);
     player = { Player::NORMAL, 14.0, 0.0, get_file_contents("player"), get_file_contents("player_1"), 0 };
-    music = new Music("res/subway.ogg");
+    engine->audio->play_music("res/platinum.ogg", sf::seconds(30.0));
     gravity = 90.0;
-    send(std::make_shared<CmdPlayMusic>(music));
 }
 
 void GameStateSubway::cleanup()
 {
-    std::make_shared<CmdStopMusic>(music)->run(this);
+    engine->audio->stop_music("res/platinum.ogg");
 }
 
 void GameStateSubway::notify(event_ptr event)
@@ -115,8 +112,7 @@ void GameStateSubway::update(sf::Time dt)
             win();
         }
 
-        if((terrain[(int)cur_beat] == NORMAL
-                   || terrain[(int)cur_beat] == LOW_CEILING)
+        if(terrain[(int)cur_beat] == NORMAL
                 && player.y >= config::screen_h_chars - 10
                 && player.y <= config::screen_h_chars - 8
                 && player.vy >= 0.0)
@@ -126,9 +122,6 @@ void GameStateSubway::update(sf::Time dt)
             player.y = config::screen_h_chars - 10;
             player.state = Player::NORMAL;
         }
-        else if(terrain[(int)cur_beat] == LOW_CEILING
-                && player.y <= config::screen_h_chars - 8)
-            lose();
         else if(player.y >= config::screen_h_chars)
             lose();
         else
@@ -158,11 +151,6 @@ void GameStateSubway::draw()
             top = "";
             bot = "##########";
         }
-        else if(terrain[i] == LOW_CEILING)
-        {
-            top = "##########";
-            bot = "##########";
-        }
         else if(terrain[i] = NO_FLOOR)
         {
             top = "";
@@ -185,7 +173,7 @@ void GameStateSubway::draw()
 
 void GameStateSubway::jump()
 {
-    if((terrain[(int)cur_beat] == NORMAL || terrain[(int)cur_beat] == LOW_CEILING) && player.state == Player::NORMAL)
+    if(terrain[(int)cur_beat] == NORMAL  && player.state == Player::NORMAL)
     {
         player.vy = -40.0;
     }
