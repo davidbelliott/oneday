@@ -3,11 +3,12 @@
 #include "Parser.h"
 #include "Terminal.h"
 
-GameStateMenu::GameStateMenu(Engine* engine_in, std::string prompt_in,
+GameStateMenu::GameStateMenu(Engine* engine_in, GameState* target_in, std::string prompt_in,
         std::map<std::string, std::vector<cmd_ptr>> options_in)
     : GameState(engine_in),
       prompt(prompt_in),
-      options(options_in)
+      options(options_in),
+      target(target_in)
 {
 
 }
@@ -41,7 +42,7 @@ void GameStateMenu::notify(event_ptr event)
             {
                 found_option = true;
                 for(int i = 0; i < it->second.size(); i++)
-                    send(it->second[i]);
+                    target->send(it->second[i]);
             }
         }
         if(!found_option)

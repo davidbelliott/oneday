@@ -23,7 +23,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "subway_tunnel";
+	world->cur_room = "jamal_bedroom";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -40,12 +40,12 @@ void execute()
                 {{EAST, "jamal_corridor"},
                 {NORTH, "jamal_bathroom"}}));
 
-    ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg");
+    ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg", sf::seconds(3.0));
     jamal_bedroom->add_component(c_music);
     jamal_bedroom->pre_command = [=](Command* cmd)
     {
         if(cmd->type == Command::LOOK_AROUND)
-            text->send_front(std::make_shared<CmdPlayMusic>(c_music->music));
+            engine->audio->play_music("res/good_day.ogg", sf::seconds(2.5));
         return true;
     };
 
@@ -85,7 +85,7 @@ void execute()
     jamal_bathroom->add_component(new ComponentRoom({{SOUTH, "jamal_bedroom"}}));
 
     Object* hole = new Object("hole");
-    hole->add_component(new ComponentDescription("A dark hole gapes in the floor, presumably where a toilet used to be.", "The hole looks big enough for a nigga."));
+    hole->add_component(new ComponentDescription("In the floor a hole is gaping, presumably where a toilet used to be.", "The hole looks big enough for a nigga."));
     hole->add_component(new ComponentPortal("sewer"));
     jamal_bathroom->pre_command = [=](Command* cmd)
     {
@@ -347,7 +347,7 @@ void execute()
     Object* compton_street = new Object("compton_street");
     compton_street->pretty_name = "Compton Street";
     compton_street->add_component(new ComponentRoom({{NORTH, "compton_street_north"}, {EAST, "magdalene_lane"}, {SOUTH, "del_mar"}, {WEST, "club_front"}}));
-    compton_street->add_component(new ComponentDescription("This strip of gritty asphalt comes straight outta the dark and unknown reaches of the city of Compton."));
+    compton_street->add_component(new ComponentDescription("This strip of gritty asphalt comes straight outta the dark and unknown reaches of Compton."));
     ComponentMusic* music_lucini = new ComponentMusic("res/lucini.ogg");
     compton_street->add_component(music_lucini);
     world->add_child(compton_street);
@@ -445,7 +445,7 @@ void execute()
             else if(lil_wayne_status == ANGRY)
             {
                     int choice = rand() % 5;
-                    std::string output = "Lil Wayne shouts at you from the window:\n(Lil Wayne) Get the %#@$ out, you ";
+                    std::string output = "Lil Wayne shouts at you from the window:\n(Lil Wayne) Get the fuck out, you ";
                     if(choice == 0)
                         output += "varlot";
                     else if(choice == 1)
@@ -485,14 +485,14 @@ void execute()
                 text->send_front(std::make_shared<CmdPause>());
                 text->send_front(std::make_shared<CmdDisp>("Yet as he clambers up from the ground, he suddenly turns hostile:"));
                 lil_wayne->add_component(new ComponentTalkable({"-ayy wat u doin in my house boi",
-                            "i just saved ur tush from a seizure",
-                            "-n!gga u better scram 'fore ah goes flop-bott on u like i did to ur mum!"}));
+                            "I just saved your ass from a seizure",
+                            "-nigga u better scram fore ah goes flop-bott on u"}));
                 auto talk = std::make_shared<CmdTalkTo>();
                 talk->add_object(lil_wayne);
                 text->send_front(talk);
-                text->send_front(std::make_shared<CmdDisp>("Lil Wayne lunges for you, and you barely escape out the door."));
-                text->send_front(std::make_shared<CmdPause>());
-                text->send_front(std::make_shared<CmdGo>("lil_wayne_front"));
+                text->send(std::make_shared<CmdDisp>("Lil Wayne lunges for you, and you barely escape out the door."));
+                text->send(std::make_shared<CmdPause>());
+                text->send(std::make_shared<CmdGo>("lil_wayne_front"));
             }
             else
             {
@@ -565,7 +565,7 @@ void execute()
     rope->add_component(new ComponentTakeable());
     rope->add_component(new ComponentTie());
     rope->add_component(new ComponentDescription("A coil of rope lies to one side."));
-    player->add_child(rope);
+    roof->add_child(rope);
 
     Object* kolob_street = new Object("kolob_street");
     kolob_street->pretty_name = "Kolob Street";
@@ -654,8 +654,43 @@ void execute()
     hobby_lobby_floor_1->pretty_name = "Hobby Lobby: 1st floor";
     hobby_lobby_floor_1->add_component(new ComponentDescription("It exceeds the wildest imaginination of the hobby rocketeer and the budding Japanophile."));
     hobby_lobby_floor_1->add_component(weeb_music);
-    hobby_lobby_floor_1->add_component(new ComponentRoom({{EAST, "sakura_park"}}));
+    hobby_lobby_floor_1->add_component(new ComponentRoom({{EAST, "sakura_park"},
+                {WEST, "hobby_elevator"}}));
     world->add_child(hobby_lobby_floor_1);
+
+    Object* hobby_lobby_floor_2 = new Object("hobby_lobby_floor_2");
+    hobby_lobby_floor_2->pretty_name = "Hobby Lobby: 2nd floor";
+    hobby_lobby_floor_2->add_component(new ComponentDescription("The second floor of the hobby l0bby"));
+    hobby_lobby_floor_2->add_component(weeb_music);
+    hobby_lobby_floor_2->add_component(new ComponentRoom({{WEST, "hobby_elevator"}}));
+    world->add_child(hobby_lobby_floor_2);
+
+    Object* hobby_lobby_floor_3 = new Object("hobby_lobby_floor_3");
+    hobby_lobby_floor_3->pretty_name = "Hobby Lobby: 3rd floor";
+    hobby_lobby_floor_3->add_component(new ComponentDescription("The third floor of the hobby l0bby"));
+    hobby_lobby_floor_3->add_component(weeb_music);
+    hobby_lobby_floor_3->add_component(new ComponentRoom({{WEST, "hobby_elevator"}}));
+    world->add_child(hobby_lobby_floor_3);
+
+    Object* hobby_elevator = new Object("hobby_elevator");
+    hobby_elevator->pretty_name = "Hobby Lobby Elevator";
+    //hobby_elevator->add_component(new ComponentRoom({{}}));
+    world->add_child(hobby_elevator);
+
+    Object* elevator_buttons = new Object("button panel");
+    elevator_buttons->aliases = {"buttons", "panel"};
+    elevator_buttons->add_component(new ComponentDescription("A panel of buttons is on the wall of the elevator."));
+    elevator_buttons->add_component(new ComponentHittable());
+    elevator_buttons->post_command = [&](Command* cmd) {
+        if(cmd->type == Command::HIT)
+        {
+            engine->push_state(new GameStateMenu(engine, text, "Which button do you hit?",
+                        {{"1", {std::make_shared<CmdGo>("hobby_lobby_floor_1")}},
+                         {"2", {std::make_shared<CmdGo>("hobby_lobby_floor_2")}},
+                         {"3", {std::make_shared<CmdGo>("hobby_lobby_floor_3")}}}));
+        }
+    };
+    hobby_elevator->add_child(elevator_buttons);
 
     Object* barber_shoppe = new Object("barber_shoppe");
     barber_shoppe->pretty_name = "Frank's Barber Shoppe";

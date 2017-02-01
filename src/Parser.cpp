@@ -308,6 +308,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
     {
         GameStateMenu* menu = new GameStateMenu(
                         g->engine,
+                        g,
                         "Are you sure you want to quit? (y/n)",
                         {{"y", {std::make_shared<CmdQuit>()}},
                          {"n", {}}});

@@ -170,7 +170,7 @@ void GameStateSubway::lose()
 {
     send(std::make_shared<CmdRemoveGameState>(this));
     send(std::make_shared<CmdClear>());
-    send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine,
+    send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine, this,
                     "Your frail body is crushed, and you expire.\nYou had "
                     + std::to_string(get_seconds_remaining())
                     + " seconds remaining.\nTry again? (y/n)",

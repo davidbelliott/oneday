@@ -8,25 +8,33 @@
 
 std::string word_wrap(std::string s, int width)
 {
-	for (int i = 1; i <= s.length() ; i++) 
-	{ 
-		if ((i % width) == 0) 
-		{ 
-			int spaceCount = 0; 
-			if (s[i - 1] != ' ') 
-			{ 
-				for (int j = i - 1; j > -1 ; j--)
-				{
-					if (s[j] == ' ')
-					{
-						s.insert(j, spaceCount, ' ');
-						break;
-					}
-					else spaceCount++;
-				}
-			}
-		}
-	}
+    int chars_since_newline = 0;
+    int chars_since_whitespace = 0;
+
+
+    for(int i = 0; i < s.length(); i++)
+    {
+        chars_since_newline++;
+        chars_since_whitespace++;
+        if(s[i] == '\n')
+        {
+            chars_since_newline = 0;
+            chars_since_whitespace = 0;
+        }
+        else if(s[i] == ' ')
+        {
+            chars_since_whitespace = 0;
+        }
+        if(chars_since_newline >= width)
+        {
+            if(chars_since_whitespace < width)
+                s[i - chars_since_whitespace] = '\n';
+            else
+                s.insert(s.begin() + i, '\n');
+            chars_since_newline = 0;
+            chars_since_whitespace = 0;
+        }
+    }
 
     return s;
  }
