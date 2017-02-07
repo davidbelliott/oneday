@@ -150,7 +150,7 @@ void execute()
     stove->add_child(jar);
 
     Object* pellets = new Object("pellets");
-    pellets->aliases = {"pellet", "medicine", "pill"};
+    pellets->aliases = {"pellet", "medicine", "pill", "crack", "weed"};
     pellets->add_component(new ComponentDescription("Several brown pellets are in the jar. They do not contain pork."));
     pellets->add_component(new ComponentTakeable());
     pellets->add_component(new ComponentEdible());
@@ -159,10 +159,10 @@ void execute()
         if(cmd->type == Command::EAT)
         {
             if(tasted_pellets)
-                text->send_front(std::make_shared<CmdDisp>("The pellets are gross. You don't want to eat any more."));
+                text->send_front(std::make_shared<CmdDisp>("You don't want to eat any more."));
             else
             {
-                text->send_front(std::make_shared<CmdDisp>("You tentatively nibble at one of the mysterious pellets. It tastes like momma's medicine."));
+                text->send_front(std::make_shared<CmdDisp>("You tentatively nibble at one of the mysterious pellets. It contains crack and weed. The combination makes your eyes bleed."));
                 tasted_pellets = true;
             }
             return false;
@@ -260,9 +260,13 @@ void execute()
 
     Object* hazmat = new Object("hazmat suit");
     hazmat->aliases = {"hazmat", "suit"};
-    hazmat->add_component(new ComponentDescription("A hazmat suit is hanging inside one locker."));
+    hazmat->add_component(new ComponentDescription("A hazmat suit is hanging inside one locker.", "The hazmat suit is rough and tough like leather."));
     hazmat->add_component(new ComponentTakeable());
     hazmat->add_component(new ComponentWearable());
+    hazmat->post_command = [&](Command* cmd) {
+        if(cmd->type == Command::WEAR)
+            engine->terminal->disp("The suit is rough and tough like leather.");
+    };
     lockers->add_child(hazmat);
 
     Object* sewer = new Object("sewer");
@@ -642,13 +646,17 @@ void execute()
 
     Object* sakura_park = new Object("sakura_park");
     sakura_park->pretty_name = "Sakura Park";
-    sakura_park->add_component(new ComponentDescription("The cherry blossom tree is truly a sight to behold, especially when it is in full riotous bloom. There are several varieties of the cherry blossom tree, and while most of them produce flowering branches full of small pinkish-hued flowers, some of them produce actual cherries."));
+    sakura_park->add_component(new ComponentDescription("An idyllic round park."));
     sakura_park->add_component(new ComponentMusic("res/blackandyellow.ogg"));
     sakura_park->add_component(new ComponentRoom({{SOUTH, "subway_station"},
                                                   {NORTH, "california_boulevard"},
                                                   {EAST, "barber_shoppe"},
                                                   {WEST, "hobby_lobby_floor_1"}}));
     world->add_child(sakura_park);
+
+    Object* cherry_trees = new Object("cherry trees");
+    cherry_trees->add_component(new ComponentDescription("A stand of cherry trees blossom in the center of the park."));
+    sakura_park->add_child(cherry_trees);
 
     Object* hobby_lobby_floor_1 = new Object("hobby_lobby_floor_1");
     hobby_lobby_floor_1->pretty_name = "Hobby Lobby: 1st floor";
@@ -676,7 +684,7 @@ void execute()
     onahole->pre_command = [&](Command* cmd) {
         if(cmd->type != Command::EXAMINE && cmd->type != Command::TAKE)
         {
-            engine->terminal->disp("lewd");
+            engine->terminal->disp(">lewd");
             return false;
         }
         return true;

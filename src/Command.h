@@ -42,6 +42,7 @@ public:
         TAKE,
         THROW,
         OPEN,
+        CLOSE,
         READ,
         DROP,
         PUT,
@@ -49,7 +50,6 @@ public:
         EAT,
         GIVE,
         SHOUT,
-        CLOSE,
         BREAK,
         KILL,
         BLESSUP,
@@ -300,6 +300,15 @@ class CmdOpen : public Command
         Object* obj;
 
         CmdOpen(Object* obj_in);
+        void run(GameState* g);
+};
+
+class CmdClose : public Command
+{
+    public:
+        Object* obj;
+
+        CmdClose(Object* obj_in);
         void run(GameState* g);
 };
 

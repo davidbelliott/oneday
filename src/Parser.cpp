@@ -211,14 +211,27 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
     arg_list args = {};
 
     //=== Going
-    if(matches(tokens, "go in #", args) || matches(tokens, "enter #", args))
+    if(matches(tokens, "go in #", args) || 
+       matches(tokens, "go out #", args) ||
+       matches(tokens, "go through #", args) ||
+       matches(tokens, "go into #", args) ||
+       matches(tokens, "jump into #", args) ||
+       matches(tokens, "enter #", args))
     {
         Object* o = get_object(args[0], g);
         if(o)
         {
             ComponentPortal* c_port = (ComponentPortal*)o->get_component(Component::PORTAL);
             if(c_port)
-                commands.push_back(std::make_shared<CmdGo>(c_port->destination));
+            {
+                ComponentOpenClose* c_open_close = (ComponentOpenClose*)o->get_component(Component::OPEN_CLOSE);
+                if(c_open_close && !c_open_close->open)
+                {
+                    errors.push_back("The " + o->pretty_name + " is closed.");
+                }
+                else
+                    commands.push_back(std::make_shared<CmdGo>(c_port->destination));
+            }
             else
                 errors.push_back("You can't go into the " + o->pretty_name + ".");
         }
@@ -226,30 +239,36 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             errors.push_back("You can find no " + join(args[0], ' ') + " to go in.");
     }
     else if(matches(tokens, "go north", args)
+            || matches(tokens, "go n", args)
             || matches(tokens, "north", args)
             || matches(tokens, "n", args))
     {
         try_to_go(NORTH, g, &commands, &errors);
     }
     else if(matches(tokens, "go east", args)
+            || matches(tokens, "go e", args)
             || matches(tokens, "east", args)
             || matches(tokens, "e", args))
+
     {
         try_to_go(EAST, g, &commands, &errors);
     }
     else if(matches(tokens, "go south", args)
+            || matches(tokens, "go s", args)
             || matches(tokens, "south", args)
             || matches(tokens, "s", args))
     {
         try_to_go(SOUTH, g, &commands, &errors);
     }
     else if(matches(tokens, "go west", args)
+            || matches(tokens, "go w", args)
             || matches(tokens, "west", args)
             || matches(tokens, "w", args))
     {
         try_to_go(WEST, g, &commands, &errors);
     }
     else if(matches(tokens, "go up", args)
+            || matches(tokens, "go u", args)
             || matches(tokens, "climb up", args)
             || matches(tokens, "climb", args)
             || matches(tokens, "climb #", args)
@@ -259,6 +278,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         try_to_go(UP, g, &commands, &errors);
     }
     if(matches(tokens, "go down", args)
+            || matches(tokens, "go d", args)
             || matches(tokens, "climb down", args)
             || matches(tokens, "climb down #", args)
             || matches(tokens, "down", args)
@@ -520,6 +540,27 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             errors.push_back("You see no such thing.");
     }
 
+    //=== Closing something
+    if(matches(tokens, "close #", args))
+    {
+        Object* obj = get_object(args[0], g);
+        if(obj)
+        {
+            ComponentOpenClose* c_open = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
+            if(c_open)
+            {
+                if(c_open->open)
+                    commands.push_back(std::make_shared<CmdClose>(obj));
+                else
+                    errors.push_back("It's already closed.");
+            }
+            else
+                errors.push_back("It can't be closed.");
+        }
+        else
+            errors.push_back("You see no such thing.");
+    }
+
     //=== Yelling
     if(matches(tokens, "yell", args)
             || matches(tokens, "shout", args)
@@ -592,7 +633,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         command = commands[0];
     else if(commands.size() > 1)
         command =  std::make_shared<CmdDisp>("Your statement was ambiguous.");
-    else if(errors.size() == 1)
+    else if(errors.size() > 1)
         command =  std::make_shared<CmdDisp>(errors[0]);
     else
     {

@@ -561,6 +561,40 @@ void CmdOpen::run(GameState* g)
     }
 }
 
+CmdClose::CmdClose(Object* obj_in)
+    : Command(CLOSE),
+    obj(obj_in)
+{
+    objects.push_back(obj);
+}
+
+void CmdClose::run(GameState* g)
+{
+    if(!obj)
+    {
+        g->send_front(std::make_shared<CmdDisp>("No object to close"));
+    }
+    else
+    {
+       ComponentOpenClose* c_open_close = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
+       
+        if(!c_open_close)
+        {
+            g->send_front(std::make_shared<CmdDisp>("You can't close the " + obj->pretty_name + "!"));
+        }
+        else if(!c_open_close->open)
+        {
+            g->send_front(std::make_shared<CmdDisp>("The " + obj->pretty_name + " is already closed."));
+        }
+        else
+        {
+            c_open_close->open = false;
+            g->engine->terminal->disp("You close the " + obj->pretty_name + ".");
+            //recursive_show(g, obj, true, false, false);
+        }
+    }
+}
+
 CmdTieTo::CmdTieTo(Object* tie_in, Object* tie_to_in)
     : Command(TIE_TO),
     tie(tie_in),
