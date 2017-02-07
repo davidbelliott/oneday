@@ -339,11 +339,18 @@ void CmdTake::run(GameState* g)
 {
     for(int i = 0; i < objects.size(); i++)
     {
-        if(objects[i]->parent)
-            objects[i]->parent->remove_child(objects[i]);
-        if(g->world->get_player())
-            g->world->get_player()->add_child(objects[i]);
-        g->engine->terminal->disp("You take the " + objects[i]->pretty_name + ".");
+        if(objects[i]->parent == g->world->get_player())
+        {
+            g->engine->terminal->disp("You already have the " + objects[i]->pretty_name + ".");
+        }
+        else
+        {
+            if(objects[i]->parent)
+                objects[i]->parent->remove_child(objects[i]);
+            if(g->world->get_player())
+                g->world->get_player()->add_child(objects[i]);
+            g->engine->terminal->disp("You take the " + objects[i]->pretty_name + ".");
+        }
     }
 }
 

@@ -23,7 +23,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "hobby_lobby_floor_1";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -653,38 +653,97 @@ void execute()
     Object* hobby_lobby_floor_1 = new Object("hobby_lobby_floor_1");
     hobby_lobby_floor_1->pretty_name = "Hobby Lobby: 1st floor";
     hobby_lobby_floor_1->add_component(new ComponentDescription("It exceeds the wildest imaginination of the hobby rocketeer and the budding Japanophile."));
-    hobby_lobby_floor_1->add_component(weeb_music);
+    hobby_lobby_floor_1->add_component(new ComponentMusic("res/weed.ogg", sf::seconds(15.0)));
     hobby_lobby_floor_1->add_component(new ComponentRoom({{EAST, "sakura_park"},
                 {WEST, "hobby_elevator"}}));
     world->add_child(hobby_lobby_floor_1);
 
     Object* hobby_lobby_floor_2 = new Object("hobby_lobby_floor_2");
     hobby_lobby_floor_2->pretty_name = "Hobby Lobby: 2nd floor";
-    hobby_lobby_floor_2->add_component(new ComponentDescription("The second floor of the hobby l0bby"));
+    hobby_lobby_floor_2->add_component(new ComponentDescription("The second floor of the lobby"));
     hobby_lobby_floor_2->add_component(weeb_music);
     hobby_lobby_floor_2->add_component(new ComponentRoom({{WEST, "hobby_elevator"}}));
     world->add_child(hobby_lobby_floor_2);
 
+    Object* store_shelf = new Object("shelf");
+    store_shelf->aliases = {"shelves"};
+    store_shelf->add_component(new ComponentDescription("Several large shelves run the length of the room."));
+    hobby_lobby_floor_2->add_child(store_shelf);
+
+    Object* onahole = new Object("onahole");
+    onahole->add_component(new ComponentTakeable());
+    onahole->add_component(new ComponentDescription("There is an onahole here.", "NEKOMIMI MAONYAN SPECIAL CATGIRL ONAHOLE"));
+    onahole->pre_command = [&](Command* cmd) {
+        if(cmd->type != Command::EXAMINE && cmd->type != Command::TAKE)
+        {
+            engine->terminal->disp("lewd");
+            return false;
+        }
+        return true;
+    };
+    store_shelf->add_child(onahole);
+
+    Object* touhou_figurine = new Object("touhou figurine");
+    touhou_figurine->aliases = {"touhou", "figurine", "figure"};
+    touhou_figurine->add_component(new ComponentTakeable());
+    touhou_figurine->add_component(new ComponentDescription("There is a Touhou figurine here.", "Patchouli Knowledge is finally getting her own Nendoroid!"));
+    store_shelf->add_child(touhou_figurine);
+
+    Object* honami_aihara_figurine = new Object("honami aihara figurine");
+    honami_aihara_figurine->aliases = {"honami", "aihara", "figurine", "figure"};
+    honami_aihara_figurine->add_component(new ComponentTakeable());
+    honami_aihara_figurine->add_component(new ComponentDescription("There is a Honami Aihara figurine here.", "She is wearing a super sexy idol uniform while squatting with legs spread and making a heart shaped symbol with her hands in front of her crotch just like the cover illustration of Ima Ria."));
+    store_shelf->add_child(honami_aihara_figurine);
+
+    Object* body_pillow = new Object("Oreimo Kirino body pillow");
+    body_pillow->aliases = {"oreimo", "kirino", "body", "pillow"};
+    body_pillow->add_component(new ComponentDescription("There is a Kirino body pillow here.", "New Oreimo Kirino Kousaka Soft Dakimakura Hugging Body Pillow"));
+    body_pillow->add_component(new ComponentTakeable());
+
+    store_shelf->add_child(body_pillow);
+
     Object* hobby_lobby_floor_3 = new Object("hobby_lobby_floor_3");
     hobby_lobby_floor_3->pretty_name = "Hobby Lobby: 3rd floor";
-    hobby_lobby_floor_3->add_component(new ComponentDescription("The third floor of the hobby l0bby"));
+    hobby_lobby_floor_3->add_component(new ComponentDescription("The third floor of the lobby"));
     hobby_lobby_floor_3->add_component(weeb_music);
     hobby_lobby_floor_3->add_component(new ComponentRoom({{WEST, "hobby_elevator"}}));
     world->add_child(hobby_lobby_floor_3);
 
+    Object* hobby_window = new Object("window");
+    hobby_window->add_component(new ComponentDescription("There is one window on the west wall, through which the evening glow lights this store's salacious wares."));
+    hobby_window->add_component(new ComponentOpenClose(true));
+    hobby_window->add_component(new ComponentPortal("fire_escape"));
+    hobby_lobby_floor_3->add_child(hobby_window);
+
+    Object* fire_escape = new Object("fire_escape");
+    fire_escape->pretty_name = "Hobby Lobby: fire escape";
+    fire_escape->add_component(new ComponentRoom({{EAST, "hobby_lobby_floor_3"},
+                                                  {DOWN, "east_kolob_lane"}}));
+    fire_escape->add_component(new ComponentDescription("You're running up in gates, and doing hits for high stakes,\nMaking [your] way on fire escapes\nYou can see the street about twenty feet below."));
+    fire_escape->pre_command = [&](Command* cmd) {
+        if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "east_kolob_lane")
+        {
+            engine->terminal->disp("Jumping from this high could be fatal. Maybe somethin' soft would break the fall.");
+            return false;
+        }
+        return true;
+    };
+    world->add_child(fire_escape);
+
     Object* hobby_elevator = new Object("hobby_elevator");
     hobby_elevator->pretty_name = "Hobby Lobby Elevator";
     //hobby_elevator->add_component(new ComponentRoom({{}}));
+    hobby_elevator->add_component(new ComponentMusic("res/weed.ogg"));
     world->add_child(hobby_elevator);
 
     Object* elevator_buttons = new Object("button panel");
-    elevator_buttons->aliases = {"buttons", "panel"};
-    elevator_buttons->add_component(new ComponentDescription("A panel of buttons is on the wall of the elevator."));
+    elevator_buttons->aliases = {"buttons", "panel", "button"};
+    elevator_buttons->add_component(new ComponentDescription("A panel of buttons is on the wall of the elevator.", "There are three buttons, labeled '3', '2', and '1', respectively."));
     elevator_buttons->add_component(new ComponentHittable());
     elevator_buttons->post_command = [&](Command* cmd) {
         if(cmd->type == Command::HIT)
         {
-            engine->push_state(new GameStateMenu(engine, text, "Which button do you hit?",
+            engine->push_state(new GameStateMenu(engine, text, "There are three buttons: 3, 2, and 1. Which button do you hit?",
                         {{"1", {std::make_shared<CmdGo>("hobby_lobby_floor_1")}},
                          {"2", {std::make_shared<CmdGo>("hobby_lobby_floor_2")}},
                          {"3", {std::make_shared<CmdGo>("hobby_lobby_floor_3")}}}));
