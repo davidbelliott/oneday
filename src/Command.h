@@ -330,3 +330,13 @@ class CmdInv : public Command
         CmdInv(Object* player_in);
         void run(GameState* g);
 };
+
+class CmdThrow : public Command
+{
+    public:
+        Object* projectile;
+        Object* target;
+
+        CmdThrow(Object* projectile_in, Object* target_in);
+        void run(GameState* g);
+};

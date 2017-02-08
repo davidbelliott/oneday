@@ -651,3 +651,35 @@ void CmdInv::run(GameState* g)
         }
     }
 }
+
+CmdThrow::CmdThrow(Object* projectile_in, Object* target_in)
+    : Command(THROW),
+    projectile(projectile_in),
+    target(target_in)
+{
+}
+
+void CmdThrow::run(GameState* g)
+{
+    if(projectile)
+    {
+        Object* player = g->world->get_player();
+        if(projectile->parent == player)
+        {
+            if(target)
+            {
+                g->engine->terminal->disp("You throw the " + projectile->pretty_name + " at the " + target->pretty_name + ".");
+//                if(target->has_component(Component::BREAKABLE))
+                    //g->send_front(std::make_shared<CmdBreak>(target));
+            }
+            else
+                g->engine->terminal->disp("You throw the " + projectile->pretty_name + ".");
+            player->remove_child(projectile);
+            g->world->get_current_room()->add_child(projectile);
+        }
+        else
+            g->engine->terminal->disp("You're not carrying the " + projectile->pretty_name + ".");
+    }
+}
+
+

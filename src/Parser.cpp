@@ -230,13 +230,19 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
                     errors.push_back("The " + o->pretty_name + " is closed.");
                 }
                 else
+                {
                     commands.push_back(std::make_shared<CmdGo>(c_port->destination));
+                }
             }
             else
+            {
                 errors.push_back("You can't go into the " + o->pretty_name + ".");
+            }
         }
         else
+        {
             errors.push_back("You can find no " + join(args[0], ' ') + " to go in.");
+        }
     }
     else if(matches(tokens, "go north", args)
             || matches(tokens, "go n", args)
@@ -625,6 +631,45 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             errors.push_back("There is no player.");
     }
 
+    //=== Throwing
+    if(matches(tokens, "throw # at #", args)
+            || matches(tokens, "drop # on #", args))
+    {
+        Object* player = g->world->get_player();
+        Object* projectile = get_object(args[0], g);
+        Object* target = get_object(args[1], g);
+        if(projectile)
+        {
+            if(projectile->parent == player)
+            {
+                if(target)
+                    commands.push_back(std::make_shared<CmdThrow>(projectile, target));
+                else
+                    errors.push_back("There ain't no " + join(args[1], ' ') + " to throw shit at, nigga.");
+            }
+            else
+                errors.push_back("You ain't carrying the " + projectile->pretty_name + ".");
+        }
+        else
+            errors.push_back("You have no " + join(args[0], ' ') + " to throw.");
+    }
+    else if(matches(tokens, "throw #", args)
+            || matches(tokens, "drop #", args))
+    {
+        Object* player = g->world->get_player();
+        Object* projectile = get_object(args[0], g);
+        if(projectile)
+        {
+            if(projectile->parent == player)
+                commands.push_back(std::make_shared<CmdThrow>(projectile, nullptr));
+            else
+                errors.push_back("You ain't carrying the " + projectile->pretty_name + ".");
+        }
+        else
+            errors.push_back("You have no " + join(args[0], ' ') + " to throw.");
+    }
+
+
 
 
     cmd_ptr command = nullptr;
@@ -633,7 +678,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         command = commands[0];
     else if(commands.size() > 1)
         command =  std::make_shared<CmdDisp>("Your statement was ambiguous.");
-    else if(errors.size() > 1)
+    else if(errors.size() >= 1)
         command =  std::make_shared<CmdDisp>(errors[0]);
     else
     {
