@@ -10,6 +10,7 @@
 #include "Audio.h"
 #include <fstream>
 #include <algorithm>
+#include <iostream>
 
 int round(double a)
 {
@@ -35,6 +36,7 @@ GameStateThugFight::GameStateThugFight(Engine* engine_in)
 
 GameStateThugFight::~GameStateThugFight()
 {
+    std::cout<<"Destructing 這個"<<std::endl;
 }
 
 void GameStateThugFight::init()
@@ -230,14 +232,13 @@ int GameStateThugFight::get_fist_x(int index)
 
 void GameStateThugFight::win()
 {
-    send_front(std::make_shared<CmdRemoveGameState>(this));
     send_front(std::make_shared<CmdClear>());
     send_front(std::make_shared<CmdAddGameState>(new GameStateNotification(engine, "Cowed by your abdominal prowess, the thugs slink off.")));
+    send_front(std::make_shared<CmdRemoveGameState>(this));
 }
 
 void GameStateThugFight::lose()
 {
-    send(std::make_shared<CmdRemoveGameState>(this));
     send(std::make_shared<CmdClear>());
     send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine, this,
                     "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nYou had "
@@ -245,4 +246,5 @@ void GameStateThugFight::lose()
                     + " seconds remaining.\nTry again? (y/n)",
                     {{"y", {std::make_shared<CmdAddGameState>(new GameStateThugFight(engine))}},
                     {"n", {std::make_shared<CmdQuit>()}}})));
+    send(std::make_shared<CmdRemoveGameState>(this));
 }

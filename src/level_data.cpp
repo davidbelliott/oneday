@@ -23,7 +23,7 @@ void execute()
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "del_mar";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -649,7 +649,7 @@ void execute()
     sakura_park->add_component(new ComponentDescription("An idyllic round park."));
     sakura_park->add_component(new ComponentMusic("res/blackandyellow.ogg"));
     sakura_park->add_component(new ComponentRoom({{SOUTH, "subway_station"},
-                                                  {NORTH, "california_boulevard"},
+                                                  {NORTH, "evangelion_ct"},
                                                   {EAST, "barber_shoppe"},
                                                   {WEST, "hobby_lobby_floor_1"}}));
     world->add_child(sakura_park);
@@ -657,6 +657,53 @@ void execute()
     Object* cherry_trees = new Object("cherry trees");
     cherry_trees->add_component(new ComponentDescription("A stand of cherry trees blossom in the center of the park."));
     sakura_park->add_child(cherry_trees);
+
+    Object* evangelion_ct = new Object("evangelion_ct");
+    evangelion_ct->pretty_name = "Evangelion Court";
+    evangelion_ct->add_component(new ComponentDescription("This boulevard connects Sakura Park to simple Ted's house. Simple Ted's house is to the north."));
+    evangelion_ct->add_component(new ComponentRoom({{NORTH, "simple_ted_house_front"}, {SOUTH, "sakura_park"}}));
+    world->add_child(evangelion_ct);
+
+    Object* simple_ted_house_front = new Object("simple_ted_house_front");
+    simple_ted_house_front->pretty_name = "The front of Simple Ted's house";
+    simple_ted_house_front->add_component(new ComponentRoom({{SOUTH, "evangelion_ct"}}));
+    world->add_child(simple_ted_house_front);
+
+    Object* front_door = new Object("front door");
+    front_door->aliases = {"door", "front"};
+    front_door->add_component(new ComponentOpenClose(false));
+    front_door->add_component(new ComponentPortal("simple_ted_house_first_floor"));
+    front_door->add_component(new ComponentDescription("A crude door leading into the house is bolted shut."));
+    front_door->pre_command = [&](Command* cmd) {
+        bool ret_val = false;
+        if((cmd->type == Command::GO && static_cast<CmdGo*>(cmd)->new_room == "simple_ted_house_first_floor")
+                || (cmd->type == Command::OPEN))
+        {
+            engine->terminal->disp("The door is bolted shut from the inside and won't budge.");
+            ret_val = false;
+        }
+        else
+            ret_val = true;
+        return ret_val;
+    };
+    simple_ted_house_front->add_child(front_door);
+
+    Object* second_floor_window = new Object("second floor window");
+    second_floor_window->aliases = {"window"};
+    second_floor_window->add_component(new ComponentDescription("A single window overlooks the yard from the second floor."));
+    simple_ted_house_front->add_child(second_floor_window);
+
+    Object* stones = new Object("gallstones");
+    stones->aliases = {"stones", "gall", "rocks", "gallstone", "stone", "rock"};
+    stones->add_component(new ComponentDescription("A pile of giant gallstones rests on the ground.", "The stones are heavy, but small enough to throw."));
+    stones->add_component(new ComponentTakeable());
+    simple_ted_house_front->add_child(stones);
+
+    Object* pulley = new Object("pulley baskets");
+    pulley->aliases = {"pulley", "baskets"};
+    pulley->add_component(new ComponentDescription("There are two large baskets on a pulley system, one at the level of Ted's window and one on the ground."));
+    pulley->add_component(new ComponentRoom({{DOWN, "simple_ted_house_front"}}));
+    simple_ted_house_front->add_child(pulley);
 
     Object* hobby_lobby_floor_1 = new Object("hobby_lobby_floor_1");
     hobby_lobby_floor_1->pretty_name = "Hobby Lobby: 1st floor";
@@ -726,16 +773,33 @@ void execute()
     Object* fire_escape = new Object("fire_escape");
     fire_escape->pretty_name = "Hobby Lobby: fire escape";
     fire_escape->add_component(new ComponentRoom({{EAST, "hobby_lobby_floor_3"},
-                                                  {DOWN, "east_kolob_lane"}}));
+                                                  {DOWN, "kolob_street_east"}}));
     fire_escape->add_component(new ComponentDescription("You're running up in gates, and doing hits for high stakes,\nMaking [your] way on fire escapes\nYou can see the street about twenty feet below."));
+    bool can_jump = false;
     fire_escape->pre_command = [&](Command* cmd) {
-        if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "east_kolob_lane")
+        if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "kolob_street_east")
         {
+            if(can_jump)
+            {
+                engine->terminal->disp("You take a flying leap from the fire escape and land directly atop the soft body pillow, which breaks your fall.");
+                return true;
+            }
             engine->terminal->disp("Jumping from this high could be fatal. Maybe somethin' soft would break the fall.");
             return false;
         }
         return true;
     };
+
+    fire_escape->post_command = [&](Command* cmd) {
+        if(cmd->type == Command::THROW && ((CmdThrow*)cmd)->projectile == body_pillow)
+        {
+            engine->terminal->disp("The body pillow lands on the street below.");
+            body_pillow->parent->remove_child(body_pillow);
+            kolob_street_east->add_child(body_pillow);
+            can_jump = true;
+        }
+    };
+
     world->add_child(fire_escape);
 
     Object* hobby_elevator = new Object("hobby_elevator");
@@ -746,6 +810,7 @@ void execute()
 
     Object* elevator_buttons = new Object("button panel");
     elevator_buttons->aliases = {"buttons", "panel", "button"};
+
     elevator_buttons->add_component(new ComponentDescription("A panel of buttons is on the wall of the elevator.", "There are three buttons, labeled '3', '2', and '1', respectively."));
     elevator_buttons->add_component(new ComponentHittable());
     elevator_buttons->post_command = [&](Command* cmd) {
@@ -769,7 +834,7 @@ void execute()
 
     Object* frank = new Object("frank");
     frank->aliases = {"barber", "man", "him", "he"};
-    frank->add_component(new ComponentDescription("Frank reclines in a chair, ingesting pizza & pasta while playing the accordian"));
+    frank->add_component(new ComponentDescription("Frank reclines in a chair, playing the accordian"));
     ComponentTalkable* frank_talk = new ComponentTalkable({"I believe in my bloodclart barber",
                 "There's levels to this ting and when manna trim they level affi set",
                 "Yo, It's barely been a week and I wanna go and get a trim again",
