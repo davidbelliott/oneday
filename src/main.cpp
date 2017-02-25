@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Terminal.h"
 #include "World.h"
 #include "GameStateText.h"
 #include "level_data.h"
@@ -16,7 +17,7 @@ int main(int argc, char *argv[])
     engine->push_state(text);
 
     unsigned int dt;
-    while(engine->running)
+    /*while(engine->running)
     {
         // Collect input from the user
         //engine->get_input();
@@ -30,7 +31,10 @@ int main(int argc, char *argv[])
 
         engine->prune();
         // Sleep for remaining time
-    }
+    }*/
+    //engine->terminal->disp("Test");
+    engine->terminal->refresh_display();
+    engine->terminal->pause();
 
 	delete engine;
     delete world;
