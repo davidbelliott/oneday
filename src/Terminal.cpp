@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <string>
 #include <functional>
+#include <ncurses.h>
 
 std::string word_wrap(std::string s, int width)
 {
@@ -40,23 +41,28 @@ std::string word_wrap(std::string s, int width)
 
 
 Terminal::Terminal()
-:   canvas(nullptr),
-    display(nullptr)
+//:   //canvas(nullptr),
+    //display(nullptr)
 {
-    canvas = caca_create_canvas(config::screen_w_chars, config::screen_h_chars);
-    display = caca_create_display(canvas);
+    initscr();
+    raw();
+    //canvas = caca_create_canvas(config::screen_w_chars, config::screen_h_chars);
+    //display = caca_create_display(canvas);
 }
 
 
 Terminal::~Terminal()
 {
-    caca_free_display(display);
-    caca_free_canvas(canvas);
+    endwin();
+    //caca_free_display(display);
+    //caca_free_canvas(canvas);
 }
 
 void Terminal::output(int start_x, int start_y, std::string str, int spread)
 {
-    caca_put_str(canvas, start_x, start_y, str.c_str());
+    printw(str.c_str());
+    //std::cout << str;
+    //caca_put_str(canvas, start_x, start_y, str.c_str());
     /*int x = start_x;
     int y = start_y;
 	for (int i = 0; i < str.size(); i++)
@@ -96,7 +102,9 @@ void Terminal::output_mode()
 
 void Terminal::disp(std::string str, bool newline)
 {
-    caca_put_str(canvas, 0, 0, str.c_str());
+    printw(str.c_str());
+    //std::cout << str << std::endl;
+    //caca_put_str(canvas, 0, 0, str.c_str());
     /*buffer->scroll_value = buffer->scroll_value_max;
     int x = buffer->get_x(state.cursor_index);
     int y = buffer->get_y(state.cursor_index);
@@ -181,7 +189,7 @@ void Terminal::refresh_display()
         window->draw(cursor_shape);
     }
     window->display();*/
-    caca_refresh_display(display);
+    //caca_refresh_display(display);
 }
 
 /*void Terminal::get_input()
@@ -206,14 +214,17 @@ void Terminal::refresh_display()
 
 std::string Terminal::get_input()
 {
-    std::string input;
+    /*std::string input;
     std::getline(std::cin, input, '\n');
-    return input;
+    return input;*/
+    getch();
+    return "";
 }
 
 void Terminal::pause()
 {
-    caca_get_event(display, CACA_EVENT_KEY_PRESS, NULL, -1);
+    getch();
+    //caca_get_event(display, CACA_EVENT_KEY_PRESS, NULL, -1);
 }
 
 /*void Terminal::notify(event_ptr event)

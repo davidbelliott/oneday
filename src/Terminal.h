@@ -5,7 +5,6 @@ class Engine;
 #include "Config.h"
 #include <string>
 #include <vector>
-#include <caca.h>
 
 std::string word_wrap(std::string str, int width);
 
@@ -13,8 +12,8 @@ class Terminal
 {
 public:
 
-    caca_display_t* display;
-    caca_canvas_t* canvas;
+    //caca_display_t* display;
+    //caca_canvas_t* canvas;
 
     std::string cur_user_string;
 

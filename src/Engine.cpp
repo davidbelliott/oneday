@@ -63,7 +63,6 @@ void Engine::draw()
     {
         game_states.back()->draw();
     }
-    terminal->disp("YOYOYOYO");
     terminal->refresh_display();
 }
 
