@@ -2,8 +2,8 @@
 #include "World.h"
 #include "Player.h"
 #include "GameState.h"
-#include "GameStateMenu.h"
 #include "Engine.h"
+#include "Terminal.h"
 #include "Command.h"
 #include <iostream>
 
@@ -199,9 +199,9 @@ bool matches(token_list statement, std::string pattern, arg_list& args)
     return match_token_lists(statement, tokenize(pattern, ' '), &args);
 }
 
-cmd_ptr Parser::parse(std::string statement, GameState* g)
+Command* Parser::parse(std::string statement, GameState* g)
 {
-    std::vector<cmd_ptr> commands = {};
+    std::vector<Command*> commands = {};
     std::vector<std::string> errors = {};
 
     statement = to_lower(statement);
@@ -231,7 +231,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
                 }
                 else
                 {
-                    commands.push_back(std::make_shared<CmdGo>(c_port->destination));
+                    commands.push_back(new CmdGo(c_port->destination));
                 }
             }
             else
@@ -303,7 +303,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             || matches(tokens, "l", args)
             || matches(tokens, "x", args))
     {
-        commands.push_back(std::make_shared<CmdLookAround>());
+        commands.push_back(new CmdLookAround());
     }
 
     //=== Examining something
@@ -316,8 +316,8 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         Object* obj = get_object(args[0], g);
         if(obj)
         {
-            std::shared_ptr<CmdExamine> examine = std::make_shared<CmdExamine>();
-            examine->add_object(obj);
+            CmdExamine* examine = new CmdExamine();
+            examine->object = obj;
             commands.push_back(examine);
         }
         else
@@ -332,13 +332,14 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         || matches(tokens, "exit", args)
         || matches(tokens, "bye bye", args))
     {
-        GameStateMenu* menu = new GameStateMenu(
+        /*GameStateMenu* menu = new GameStateMenu(
                         g->engine,
                         g,
                         "Are you sure you want to quit? (y/n)",
-                        {{"y", {std::make_shared<CmdQuit>()}},
+                        {{"y", {new CmdQuit()}},
                          {"n", {}}});
-        commands.push_back(std::make_shared<CmdAddGameState>(menu));
+        commands.push_back(new CmdAddGameState(menu));*/
+        g->engine->running = false;
     }
 
     //=== Taking
@@ -363,8 +364,8 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
                     errors.push_back("The " + obj->pretty_name + " is tied to the " + c_tie->tie_to[0]->pretty_name + ".");
                 else
                 {
-                    cmd_ptr cmd_take = std::make_shared<CmdTake>();
-                    cmd_take->add_object(obj);
+                    CmdTake* cmd_take = new CmdTake();
+                    cmd_take->object = obj;
                     commands.push_back(cmd_take);
                 }
             }
@@ -381,7 +382,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             || matches(tokens, "damn", args)
             || matches(tokens, "fug", args))
     {
-        commands.push_back(std::make_shared<CmdDisp>("-keep it clean, nigga"));
+        errors.push_back("-keep it clean, nigga");
     }
 
     //=== Reading
@@ -392,8 +393,8 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         Object* obj = get_object(args[0], g);
         if(obj)
         {
-            std::shared_ptr<CmdRead> read = std::make_shared<CmdRead>();
-            read->add_object(obj);
+            CmdRead* read = new CmdRead();
+            read->object = obj;
             commands.push_back(read);
         }
         else
@@ -417,8 +418,8 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             ComponentHittable* c_hittable = (ComponentHittable*)obj->get_component(Component::HITTABLE);
             if(c_hittable)
             {
-                std::shared_ptr<CmdHit> hit = std::make_shared<CmdHit>();
-                hit->add_object(obj);
+                CmdHit* hit = new CmdHit();
+                hit->object = obj;
                 commands.push_back(hit);
             }
             else
@@ -441,8 +442,8 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         {
             if(obj->has_component(Component::WEARABLE))
             {
-                std::shared_ptr<CmdWear> wear = std::make_shared<CmdWear>();
-                wear->add_object(obj);
+                CmdWear* wear = new CmdWear();
+                wear->object = obj;
                 commands.push_back(wear);
             }
             else
@@ -461,8 +462,8 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         Object* obj = get_object(args[0], g);
         if(obj)
         {
-            auto talk_to = std::make_shared<CmdTalkTo>();
-            talk_to->add_object(obj);
+            auto talk_to = new CmdTalkTo();
+            //talk_to->object = obj;
             commands.push_back(talk_to);
         }
         else
@@ -475,8 +476,8 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         Object* obj = get_object(args[0], g);
         if(obj)
         {
-            auto move = std::make_shared<CmdMove>();
-            move->add_object(obj);
+            auto move = new CmdMove();
+            move->object = obj;
             commands.push_back(move);
         }
         else
@@ -490,7 +491,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         if(obj)
         {
             if(obj->has_component(Component::EDIBLE))
-                commands.push_back(std::make_shared<CmdEat>(obj));
+                commands.push_back(new CmdEat(obj));
             else
                 errors.push_back("The " + obj->pretty_name + " is not edible.");
         }
@@ -511,7 +512,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
                 if(obj)
                 {
                     if(obj->has_component(Component::TAKEABLE))
-                        commands.push_back(std::make_shared<CmdGive>(obj, actor));
+                        commands.push_back(new CmdGive(obj, actor));
                     else
                         errors.push_back("The " + obj->pretty_name + " can't be taken.");
                 }
@@ -535,7 +536,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             if(c_open)
             {
                 if(!c_open->open)
-                    commands.push_back(std::make_shared<CmdOpen>(obj));
+                    commands.push_back(new CmdOpen(obj));
                 else
                     errors.push_back("It's already open.");
             }
@@ -556,7 +557,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             if(c_open)
             {
                 if(c_open->open)
-                    commands.push_back(std::make_shared<CmdClose>(obj));
+                    commands.push_back(new CmdClose(obj));
                 else
                     errors.push_back("It's already closed.");
             }
@@ -573,14 +574,14 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             || matches(tokens, "holler", args)
             || matches(tokens, "scream", args))
     {
-        commands.push_back(std::make_shared<CmdDisp>("(Jamal) SHEEEIT!"));
+        //commands.push_back(new CmdDisp("(Jamal) SHEEEIT!"));
     }
     else if(matches(tokens, "yell #", args)
             || matches(tokens, "shout #", args)
             || matches(tokens, "holler #", args)
             || matches(tokens, "scream #", args))
     {
-        commands.push_back(std::make_shared<CmdDisp>("(Jamal) " + to_upper(join(args[0], ' ')) + "!"));
+        //commands.push_back(new CmdDisp("(Jamal) " + to_upper(join(args[0], ' ')) + "!"));
     }
 
     //=== Tying
@@ -599,7 +600,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
                 if(tie)
                 {
                     if(tie->has_component(Component::TIE))
-                        commands.push_back(std::make_shared<CmdTieTo>(tie, tie_to));
+                        commands.push_back(new CmdTieTo(tie, tie_to));
                     else
                         errors.push_back("The " + tie->pretty_name + " can't be tied.");
                 }
@@ -623,7 +624,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         if(player)
         {
             if(player->has_component(Component::INVENTORY))
-                commands.push_back(std::make_shared<CmdInv>(player));
+                commands.push_back(new CmdInv(player));
             else
                 errors.push_back(player->pretty_name + " has no inventory.");
         }
@@ -643,7 +644,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             if(projectile->parent == player)
             {
                 if(target)
-                    commands.push_back(std::make_shared<CmdThrow>(projectile, target));
+                    commands.push_back(new CmdThrow(projectile, target));
                 else
                     errors.push_back("There ain't no " + join(args[1], ' ') + " to throw shit at, nigga.");
             }
@@ -661,7 +662,7 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
         if(projectile)
         {
             if(projectile->parent == player)
-                commands.push_back(std::make_shared<CmdThrow>(projectile, nullptr));
+                commands.push_back(new CmdThrow(projectile, nullptr));
             else
                 errors.push_back("You ain't carrying the " + projectile->pretty_name + ".");
         }
@@ -672,14 +673,15 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
 
 
 
-    cmd_ptr command = nullptr;
+    Command* command = nullptr;
 
     if(commands.size() == 1)
         command = commands[0];
     else if(commands.size() > 1)
-        command =  std::make_shared<CmdDisp>("Your statement was ambiguous.");
+        g->engine->terminal->disp("Your statement was ambiguous.");
     else if(errors.size() >= 1)
-        command =  std::make_shared<CmdDisp>(errors[0]);
+        g->engine->terminal->disp(errors[0]);
+        //command =  new CmdDisp(errors[0]);
     else
     {
         int index = -1;
@@ -689,25 +691,25 @@ cmd_ptr Parser::parse(std::string statement, GameState* g)
             token_list lhs = slice(tokens, 0, index);
             token_list rhs = slice(tokens, index + 1);
             std::string output = "";
-            if(lhs.size() == 0)
-                command = std::make_shared<CmdDisp>("I don't understand what you want to do to the " + obj->pretty_name + ".");
-            else
-                command = std::make_shared<CmdDisp>("I don't understand how to " + join(lhs, ' ') + " something.");
+            /*if(lhs.size() == 0)
+                //command = new CmdDisp("I don't understand what you want to do to the " + obj->pretty_name + ".");
+            else*/
+                //command = new CmdDisp("I don't understand how to " + join(lhs, ' ') + " something.");
         }
-        else
-            command = std::make_shared<CmdDisp>("-wat u talkin bout boi");
+        //else
+            //command = new CmdDisp("-wat u talkin bout boi");
     }
     return command;
 }
 
-void try_to_go(DirectionId direction, GameState* g, std::vector<cmd_ptr>* commands, std::vector<std::string>* errors)
+void try_to_go(DirectionId direction, GameState* g, std::vector<Command*>* commands, std::vector<std::string>* errors)
 {
     bool can_go = true;
     if(Object* room = g->world->get_current_room())
     {
         ComponentRoom* room_component = (ComponentRoom*)room->get_component(Component::ROOM);
         if(room_component && room_component->directions[direction] != "")
-            commands->push_back(std::make_shared<CmdGo>(room_component->directions[direction]));
+            commands->push_back(new CmdGo(room_component->directions[direction]));
         else
             can_go = false;
     }

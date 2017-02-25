@@ -2,7 +2,6 @@
 
 class Player;
 #include "Object.h"
-#include <SFML/Audio.hpp>
 #include <map>
 
 class World : public Object

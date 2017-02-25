@@ -5,7 +5,6 @@
 #include "World.h"
 #include "Directions.h"
 #include "Player.h"
-#include "Audio.h"
 #include <set>
 
 Command::Command(CommandType type_in)
@@ -17,7 +16,7 @@ Command::~Command()
 {
 }
 
-void Command::run_and_callback(GameState* g)
+/*void Command::run_and_callback(GameState* g)
 {
     std::set<Object*> callback_list;
     for(int i = 0; i < std::max(1, int(objects.size())); i++)
@@ -48,134 +47,18 @@ void Command::run_and_callback(GameState* g)
                 (*it)->post_command(this);
         }
     }
-}
+}*/
 
 void Command::run(GameState* g)
 {
-}
 
-void Command::add_object(Object* o)
-{
-    objects.push_back(o);
-}
-
-CmdDisp::CmdDisp(std::string str_in, bool append_newline_in)
-:   Command(DISP),
-    str(str_in),
-    append_newline(append_newline_in)
-{
-}
-
-void CmdDisp::run(GameState* g)
-{
-    g->engine->terminal->disp(str, append_newline);
-}
-
-CmdOutput::CmdOutput(int x_in, int y_in, std::string str_in)
-    : Command(OUTPUT),
-    x(x_in),
-    y(y_in),
-    str(str_in),
-    spread(0)
-{
-}
-
-void CmdOutput::run(GameState* g)
-{
-    g->engine->terminal->output(x, y, str, spread);
-}
-
-CmdClear::CmdClear()
-    : Command(CLEAR)
-{}
-
-void CmdClear::run(GameState* g)
-{
-    g->engine->terminal->clr();
-}
-
-CmdInput::CmdInput()
-    : Command(INPUT)
-{}
-
-void CmdInput::run(GameState* g)
-{
-    g->engine->terminal->input_mode();
-}
-
-CmdPlayMusic::CmdPlayMusic(std::string music_in)
-    : Command(PLAY_MUSIC),
-      music(music_in)
-{}
-
-void CmdPlayMusic::run(GameState* g)
-{
-    g->engine->audio->play_music(music);
-}
-
-CmdPauseMusic::CmdPauseMusic(std::string music_in)
-    : Command(PAUSE_MUSIC),
-    music(music_in)
-{}
-
-void CmdPauseMusic::run(GameState* g)
-{
-    //music->set_fade(Music::PAUSE);
-}
-
-CmdStopMusic::CmdStopMusic(std::string music_in)
-    : Command(STOP_MUSIC),
-    music(music_in)
-{}
-
-void CmdStopMusic::run(GameState* g)
-{
-    g->engine->audio->stop_music(music);
-    //music->set_fade(Music::STOP);
-}
-
-CmdPause::CmdPause()
-    : Command(PAUSE)
-{}
-
-void CmdPause::run(GameState* g)
-{
-    g->pause();
-}
-
-CmdUnpause::CmdUnpause()
-    : Command(UNPAUSE)
-{}
-
-void CmdUnpause::run(GameState* g)
-{
-    g->unpause();
-}
-
-CmdAddGameState::CmdAddGameState(GameState* state_to_add_in)
-    : Command(ADD_GAMESTATE),
-      state_to_add(state_to_add_in)
-{}
-
-void CmdAddGameState::run(GameState* g)
-{
-    g->engine->push_state(state_to_add);
-}
-
-CmdRemoveGameState::CmdRemoveGameState(GameState* state_to_remove_in)
-    : Command(REMOVE_GAMESTATE),
-    state_to_remove(state_to_remove_in)
-{}
-
-void CmdRemoveGameState::run(GameState* g)
-{
-    state_to_remove->running = false;
 }
 
 CmdGo::CmdGo(std::string new_room_in)
     : Command(GO),
       new_room(new_room_in)
 {
+
 }
 
 void CmdGo::run(GameState* g)
@@ -185,17 +68,17 @@ void CmdGo::run(GameState* g)
         ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
         g->world->set_current_room(new_room);
         ComponentMusic* music_entering = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
-        if(music_leaving)
+        /*if(music_leaving)
             g->engine->audio->pause_music(music_leaving->music);
         if(music_entering)
-            g->engine->audio->play_music(music_entering->music, music_entering->start_time);
+            g->engine->audio->play_music(music_entering->music, music_entering->start_time);*/
 
-        std::shared_ptr<CmdLookAround> look_around = std::make_shared<CmdLookAround>();
-        g->send_front(look_around);
+        CmdLookAround look_around;
+        look_around.run(g);
     }
     else
     {
-        g->send_front(std::make_shared<CmdDisp>("Error: room " + new_room + " doesn't exist."));
+        g->engine->terminal->disp("Error: room " + new_room + " doesn't exist.");
     }
 }
 
@@ -207,17 +90,6 @@ CmdQuit::CmdQuit()
 void CmdQuit::run(GameState* g)
 {
     g->engine->running = false;
-}
-
-CmdCustom::CmdCustom(std::function<void(GameState*)> fn_in)
-    : Command(CUSTOM),
-      fn(fn_in)
-{
-}
-
-void CmdCustom::run(GameState* g)
-{
-    fn(g);
 }
 
 CmdLookAround::CmdLookAround()
@@ -327,8 +199,7 @@ CmdExamine::CmdExamine()
 
 void CmdExamine::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
-        recursive_show(g, objects[i], true, false, true);
+    recursive_show(g, object, true, false, true);
 }
 
 CmdTake::CmdTake()
@@ -337,20 +208,17 @@ CmdTake::CmdTake()
 
 void CmdTake::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    if(object->parent == g->world->get_player())
     {
-        if(objects[i]->parent == g->world->get_player())
-        {
-            g->engine->terminal->disp("You already have the " + objects[i]->pretty_name + ".");
-        }
-        else
-        {
-            if(objects[i]->parent)
-                objects[i]->parent->remove_child(objects[i]);
-            if(g->world->get_player())
-                g->world->get_player()->add_child(objects[i]);
-            g->engine->terminal->disp("You take the " + objects[i]->pretty_name + ".");
-        }
+        g->engine->terminal->disp("You already have the " + object->pretty_name + ".");
+    }
+    else
+    {
+        if(object->parent)
+            object->parent->remove_child(object);
+        if(g->world->get_player())
+            g->world->get_player()->add_child(object);
+        g->engine->terminal->disp("You take the " + object->pretty_name + ".");
     }
 }
 
@@ -360,12 +228,9 @@ CmdHit::CmdHit()
 
 void CmdHit::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
-    {
-        ComponentHittable* c_hittable = (ComponentHittable*)objects[i]->get_component(Component::HITTABLE);
-        if(c_hittable)
-            c_hittable->flipped = !c_hittable->flipped;
-    }
+    ComponentHittable* c_hittable = (ComponentHittable*)object->get_component(Component::HITTABLE);
+    if(c_hittable)
+        c_hittable->flipped = !c_hittable->flipped;
 }
 
 CmdWear::CmdWear()
@@ -374,17 +239,14 @@ CmdWear::CmdWear()
 
 void CmdWear::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    if(object->parent)
+        object->parent->remove_child(object);
+    if(g->world->get_player())
     {
-        if(objects[i]->parent)
-            objects[i]->parent->remove_child(objects[i]);
-        if(g->world->get_player())
-        {
-            g->world->get_player()->add_child(objects[i]);
-            ((Player*)g->world->get_player())->clothing = objects[i]->name;
-        }
-        g->engine->terminal->disp("You put on the " + objects[i]->pretty_name + ".");
+        g->world->get_player()->add_child(object);
+        ((Player*)g->world->get_player())->clothing = object->name;
     }
+    g->engine->terminal->disp("You put on the " + object->pretty_name + ".");
 }
 
 CmdRead::CmdRead()
@@ -393,18 +255,15 @@ CmdRead::CmdRead()
 
 void CmdRead::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    ComponentText* c_text = (ComponentText*)object->get_component(Component::TEXT);
+    if(c_text)
     {
-        ComponentText* c_text = (ComponentText*)objects[i]->get_component(Component::TEXT);
-        if(c_text)
-        {
-            g->send_front(std::make_shared<CmdDisp>("The " + objects[i]->pretty_name + " reads:"));
-            g->send_front(std::make_shared<CmdDisp>(c_text->text));
-        }
-        else
-        {
-            g->send_front(std::make_shared<CmdDisp>("There's nothing to read on the " + objects[i]->pretty_name + "."));
-        }
+        g->engine->terminal->disp("The " + object->pretty_name + " reads:");
+        g->engine->terminal->disp(c_text->text);
+    }
+    else
+    {
+        g->engine->terminal->disp("There's nothing to read on the " + object->pretty_name + ".");
     }
 }
 
@@ -414,25 +273,22 @@ CmdMove::CmdMove()
 
 void CmdMove::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    ComponentMoveable* c_move = (ComponentMoveable*)object->get_component(Component::MOVEABLE);
+    ComponentDescription* c_desc = (ComponentDescription*)object->get_component(Component::DESCRIPTION);
+    if(c_move)
     {
-        ComponentMoveable* c_move = (ComponentMoveable*)objects[i]->get_component(Component::MOVEABLE);
-        ComponentDescription* c_desc = (ComponentDescription*)objects[i]->get_component(Component::DESCRIPTION);
-        if(c_move)
+        if(c_move->new_parent)
         {
-            if(c_move->new_parent)
-            {
-                objects[i]->parent->remove_child(objects[i]);
-                c_move->new_parent->add_child(objects[i]);
-            }
-            if(c_desc)
-                c_desc->current_appearance = "There is a " + objects[i]->pretty_name + " here.";
-            g->engine->terminal->disp("With considerable effort, you move the " + objects[i]->pretty_name + " aside.");
+            object->parent->remove_child(object);
+            c_move->new_parent->add_child(object);
         }
-        else
-        {
-            g->engine->terminal->disp("Try as you might, the " + objects[i]->pretty_name + " will not budge.");
-        }
+        if(c_desc)
+            c_desc->current_appearance = "There is a " + object->pretty_name + " here.";
+        g->engine->terminal->disp("With considerable effort, you move the " + object->pretty_name + " aside.");
+    }
+    else
+    {
+        g->engine->terminal->disp("Try as you might, the " + object->pretty_name + " will not budge.");
     }
 }
 
@@ -442,49 +298,45 @@ CmdTalkTo::CmdTalkTo()
 
 void CmdTalkTo::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    /*ComponentTalkable* c_talk = (ComponentTalkable*)object->get_component(Component::TALKABLE);
+    if(c_talk)
     {
-        ComponentTalkable* c_talk = (ComponentTalkable*)objects[i]->get_component(Component::TALKABLE);
-        if(c_talk)
-        {
-           for(auto j = c_talk->talkable_data.begin(); j != c_talk->talkable_data.end(); j++) 
-           {
-               bool other = (j->size() > 0 && (*j)[0] == '-');
-               std::string output_text = "("
-                   + (other ? objects[i]->pretty_name : g->world->get_player()->pretty_name)
-                   + ") "
-                   + (other ? j->substr(1, j->size() - 1) : *j);
-               g->send_front(std::make_shared<CmdDisp>(output_text));
-               g->send_front(std::make_shared<CmdPause>());
-           }
-        }
-        else
-        {
-            g->send_front(std::make_shared<CmdDisp>(">he thinks he can talk to a " + objects[i]->pretty_name));
-        }
+       for(auto j = c_talk->talkable_data.begin(); j != c_talk->talkable_data.end(); j++) 
+       {
+           bool other = (j->size() > 0 && (*j)[0] == '-');
+           std::string output_text = "("
+               + (other ? object->pretty_name : g->world->get_player()->pretty_name)
+               + ") "
+               + (other ? j->substr(1, j->size() - 1) : *j);
+           g->engine->terminal->disp(output_text);
+           g->engine->terminal->pause();
+       }
     }
+    else
+    {
+        g->terminal->disp(">he thinks he can talk to a " + object->pretty_name));
+    }*/
 }
 
 CmdEat::CmdEat(Object* food_in)
     : Command(EAT),
     food(food_in)
 {
-    objects.push_back(food);
 }
 
 void CmdEat::run(GameState* g)
 {
     if(!food)
     {
-        g->send_front(std::make_shared<CmdDisp>("Eat what?"));
+        g->engine->terminal->disp("Eat what?");
     }
     else if(!food->has_component(Component::EDIBLE))
     {
-        g->send_front(std::make_shared<CmdDisp>("The " + food->pretty_name + " isn't edible."));
+        g->engine->terminal->disp("The " + food->pretty_name + " isn't edible.");
     }
     else
     {
-        g->send_front(std::make_shared<CmdDisp>("You eat the " + food->pretty_name + " and find it most satisfactory."));
+        g->engine->terminal->disp("You eat the " + food->pretty_name + " and find it most satisfactory.");
         if(food->parent)
             food->parent->remove_child(food);
         food->active = false;
@@ -496,31 +348,22 @@ CmdGive::CmdGive(Object* obj_in, Object* actor_in)
     obj(obj_in),
     actor(actor_in)
 {
-    objects.push_back(obj);
-    objects.push_back(actor);
+
 }
 
 void CmdGive::run(GameState* g)
 {
     if(!obj)
-    {
-        g->send_front(std::make_shared<CmdDisp>("Object not found."));
-    }
+        g->engine->terminal->disp("Object not found.");
     else if(!actor)
-    {
-        g->send_front(std::make_shared<CmdDisp>("Actor not found."));
-    }
+        g->engine->terminal->disp("Actor not found.");
     else if(!obj->has_component(Component::TAKEABLE))
-    {
-        g->send_front(std::make_shared<CmdDisp>("A " + obj->pretty_name + " can't be taken."));
-    }
+        g->engine->terminal->disp("A " + obj->pretty_name + " can't be taken.");
     else if(!actor->has_component(Component::TALKABLE))
-    {
-        g->send_front(std::make_shared<CmdDisp>(">implying one can give a " + obj->pretty_name + " to a " + actor->pretty_name));
-    }
+        g->engine->terminal->disp(">implying one can give a " + obj->pretty_name + " to a " + actor->pretty_name);
     else
     {
-        g->send_front(std::make_shared<CmdDisp>("You give the " + obj->pretty_name + " to " + actor->pretty_name + "."));
+        g->engine->terminal->disp("You give the " + obj->pretty_name + " to " + actor->pretty_name + ".");
         if(obj->parent)
             obj->parent->remove_child(obj);
         obj->active = false;
@@ -531,27 +374,21 @@ CmdOpen::CmdOpen(Object* obj_in)
     : Command(OPEN),
     obj(obj_in)
 {
-    objects.push_back(obj);
+
 }
 
 void CmdOpen::run(GameState* g)
 {
     if(!obj)
-    {
-        g->send_front(std::make_shared<CmdDisp>("No object to open"));
-    }
+        g->engine->terminal->disp("No object to open");
     else
     {
        ComponentOpenClose* c_open_close = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
        
         if(!c_open_close)
-        {
-            g->send_front(std::make_shared<CmdDisp>("You can't open the " + obj->pretty_name + "!"));
-        }
+            g->engine->terminal->disp("You can't open the " + obj->pretty_name + "!");
         else if(c_open_close->open)
-        {
-            g->send_front(std::make_shared<CmdDisp>("The " + obj->pretty_name + " is already open."));
-        }
+            g->engine->terminal->disp("The " + obj->pretty_name + " is already open.");
         else
         {
             c_open_close->open = true;
@@ -565,27 +402,20 @@ CmdClose::CmdClose(Object* obj_in)
     : Command(CLOSE),
     obj(obj_in)
 {
-    objects.push_back(obj);
 }
 
 void CmdClose::run(GameState* g)
 {
     if(!obj)
-    {
-        g->send_front(std::make_shared<CmdDisp>("No object to close"));
-    }
+        g->engine->terminal->disp("No object to close");
     else
     {
        ComponentOpenClose* c_open_close = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
        
         if(!c_open_close)
-        {
-            g->send_front(std::make_shared<CmdDisp>("You can't close the " + obj->pretty_name + "!"));
-        }
+            g->engine->terminal->disp("You can't close the " + obj->pretty_name + "!");
         else if(!c_open_close->open)
-        {
-            g->send_front(std::make_shared<CmdDisp>("The " + obj->pretty_name + " is already closed."));
-        }
+            g->engine->terminal->disp("The " + obj->pretty_name + " is already closed.");
         else
         {
             c_open_close->open = false;

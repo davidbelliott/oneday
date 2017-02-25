@@ -185,15 +185,3 @@ Component* Object::get_component(Component::Type type)
     }
     properties |= Object::DISCOVERED;
 }*/
-
-void Object::update(sf::Time dt)
-{
-    for(auto it = components.begin(); it != components.end(); ++it)
-    {
-        it->second->update(dt);
-    }
-    for(auto it = children.begin(); it != children.end(); ++it)
-    {
-        (*it)->update(dt);
-    }
-}

@@ -1,19 +1,15 @@
 #include "level_data.h"
 #include "Engine.h"
-#include "GameStateIntro.h"
 #include "GameStateText.h"
-#include "GameStateThugFight.h"
-#include "GameStateSubway.h"
-#include "GameStateMenu.h"
+//#include "GameStateThugFight.h"
+//#include "GameStateSubway.h"
+//#include "GameStateMenu.h"
 #include "Player.h"
 #include "World.h"
 #include "Terminal.h"
 
-void execute()
+World* generate_world(Engine* engine)
 {
-    Engine* engine = new Engine();
-    GameStateText* text = new GameStateText(engine);
-
     // Generate the world
     World* world = new World();
 
@@ -40,14 +36,8 @@ void execute()
                 {{EAST, "jamal_corridor"},
                 {NORTH, "jamal_bathroom"}}));
 
-    ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg", sf::seconds(3.0));
+    ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg");
     jamal_bedroom->add_component(c_music);
-    jamal_bedroom->pre_command = [=](Command* cmd)
-    {
-        if(cmd->type == Command::LOOK_AROUND)
-            engine->audio->play_music("res/good_day.ogg", sf::seconds(2.5));
-        return true;
-    };
 
     Object* posters = new Object("posters");
     posters->aliases = { "poster", "wall", "walls" };
@@ -62,7 +52,7 @@ void execute()
     thugs->aliases = {"thug"};
     thugs->add_component(new ComponentDescription("You notice a gang of thugs gathered in front of your house."));
     thugs->pre_command = [&](Command* cmd) {
-        text->engine->terminal->disp("The thugs are too far away.");
+        engine->terminal->disp("The thugs are too far away.");
         return false;
     };
     window->add_child(thugs);
@@ -79,7 +69,7 @@ void execute()
 
     Object* jamal_bathroom = new Object("jamal_bathroom");
     jamal_bathroom->pretty_name = "Jamal's bathroom";
-    ComponentMusic* music_hard = new ComponentMusic("res/hypnotize.ogg", sf::seconds(10.0));
+    ComponentMusic* music_hard = new ComponentMusic("res/hypnotize.ogg");
     jamal_bathroom->add_component(music_hard);
     jamal_bathroom->add_component(new ComponentDescription("This is where you defecate daily. This cesuo is a reeking pigsty."));
     jamal_bathroom->add_component(new ComponentRoom({{SOUTH, "jamal_bedroom"}}));
@@ -94,13 +84,13 @@ void execute()
         {
             if(((Player*)world->get_player())->clothing == "hazmat suit")
             {
-                text->send_front(std::make_shared<CmdDisp>("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage."));
-                text->send_front(std::make_shared<CmdPause>());
+                engine->terminal->disp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage.");
+                engine->terminal->pause();
                 execute = true;
             }
             else
             {
-                text->send_front(std::make_shared<CmdDisp>("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~"));
+                engine->terminal->disp("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~");
                 execute = false;
             }
         }
@@ -159,10 +149,10 @@ void execute()
         if(cmd->type == Command::EAT)
         {
             if(tasted_pellets)
-                text->send_front(std::make_shared<CmdDisp>("You don't want to eat any more."));
+                engine->terminal->disp("You don't want to eat any more.");
             else
             {
-                text->send_front(std::make_shared<CmdDisp>("You tentatively nibble at one of the mysterious pellets. It contains crack and weed. The combination makes your eyes bleed."));
+                engine->terminal->disp("You tentatively nibble at one of the mysterious pellets. It contains crack and weed. The combination makes your eyes bleed.");
                 tasted_pellets = true;
             }
             return false;
@@ -203,7 +193,7 @@ void execute()
     secret_switch->pre_command = [=](Command* cmd) {
         if(cmd->type == Command::HIT && c_hit->flipped)
         {
-            text->send_front(std::make_shared<CmdDisp>("Hitting the switch again has no effect."));
+            engine->terminal->disp("Hitting the switch again has no effect.");
             return false;
         }
         return true;
@@ -211,7 +201,7 @@ void execute()
     secret_switch->post_command = [=](Command* cmd) {
         if(cmd->type == Command::HIT)
         {
-                text->send_front(std::make_shared<CmdDisp>("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west."));
+                engine->terminal->disp("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west.");
                 c_desc->initial_appearance = "A massive bookshelf is slid to one side of the west wall.";
                 c_room->directions[WEST] = "lab";
         }
@@ -226,7 +216,7 @@ void execute()
     {
         if(cmd->type == Command::TAKE)
         {
-            text->send_front(std::make_shared<CmdDisp>("Taking the book reveals a secret switch."));
+            engine->terminal->disp("Taking the book reveals a secret switch.");
             c_desc->initial_appearance += " One book is missing, leaving an empty slot.";
             c_desc->description += " One book is missing, leaving an empty slot.";
             secret_switch->active = true;
@@ -331,12 +321,12 @@ void execute()
     {
         if(cmd->type == Command::LOOK_AROUND && world->get_flag("thug_fight_outcome") == 0)
         {
-            text->send_front(std::make_shared<CmdDisp>("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!"));
-            text->send_front(std::make_shared<CmdPause>());
-            text->send_front(std::make_shared<CmdDisp>("Each time a fist hits you, hit A, S, D, or F to tense the corresponding ab and deflect the blow."));
-            text->send_front(std::make_shared<CmdDisp>("Undeflected blows will push your abs back until you perish."));
-            text->send_front(std::make_shared<CmdPause>());
-            text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
+            engine->terminal->disp("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!");
+            engine->terminal->pause();
+            engine->terminal->disp("Each time a fist hits you, hit A, S, D, or F to tense the corresponding ab and deflect the blow.");
+            engine->terminal->disp("Undeflected blows will push your abs back until you perish.");
+            engine->terminal->pause();
+            //text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
             world->set_flag("thug_fight_outcome", 1);
         }
         return true;
@@ -391,13 +381,13 @@ void execute()
                 else if(n_talks == 3)
                     output += "furiously";
                 output += ".";
-                text->send_front(std::make_shared<CmdDisp>(output));
+                engine->terminal->disp(output);
             }
             else
             {
-                text->send_front(std::make_shared<CmdDisp>("The youth strikes out and delivers a fatal kick to your pancreas.\nYou die."));
-                text->send_front(std::make_shared<CmdPause>());
-                text->send_front(std::make_shared<CmdQuit>());
+                engine->terminal->disp("The youth strikes out and delivers a fatal kick to your pancreas.\nYou die.");
+                engine->terminal->pause();
+                engine->running = false;
             }
             if(n_talks >= 0)
                 n_talks++;
@@ -430,11 +420,11 @@ void execute()
             {
                 if(player->has_direct_child("hedge clippers"))
                 {
-                    text->send_front(std::make_shared<CmdDisp>("Hedge clippers in hand, you creep stealthily into the domain of Birdman Jr."));
+                    engine->terminal->disp("Hedge clippers in hand, you creep stealthily into the domain of Birdman Jr.");
                 }
                 else
                 {
-                    text->send_front(std::make_shared<CmdDisp>("Lil Wayne is bretty mad :-DD best not go in here unarmed."));
+                    engine->terminal->disp("Lil Wayne is bretty mad :-DD best not go in here unarmed.");
                     return false;
                 }
             }
@@ -445,7 +435,7 @@ void execute()
         if(cmd->type == Command::LOOK_AROUND)
         {
             if(lil_wayne_status == SEIZURE)
-                text->send_front(std::make_shared<CmdDisp>("You hear loud, convulsive fits from within the house. Mr. Crazy Flow could be in trouble!"));
+                engine->terminal->disp("You hear loud, convulsive fits from within the house. Mr. Crazy Flow could be in trouble!");
             else if(lil_wayne_status == ANGRY)
             {
                     int choice = rand() % 5;
@@ -455,12 +445,12 @@ void execute()
                     else if(choice == 1)
                         output += "rank tickle-brained fustilarian";
                     else if(choice == 2)
-                        output += "b!tch a$s n!gga";
+                        output += "bitch ass nigga";
                     else if(choice == 3)
                         output += "lewdster";
                     else if(choice == 4)
                         output += "baka gaijin";
-                    text->send_front(std::make_shared<CmdDisp>(output));
+                    engine->terminal->disp(output);
             }
         }
     };
@@ -485,25 +475,25 @@ void execute()
             if(cmd->type == Command::GIVE && static_cast<CmdGive*>(cmd)->obj->name == "pellets")
             {
                 lil_wayne_status = ANGRY;
-                text->send_front(std::make_shared<CmdDisp>("Lil Wayne recovers from his seizure!\nIt's A Christmas miracle."));
-                text->send_front(std::make_shared<CmdPause>());
-                text->send_front(std::make_shared<CmdDisp>("Yet as he clambers up from the ground, he suddenly turns hostile:"));
-                lil_wayne->add_component(new ComponentTalkable({"-ayy wat u doin in my house boi",
-                            "I just saved your ass from a seizure",
-                            "-nigga u better scram fore ah goes flop-bott on u"}));
-                auto talk = std::make_shared<CmdTalkTo>();
-                talk->add_object(lil_wayne);
-                text->send_front(talk);
-                text->send(std::make_shared<CmdDisp>("Lil Wayne lunges for you, and you barely escape out the door."));
-                text->send(std::make_shared<CmdPause>());
-                text->send(std::make_shared<CmdGo>("lil_wayne_front"));
+                engine->terminal->disp("Lil Wayne recovers from his seizure!\nIt's A Christmas miracle.");
+                engine->terminal->pause();
+                engine->terminal->disp("Yet as he clambers up from the ground, he suddenly turns hostile:");
+                engine->terminal->disp("-ayy wat u doin in my house boi");
+                engine->terminal->pause();
+                engine->terminal->disp("I just saved your ass from a seizure");
+                engine->terminal->pause();
+                engine->terminal->disp("-nigga u better scram fore ah goes flop-bott on u");
+                //text->send_front(talk);
+                engine->terminal->disp("Lil Wayne lunges for you, and you barely escape out the door.");
+                engine->terminal->pause();
+                //text->send(std::make_shared<CmdGo>("lil_wayne_front"));
             }
             else
             {
                 if(lil_wayne_interaction_counter % 2 == 0)
-                    text->send_front(std::make_shared<CmdDisp>("Lil Wayne writhes on the ground like a monsta."));
+                    engine->terminal->disp("Lil Wayne writhes on the ground like a monsta.");
                 else
-                    text->send_front(std::make_shared<CmdDisp>("Perhaps if you feed medicine to Lil Wayne he'll get better."));
+                    engine->terminal->disp("Perhaps if you feed medicine to Lil Wayne he'll get better.");
                 lil_wayne_interaction_counter++;
             }
         }
@@ -605,7 +595,7 @@ void execute()
                 directions[DOWN] = "subway_tunnel";
             static_cast<ComponentDescription*>(shaft->get_component(Component::DESCRIPTION))->
                 current_appearance += "\nA rope dangles down from the grate into the shaft.";
-            text->send_front(std::make_shared<CmdDisp>("The rope dangles down into the dark shaft."));
+            engine->terminal->disp("The rope dangles down into the dark shaft.");
         }
     };
     kolob_street_east->add_child(grate);
@@ -618,11 +608,11 @@ void execute()
     subway_tunnel->pre_command = [&](Command* cmd) {
         if(cmd->type == Command::LOOK_AROUND && world->get_flag("subway_outcome") == 0)
         {
-            text->send_front(std::make_shared<CmdDisp>("You drop into the subway and land atop a moving train."));
-            text->send_front(std::make_shared<CmdPause>());
-            text->send_front(std::make_shared<CmdDisp>("Press the up key to jump gaps between cars and down to duck beneath low ceilings."));
-            text->send_front(std::make_shared<CmdPause>());
-            text->send_front(std::make_shared<CmdAddGameState>(new GameStateSubway(engine)));
+            engine->terminal->disp("You drop into the subway and land atop a moving train.");
+            engine->terminal->pause();
+            engine->terminal->disp("Press the up key to jump gaps between cars and down to duck beneath low ceilings.");
+            engine->terminal->pause();
+            //text->send_front(std::make_shared<CmdAddGameState>(new GameStateSubway(engine)));
             world->set_flag("subway_outcome", 1);
             world->set_current_room("subway_station");
         }
@@ -638,8 +628,8 @@ void execute()
     subway_station->add_component(new ComponentMusic("res/blackandyellow.ogg"));
     subway_station->pre_command = [=](Command* cmd)
     {
-        if(cmd->type == Command::LOOK_AROUND)
-            text->send_front(std::make_shared<CmdPlayMusic>("res/blackandyellow.ogg"));
+        //if(cmd->type == Command::LOOK_AROUND)
+            //text->send_front(std::make_shared<CmdPlayMusic>("res/blackandyellow.ogg"));
         return true;
     };
     world->add_child(subway_station);
@@ -708,7 +698,7 @@ void execute()
     Object* hobby_lobby_floor_1 = new Object("hobby_lobby_floor_1");
     hobby_lobby_floor_1->pretty_name = "Hobby Lobby: 1st floor";
     hobby_lobby_floor_1->add_component(new ComponentDescription("It exceeds the wildest imaginination of the hobby rocketeer and the budding Japanophile."));
-    hobby_lobby_floor_1->add_component(new ComponentMusic("res/weed.ogg", sf::seconds(15.0)));
+    hobby_lobby_floor_1->add_component(new ComponentMusic("res/weed.ogg"));
     hobby_lobby_floor_1->add_component(new ComponentRoom({{EAST, "sakura_park"},
                 {WEST, "hobby_elevator"}}));
     world->add_child(hobby_lobby_floor_1);
@@ -814,13 +804,13 @@ void execute()
     elevator_buttons->add_component(new ComponentDescription("A panel of buttons is on the wall of the elevator.", "There are three buttons, labeled '3', '2', and '1', respectively."));
     elevator_buttons->add_component(new ComponentHittable());
     elevator_buttons->post_command = [&](Command* cmd) {
-        if(cmd->type == Command::HIT)
+        /*if(cmd->type == Command::HIT)
         {
             engine->push_state(new GameStateMenu(engine, text, "There are three buttons: 3, 2, and 1. Which button do you hit?",
                         {{"1", {std::make_shared<CmdGo>("hobby_lobby_floor_1")}},
                          {"2", {std::make_shared<CmdGo>("hobby_lobby_floor_2")}},
                          {"3", {std::make_shared<CmdGo>("hobby_lobby_floor_3")}}}));
-        }
+        }*/
     };
     hobby_elevator->add_child(elevator_buttons);
 
@@ -858,48 +848,15 @@ void execute()
                 "How many shekels?",
                 "-Shekels cannot buy these adamantine blades.",
                 "-They can only be purchased with blank media."};
-            std::shared_ptr<CmdTalkTo> talk_to = std::make_shared<CmdTalkTo>();
-            talk_to->add_object(frank);
-            text->send_front(talk_to);
+            //std::shared_ptr<CmdTalkTo> talk_to = std::make_shared<CmdTalkTo>();
+            //talk_to->add_object(frank);
+            //text->send_front(talk_to);
             return false;
         }
         return true;
     };
     frank->add_child(clippers);
-    
-    /*cmd_ptr describe = std::make_shared<CmdDescribe>();
-    describe->add_object((Object*)engine->world->get_current_room());
-    text->send(describe);*/
-    //world->get_current_room()->describe(text);
-    text->world = world;
-    engine->push_state(text);
 
-    sf::Clock clock;
-    sf::Time dt;
-    while(engine->running)
-    {
-        // Collect input from the user
-        engine->get_input();
 
-        // Let gamestates handle their pending events
-        engine->execute_commands();
-
-        // Update gamestates based on elapsed time
-        dt = clock.restart();
-        engine->update(dt);
-
-        // Draw gamestates
-        engine->draw();
-
-        engine->prune();
-        // Sleep for remaining time
-        while(clock.getElapsedTime().asSeconds() < 1.0f / config::update_frequency)
-        {
-            sf::sleep(sf::milliseconds(1.0f));
-        }
-    }
-
-    delete text;
-	delete engine;
-    delete world;
+    return world;
 }

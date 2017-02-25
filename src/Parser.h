@@ -39,7 +39,7 @@ bool matches(token_list statement, std::string pattern, arg_list& args);
 // to the index of the token corresponding to the object (or -1 if object not found).
 Object* get_object(token_list tokens, GameState* g, int* index = nullptr);
 
-void try_to_go(DirectionId dir, GameState* g, std::vector<cmd_ptr>* commands, std::vector<std::string>* errors);
+void try_to_go(DirectionId dir, GameState* g, std::vector<Command*>* commands, std::vector<std::string>* errors);
 
 enum ParseOutcome
 {
@@ -57,5 +57,5 @@ public:
 	Parser();
 	virtual ~Parser();
 
-    cmd_ptr parse(std::string statement, GameState* g);
+    Command* parse(std::string statement, GameState* g);
 };

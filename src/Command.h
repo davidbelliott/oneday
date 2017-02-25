@@ -4,7 +4,6 @@ class Object;
 class GameState;
 
 #include "Config.h"
-#include <SFML/Graphics.hpp>
 #include <memory>
 
 // Commands are the functional backbone of the engine.
@@ -16,19 +15,7 @@ class Command
 public:
     enum CommandType
     {
-        // View commands
-        DISP,
-        OUTPUT,
-        CLEAR,
-        PLAY_MUSIC,
-        PAUSE_MUSIC,
-        STOP_MUSIC,
-        // Controller commands
-        INPUT,
-        PAUSE,
-        UNPAUSE,
         QUIT,
-        // Model commands
         GO,
         LOOK_AROUND,
         EXAMINE,
@@ -57,127 +44,17 @@ public:
         SMELL,
         TALK_TO,
         TIE_TO,
-
-        ADD_GAMESTATE,
-        REMOVE_GAMESTATE,
-        ADD_OBJECT,
-        RM_OBJECT,
         WEAR,
         HIT,
-        CUSTOM
     };
 
     CommandType type;
-    std::vector<Object*> objects;
 
     Command(CommandType type_in);
     virtual ~Command();
 
-    // Adds an object to the list of objects that will be acted on
-    virtual void add_object(Object* o);
-
-    virtual void run_and_callback(GameState* g);
-
-    // === Methods subclasses should overload ===
-
     // Runs the command.
     virtual void run(GameState* g);
-};
-
-typedef std::shared_ptr<Command> cmd_ptr;
-
-class CmdDisp : public Command
-{
-    public:
-        std::string str;
-        bool append_newline;
-        int spread;
-
-        CmdDisp(std::string str_in, bool append_newline_in = true);
-
-        void run(GameState* g);
-};
-
-class CmdOutput : public Command
-{
-    public:
-        int x;
-        int y;
-        int spread;
-        std::string str;
-
-        CmdOutput(int x_in, int y_in, std::string str_in);
-
-        void run(GameState* g);
-};
-
-class CmdClear : public Command
-{
-    public:
-
-        CmdClear();
-        void run(GameState* g);
-};
-
-class CmdInput : public Command
-{
-    public:
-        CmdInput();
-        void run(GameState* g);
-};
-
-class CmdPlayMusic : public Command
-{
-    public:
-        std::string music;
-        CmdPlayMusic(std::string music_in);
-        void run(GameState* g);
-};
-
-class CmdPauseMusic : public Command
-{
-    public:
-        std::string music;
-        CmdPauseMusic(std::string music_in);
-        void run(GameState* g);
-};
-
-class CmdStopMusic : public Command
-{
-    public:
-        std::string music;
-        CmdStopMusic(std::string music_in);
-        void run(GameState* g);
-};
-
-class CmdPause : public Command
-{
-    public:
-        CmdPause();
-        void run(GameState* g);
-};
-
-class CmdUnpause : public Command
-{
-    public:
-        CmdUnpause();
-        void run(GameState* g);
-};
-
-class CmdAddGameState : public Command
-{
-    public:
-        GameState* state_to_add;
-        CmdAddGameState(GameState* state_to_add_in);
-        void run(GameState* g);
-};
-
-class CmdRemoveGameState : public Command
-{
-    public:
-        GameState* state_to_remove;
-        CmdRemoveGameState(GameState* state_to_remove_in);
-        void run(GameState* g);
 };
 
 class CmdGo : public Command
@@ -198,6 +75,7 @@ class CmdQuit : public Command
 class CmdHit : public Command
 {
     public:
+        Object* object;
         CmdHit();
         void run(GameState* g);
 };
@@ -212,6 +90,7 @@ class CmdShout : public Command
 class CmdRead : public Command
 {
     public:
+        Object* object;
         CmdRead();
         void run(GameState* g);
 };
@@ -230,14 +109,6 @@ class CmdHelp : public Command
         void run(GameState* g);
 };
 
-class CmdCustom : public Command
-{
-    public:
-        std::function<void(GameState*)> fn;
-        CmdCustom(std::function<void(GameState*)> fn_in);
-        void run(GameState* g);
-};
-
 void recursive_show(GameState* g, Object* o, bool show_children, bool appearance, bool description);
 
 class CmdLookAround : public Command
@@ -250,6 +121,7 @@ class CmdLookAround : public Command
 class CmdExamine : public Command
 {
     public:
+        Object* object;
         CmdExamine();
         void run(GameState* g);
 };
@@ -257,6 +129,7 @@ class CmdExamine : public Command
 class CmdTake : public Command
 {
     public:
+        Object* object;
         CmdTake();
         void run(GameState* g);
 };
@@ -264,6 +137,7 @@ class CmdTake : public Command
 class CmdWear : public Command
 {
     public:
+        Object* object;
         CmdWear();
         void run(GameState* g);
 };
@@ -271,6 +145,7 @@ class CmdWear : public Command
 class CmdMove : public Command
 {
     public:
+        Object* object;
         CmdMove();
         void run(GameState* g);
 };
