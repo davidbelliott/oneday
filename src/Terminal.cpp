@@ -45,7 +45,8 @@ Terminal::Terminal()
     //display(nullptr)
 {
     initscr();
-    raw();
+    cbreak();
+    scrollok(stdscr, true);
     //canvas = caca_create_canvas(config::screen_w_chars, config::screen_h_chars);
     //display = caca_create_display(canvas);
 }
@@ -60,7 +61,7 @@ Terminal::~Terminal()
 
 void Terminal::output(int start_x, int start_y, std::string str, int spread)
 {
-    printw(str.c_str());
+    mvprintw(start_y, start_x, str.c_str());
     //std::cout << str;
     //caca_put_str(canvas, start_x, start_y, str.c_str());
     /*int x = start_x;
@@ -102,7 +103,7 @@ void Terminal::output_mode()
 
 void Terminal::disp(std::string str, bool newline)
 {
-    printw(str.c_str());
+    printw((str + (newline ? "\n" : "")).c_str());
     //std::cout << str << std::endl;
     //caca_put_str(canvas, 0, 0, str.c_str());
     /*buffer->scroll_value = buffer->scroll_value_max;
@@ -217,8 +218,10 @@ std::string Terminal::get_input()
     /*std::string input;
     std::getline(std::cin, input, '\n');
     return input;*/
-    getch();
-    return "";
+    printw(">");
+    char str[80];
+    getstr(str);
+    return std::string(str);
 }
 
 void Terminal::pause()

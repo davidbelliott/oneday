@@ -15,26 +15,49 @@ Parser::Parser()
         "a",
         "and"
     };
+
+    parsing_cmds = {
+        new CmdGo(),
+        new CmdQuit(),
+        new CmdHit(),
+        //new CmdShout(),
+        new CmdRead(),
+        new CmdTalkTo(),
+        //new CmdHelp(),
+        new CmdLookAround(),
+        new CmdExamine(),
+        new CmdTake(),
+        new CmdWear(),
+        new CmdMove(),
+        new CmdEat(),
+        new CmdGive(),
+        new CmdOpen(),
+        new CmdClose(),
+        new CmdTieTo(),
+        new CmdInv(),
+        new CmdThrow()};
 }
 
 Parser::~Parser()
 {
+    for(int i = 0; i < parsing_cmds.size(); i++)
+        delete parsing_cmds[i];
 }
 
-Object* get_object(token_list tokens, GameState* g, int* index)
+Object* get_object(token_list tokens, World* world, int* index)
 {
     Object* found_object = nullptr;
     int i = 0;
     for( ; i < tokens.size() && !found_object; i++)
     {
-        found_object = g->world->get_current_room()->get_indirect_child(tokens[i], 0);
+        found_object = world->get_current_room()->get_indirect_child(tokens[i], 0);
         if(found_object &&
                 (!found_object->active ||
-                 !(found_object->discovered || found_object->parent == g->world->get_player())))
+                 !(found_object->discovered || found_object->parent == world->get_player())))
             found_object = nullptr;
         if(!found_object)
         {
-            found_object = g->world->get_player()->get_indirect_child(tokens[i], 0);
+            found_object = world->get_player()->get_indirect_child(tokens[i], 0);
             if(found_object && (!found_object->active || !found_object->discovered))
                 found_object = nullptr;
         }
@@ -193,188 +216,71 @@ bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
     }
 }
 
-bool matches(token_list statement, std::string pattern, arg_list& args)
+bool matches(std::string statement, std::string pattern, arg_list& args)
 {
     args = {};
-    return match_token_lists(statement, tokenize(pattern, ' '), &args);
+    return match_token_lists(tokenize(statement, ' '), tokenize(pattern, ' '), &args);
 }
 
 Command* Parser::parse(std::string statement, GameState* g)
 {
-    std::vector<Command*> commands = {};
-    std::vector<std::string> errors = {};
+    std::vector<Command*> commands;
+    std::vector<std::string> errors;
 
-    statement = to_lower(statement);
-    token_list tokens = tokenize(statement, ' ');
-    remove_tokens(&tokens, tokens_to_remove);
-
-    arg_list args = {};
-
-    //=== Going
-    if(matches(tokens, "go in #", args) || 
-       matches(tokens, "go out #", args) ||
-       matches(tokens, "go through #", args) ||
-       matches(tokens, "go into #", args) ||
-       matches(tokens, "jump into #", args) ||
-       matches(tokens, "enter #", args))
+    for(int i = 0; i < parsing_cmds.size(); i++)
     {
-        Object* o = get_object(args[0], g);
-        if(o)
-        {
-            ComponentPortal* c_port = (ComponentPortal*)o->get_component(Component::PORTAL);
-            if(c_port)
-            {
-                ComponentOpenClose* c_open_close = (ComponentOpenClose*)o->get_component(Component::OPEN_CLOSE);
-                if(c_open_close && !c_open_close->open)
-                {
-                    errors.push_back("The " + o->pretty_name + " is closed.");
-                }
-                else
-                {
-                    commands.push_back(new CmdGo(c_port->destination));
-                }
-            }
-            else
-            {
-                errors.push_back("You can't go into the " + o->pretty_name + ".");
-            }
-        }
-        else
-        {
-            errors.push_back("You can find no " + join(args[0], ' ') + " to go in.");
-        }
-    }
-    else if(matches(tokens, "go north", args)
-            || matches(tokens, "go n", args)
-            || matches(tokens, "north", args)
-            || matches(tokens, "n", args))
-    {
-        try_to_go(NORTH, g, &commands, &errors);
-    }
-    else if(matches(tokens, "go east", args)
-            || matches(tokens, "go e", args)
-            || matches(tokens, "east", args)
-            || matches(tokens, "e", args))
-
-    {
-        try_to_go(EAST, g, &commands, &errors);
-    }
-    else if(matches(tokens, "go south", args)
-            || matches(tokens, "go s", args)
-            || matches(tokens, "south", args)
-            || matches(tokens, "s", args))
-    {
-        try_to_go(SOUTH, g, &commands, &errors);
-    }
-    else if(matches(tokens, "go west", args)
-            || matches(tokens, "go w", args)
-            || matches(tokens, "west", args)
-            || matches(tokens, "w", args))
-    {
-        try_to_go(WEST, g, &commands, &errors);
-    }
-    else if(matches(tokens, "go up", args)
-            || matches(tokens, "go u", args)
-            || matches(tokens, "climb up", args)
-            || matches(tokens, "climb", args)
-            || matches(tokens, "climb #", args)
-            || matches(tokens, "up", args)
-            || matches(tokens, "u", args))
-    {
-        try_to_go(UP, g, &commands, &errors);
-    }
-    if(matches(tokens, "go down", args)
-            || matches(tokens, "go d", args)
-            || matches(tokens, "climb down", args)
-            || matches(tokens, "climb down #", args)
-            || matches(tokens, "down", args)
-            || matches(tokens, "d", args))
-    {
-        try_to_go(DOWN, g, &commands, &errors);
-    }
-    else if(matches(tokens, "go #", args))
-    {
-        errors.push_back(join(args[0], ' ') + " isn't a valid direction.");
+        bool match = parsing_cmds[i]->match(statement, &errors, g->world);
+        if(match)
+            commands.push_back(parsing_cmds[i]);
     }
 
-    //=== Looking around
-    if(matches(tokens, "look around", args)
-            || matches(tokens, "look", args)
-            || matches(tokens, "l", args)
-            || matches(tokens, "x", args))
-    {
-        commands.push_back(new CmdLookAround());
-    }
+    Command* command = nullptr;
 
-    //=== Examining something
-    if(matches(tokens, "examine #", args)
-        || matches(tokens, "look at #", args)
-        || matches(tokens, "look #", args)
-        || matches(tokens, "l #", args)
-        || matches(tokens, "x #", args))
+    if(commands.size() == 1)
+        command = commands[0];
+    else if(commands.size() > 1)
+        g->engine->terminal->disp("Your statement was ambiguous.");
+    else if(errors.size() >= 1)
+        g->engine->terminal->disp(errors[0]);
+    else
+        g->engine->terminal->disp("-wat u talkin bout boi");
+
+        //command =  new CmdDisp(errors[0]);
+    /*else
     {
-        Object* obj = get_object(args[0], g);
+        int index = -1;
+        Object* obj = get_object(tokens, g, &index);
         if(obj)
         {
-            CmdExamine* examine = new CmdExamine();
-            examine->object = obj;
-            commands.push_back(examine);
+            token_list lhs = slice(tokens, 0, index);
+            token_list rhs = slice(tokens, index + 1);
+            std::string output = "";
+            if(lhs.size() == 0)
+                //command = new CmdDisp("I don't understand what you want to do to the " + obj->pretty_name + ".");
+            else
+                //command = new CmdDisp("I don't understand how to " + join(lhs, ' ') + " something.");
         }
-        else
-        {
-            errors.push_back("There is no " + join(args[0], ' ') + " for you to examine here.");
-        }
-    }
+        //else
+            //command = new CmdDisp("-wat u talkin bout boi");
+    }*/
+    return command;
+
+
+    //statement = to_lower(statement);
+    //token_list tokens = tokenize(statement, ' ');
+    //remove_tokens(&tokens, tokens_to_remove);
+
+    //arg_list args = {};
+/*
+    //=== Going
+
+    //=== Looking around
+
+    //=== Examining something
 
     //=== Quitting
-    if(matches(tokens, "quit", args)
-        || matches(tokens, "q", args)
-        || matches(tokens, "exit", args)
-        || matches(tokens, "bye bye", args))
-    {
-        /*GameStateMenu* menu = new GameStateMenu(
-                        g->engine,
-                        g,
-                        "Are you sure you want to quit? (y/n)",
-                        {{"y", {new CmdQuit()}},
-                         {"n", {}}});
-        commands.push_back(new CmdAddGameState(menu));*/
-        g->engine->running = false;
-    }
 
     //=== Taking
-    if(matches(tokens, "take #", args)
-            || matches(tokens, "get #", args)
-            || matches(tokens, "pick up #", args)
-            || matches(tokens, "pick # up", args)
-            || matches(tokens, "grab #", args)
-            || matches(tokens, "snatch #", args)
-            || matches(tokens, "obtain #", args)
-            || matches(tokens, "grasp #", args))
-    {
-        Object* obj = get_object(args[0], g);
-        if(!obj)
-            errors.push_back("There's no " + join(args[0], ' ') + " for you to take here.");
-        else
-        {
-            if(obj->has_component(Component::TAKEABLE))
-            {
-                ComponentTie* c_tie = (ComponentTie*)obj->get_component(Component::TIE);
-                if(c_tie && c_tie->tie_to.size() > 0)
-                    errors.push_back("The " + obj->pretty_name + " is tied to the " + c_tie->tie_to[0]->pretty_name + ".");
-                else
-                {
-                    CmdTake* cmd_take = new CmdTake();
-                    cmd_take->object = obj;
-                    commands.push_back(cmd_take);
-                }
-            }
-            else
-            {
-                errors.push_back("You can't pick up the " + obj->pretty_name + ".");
-            }
-        }
-    }
 
     //=== Obscenity
     else if(matches(tokens, "fuck", args)
@@ -386,187 +292,22 @@ Command* Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Reading
-    else if(matches(tokens, "read #", args)
-        || matches(tokens, "peruse #", args)
-        || matches(tokens, "browse #", args))
-    {
-        Object* obj = get_object(args[0], g);
-        if(obj)
-        {
-            CmdRead* read = new CmdRead();
-            read->object = obj;
-            commands.push_back(read);
-        }
-        else
-        {
-            errors.push_back("There's no " + join(args[0], ' ') + "for you to read.");
-        }
-    }
 
     //=== Hitting
-    else if(matches(tokens, "hit #", args)
-            || matches(tokens, "flip #", args)
-            || matches(tokens, "toggle #", args)
-            || matches(tokens, "pull #", args)
-            || matches(tokens, "push #", args)
-            || matches(tokens, "yank #", args)
-            || matches(tokens, "depress #", args))
-    {
-        Object* obj = get_object(args[0], g);
-        if(obj)
-        {
-            ComponentHittable* c_hittable = (ComponentHittable*)obj->get_component(Component::HITTABLE);
-            if(c_hittable)
-            {
-                CmdHit* hit = new CmdHit();
-                hit->object = obj;
-                commands.push_back(hit);
-            }
-            else
-                errors.push_back("You can't hit the " + join(args[0], ' ') + ", baka!");
-        }
-        else
-            errors.push_back("There's no " + join(args[0], ' ') + " for you to hit here.");
-    }
 
     //=== Wearing
-    else if(matches(tokens, "wear #", args)
-            || matches(tokens, "put on #", args)
-            || matches(tokens, "put # on", args)
-            || matches(tokens, "don #", args)
-            || matches(tokens, "dress in #", args))
-    {
-
-        Object* obj = get_object(args[0], g);
-        if(obj)
-        {
-            if(obj->has_component(Component::WEARABLE))
-            {
-                CmdWear* wear = new CmdWear();
-                wear->object = obj;
-                commands.push_back(wear);
-            }
-            else
-                errors.push_back("You can't wear a " + obj->pretty_name + ", silly~");
-        }
-        else
-            errors.push_back("You see no such thing.");
-    }
 
     //=== Talking to
-    else if(matches(tokens, "talk to #", args)
-            || matches(tokens, "talk with #", args)
-            || matches(tokens, "converse with #", args))
-    {
-
-        Object* obj = get_object(args[0], g);
-        if(obj)
-        {
-            auto talk_to = new CmdTalkTo();
-            //talk_to->object = obj;
-            commands.push_back(talk_to);
-        }
-        else
-            errors.push_back("You can't find a " + join(args[0], ' ') + " to talk to.");
-    }
 
     //=== Moving an object
-    if(matches(tokens, "move #", args))
-    {
-        Object* obj = get_object(args[0], g);
-        if(obj)
-        {
-            auto move = new CmdMove();
-            move->object = obj;
-            commands.push_back(move);
-        }
-        else
-            errors.push_back("You can find no " + join(args[0], ' ') + " to move here.");
-    }
 
     //=== Eating an object
-    if(matches(tokens, "eat #", args))
-    {
-        Object* obj = get_object(args[0], g);
-        if(obj)
-        {
-            if(obj->has_component(Component::EDIBLE))
-                commands.push_back(new CmdEat(obj));
-            else
-                errors.push_back("The " + obj->pretty_name + " is not edible.");
-        }
-        else
-            errors.push_back("There is no " + join(args[0], ' ') + " here.");
-    }
             
     //=== Giving an object to an actor
-    if(matches(tokens, "give # to #", args)
-        || matches(tokens, "feed # to #", args))
-    {
-        Object* obj = get_object(args[0], g);
-        Object* actor = get_object(args[1], g);
-        if(actor)
-        {
-            if(actor->has_component(Component::TALKABLE))
-            {
-                if(obj)
-                {
-                    if(obj->has_component(Component::TAKEABLE))
-                        commands.push_back(new CmdGive(obj, actor));
-                    else
-                        errors.push_back("The " + obj->pretty_name + " can't be taken.");
-                }
-                else
-                    errors.push_back("There is no " + join(args[0], ' ') + " here.");
-            }
-            else
-                errors.push_back(">He thinks he can give something to a " + actor->pretty_name);
-        }
-        else
-            errors.push_back("There is no " + join(args[1], ' ') + "here.");
-    }
 
     //=== Opening something
-    if(matches(tokens, "open #", args))
-    {
-        Object* obj = get_object(args[0], g);
-        if(obj)
-        {
-            ComponentOpenClose* c_open = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
-            if(c_open)
-            {
-                if(!c_open->open)
-                    commands.push_back(new CmdOpen(obj));
-                else
-                    errors.push_back("It's already open.");
-            }
-            else
-                errors.push_back("It can't be opened.");
-        }
-        else
-            errors.push_back("You see no such thing.");
-    }
 
     //=== Closing something
-    if(matches(tokens, "close #", args))
-    {
-        Object* obj = get_object(args[0], g);
-        if(obj)
-        {
-            ComponentOpenClose* c_open = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
-            if(c_open)
-            {
-                if(c_open->open)
-                    commands.push_back(new CmdClose(obj));
-                else
-                    errors.push_back("It's already closed.");
-            }
-            else
-                errors.push_back("It can't be closed.");
-        }
-        else
-            errors.push_back("You see no such thing.");
-    }
 
     //=== Yelling
     if(matches(tokens, "yell", args)
@@ -585,136 +326,14 @@ Command* Parser::parse(std::string statement, GameState* g)
     }
 
     //=== Tying
-    if(matches(tokens, "tie # to #", args)
-            || matches(tokens, "tie # around #", args)
-            || matches(tokens, "attach # to #", args)
-            || matches(tokens, "fasten # to #", args)
-            || matches(tokens, "mount # to #", args))
-    {
-        Object* tie = get_object(args[0], g);
-        Object* tie_to = get_object(args[1], g);
-        if(tie_to)
-        {
-            if(tie_to->has_component(Component::TIE_TO))
-            {
-                if(tie)
-                {
-                    if(tie->has_component(Component::TIE))
-                        commands.push_back(new CmdTieTo(tie, tie_to));
-                    else
-                        errors.push_back("The " + tie->pretty_name + " can't be tied.");
-                }
-                else
-                    errors.push_back("There's no " + join(args[0], ' ') + " for you to tie.");
-            }
-            else
-                errors.push_back("Nothing can be tied to the " + tie_to->pretty_name + ".");
-        }
-        else
-            errors.push_back("There's no " + join(args[1], ' ') + " for you to tie something to.");
-    }
 
 
     //=== Inventory
-    if(matches(tokens, "i", args)
-            || matches(tokens, "inv", args)
-            || matches(tokens, "inventory", args))
-    {
-        Object* player = g->world->get_player();
-        if(player)
-        {
-            if(player->has_component(Component::INVENTORY))
-                commands.push_back(new CmdInv(player));
-            else
-                errors.push_back(player->pretty_name + " has no inventory.");
-        }
-        else
-            errors.push_back("There is no player.");
-    }
 
     //=== Throwing
-    if(matches(tokens, "throw # at #", args)
-            || matches(tokens, "drop # on #", args))
-    {
-        Object* player = g->world->get_player();
-        Object* projectile = get_object(args[0], g);
-        Object* target = get_object(args[1], g);
-        if(projectile)
-        {
-            if(projectile->parent == player)
-            {
-                if(target)
-                    commands.push_back(new CmdThrow(projectile, target));
-                else
-                    errors.push_back("There ain't no " + join(args[1], ' ') + " to throw shit at, nigga.");
-            }
-            else
-                errors.push_back("You ain't carrying the " + projectile->pretty_name + ".");
-        }
-        else
-            errors.push_back("You have no " + join(args[0], ' ') + " to throw.");
-    }
-    else if(matches(tokens, "throw #", args)
-            || matches(tokens, "drop #", args))
-    {
-        Object* player = g->world->get_player();
-        Object* projectile = get_object(args[0], g);
-        if(projectile)
-        {
-            if(projectile->parent == player)
-                commands.push_back(new CmdThrow(projectile, nullptr));
-            else
-                errors.push_back("You ain't carrying the " + projectile->pretty_name + ".");
-        }
-        else
-            errors.push_back("You have no " + join(args[0], ' ') + " to throw.");
-    }
 
 
+*/
 
-
-    Command* command = nullptr;
-
-    if(commands.size() == 1)
-        command = commands[0];
-    else if(commands.size() > 1)
-        g->engine->terminal->disp("Your statement was ambiguous.");
-    else if(errors.size() >= 1)
-        g->engine->terminal->disp(errors[0]);
-        //command =  new CmdDisp(errors[0]);
-    else
-    {
-        int index = -1;
-        Object* obj = get_object(tokens, g, &index);
-        if(obj)
-        {
-            token_list lhs = slice(tokens, 0, index);
-            token_list rhs = slice(tokens, index + 1);
-            std::string output = "";
-            /*if(lhs.size() == 0)
-                //command = new CmdDisp("I don't understand what you want to do to the " + obj->pretty_name + ".");
-            else*/
-                //command = new CmdDisp("I don't understand how to " + join(lhs, ' ') + " something.");
-        }
-        //else
-            //command = new CmdDisp("-wat u talkin bout boi");
-    }
-    return command;
 }
 
-void try_to_go(DirectionId direction, GameState* g, std::vector<Command*>* commands, std::vector<std::string>* errors)
-{
-    bool can_go = true;
-    if(Object* room = g->world->get_current_room())
-    {
-        ComponentRoom* room_component = (ComponentRoom*)room->get_component(Component::ROOM);
-        if(room_component && room_component->directions[direction] != "")
-            commands->push_back(new CmdGo(room_component->directions[direction]));
-        else
-            can_go = false;
-    }
-    else
-        can_go = false;
-    if(!can_go)
-        errors->push_back("You can't go " + dir[direction].name + " from here, baka!");
-}

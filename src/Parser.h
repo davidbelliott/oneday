@@ -1,7 +1,9 @@
 #pragma once
 class World;
+class Command;
+class Object;
+class GameState;
 #include "Token.h"
-#include "Command.h"
 #include "Directions.h"
 #include <string>
 #include <vector>
@@ -30,28 +32,20 @@ bool match_tokens(token s_token, token p_token, arg_list* args);
 // Attempts to match two lists of tokens, pushing arguments to args if needed
 bool match_token_lists(token_list statement, token_list pattern, arg_list* args);
 
-/* Clears args, tokenizes pattern, and uses the two above functions to recursively test
+/* Clears args, tokenizes pattern and statement, and uses the two above functions to recursively test
  * for equality of the statement and pattern. */
-bool matches(token_list statement, std::string pattern, arg_list& args);
+bool matches(std::string statement, std::string pattern, arg_list& args);
 
 // Iterates through the provided tokens until it is able to find one corresponding
 // to an object in the gamestate provided. If index is not null, it will be set
 // to the index of the token corresponding to the object (or -1 if object not found).
-Object* get_object(token_list tokens, GameState* g, int* index = nullptr);
-
-void try_to_go(DirectionId dir, GameState* g, std::vector<Command*>* commands, std::vector<std::string>* errors);
-
-enum ParseOutcome
-{
-    SUCCESS,
-    UNKNOWN_VERB,
-    UNKNOWN
-};
+Object* get_object(token_list tokens, World* world, int* index = nullptr);
 
 class Parser
 {
 public:
     token_list tokens_to_remove;
+    std::vector<Command*> parsing_cmds;
 
 public:
 	Parser();
