@@ -3,13 +3,11 @@
 #include "Terminal.h"
 #include "common.h"
 #include "Event.h"
-#include "Audio.h"
 #include <iostream>
 
 Engine::Engine()
 :   running(true),
-    audio(new Audio()),
-    terminal(new Terminal(this)),
+    terminal(new Terminal()),
     game_states()
 {
 }
@@ -18,7 +16,6 @@ Engine::Engine()
 Engine::~Engine()
 {
     delete terminal;
-    delete audio;
 }
 
 void Engine::push_state(GameState* state)
@@ -47,32 +44,17 @@ void Engine::notify(event_ptr event)
     }
 }
 
-void Engine::command_gamestates(cmd_ptr command)
-{
-    if(!game_states.empty())
-    {
-        game_states.back()->send(command);
-    }
-}
-
 void Engine::get_input()
 {
-    terminal->get_input();
+    //terminal->get_input();
 }
 
-void Engine::execute_commands()
-{
-    while(!game_states.empty() && game_states.back()->execute_front_command())
-    { }
-}
-
-void Engine::update(sf::Time dt)
+void Engine::update(unsigned int millis)
 {
     if(!game_states.empty())
     {
-        game_states.back()->update(dt);
+        game_states.back()->update(millis);
     }
-    audio->update(dt);
 }
 
 void Engine::draw()
@@ -81,7 +63,7 @@ void Engine::draw()
     {
         game_states.back()->draw();
     }
-    terminal->display();
+    terminal->refresh_display();
 }
 
 void Engine::prune()

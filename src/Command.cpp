@@ -5,11 +5,11 @@
 #include "World.h"
 #include "Directions.h"
 #include "Player.h"
-#include "Audio.h"
 #include <set>
 
 Command::Command(CommandType type_in)
-    : type(type_in)
+    : type(type_in),
+      objects({})
 {
 }
 
@@ -17,7 +17,7 @@ Command::~Command()
 {
 }
 
-void Command::run_and_callback(GameState* g)
+/*void Command::run_and_callback(GameState* g)
 {
     std::set<Object*> callback_list;
     for(int i = 0; i < std::max(1, int(objects.size())); i++)
@@ -48,134 +48,157 @@ void Command::run_and_callback(GameState* g)
                 (*it)->post_command(this);
         }
     }
-}
+}*/
 
 void Command::run(GameState* g)
 {
+
 }
 
-void Command::add_object(Object* o)
+void Command::run_with_callbacks(GameState* g)
 {
-    objects.push_back(o);
+    bool run = true;
+    for(int i = 0; i < objects.size() && run; i++)
+        run = objects[i]->before(this);
+    if(run)
+    {
+        this->run(g);
+        for(int i = 0; i < objects.size(); i++)
+            objects[i]->after(this);
+    }
 }
 
-CmdDisp::CmdDisp(std::string str_in, bool append_newline_in)
-:   Command(DISP),
-    str(str_in),
-    append_newline(append_newline_in)
-{
-}
-
-void CmdDisp::run(GameState* g)
-{
-    g->engine->terminal->disp(str, append_newline);
-}
-
-CmdOutput::CmdOutput(int x_in, int y_in, std::string str_in)
-    : Command(OUTPUT),
-    x(x_in),
-    y(y_in),
-    str(str_in),
-    spread(0)
-{
-}
-
-void CmdOutput::run(GameState* g)
-{
-    g->engine->terminal->output(x, y, str, spread);
-}
-
-CmdClear::CmdClear()
-    : Command(CLEAR)
-{}
-
-void CmdClear::run(GameState* g)
-{
-    g->engine->terminal->clr();
-}
-
-CmdInput::CmdInput()
-    : Command(INPUT)
-{}
-
-void CmdInput::run(GameState* g)
-{
-    g->engine->terminal->input_mode();
-}
-
-CmdPlayMusic::CmdPlayMusic(std::string music_in)
-    : Command(PLAY_MUSIC),
-      music(music_in)
-{}
-
-void CmdPlayMusic::run(GameState* g)
-{
-    g->engine->audio->play_music(music);
-}
-
-CmdPauseMusic::CmdPauseMusic(std::string music_in)
-    : Command(PAUSE_MUSIC),
-    music(music_in)
-{}
-
-void CmdPauseMusic::run(GameState* g)
-{
-    //music->set_fade(Music::PAUSE);
-}
-
-CmdStopMusic::CmdStopMusic(std::string music_in)
-    : Command(STOP_MUSIC),
-    music(music_in)
-{}
-
-void CmdStopMusic::run(GameState* g)
-{
-    g->engine->audio->stop_music(music);
-    //music->set_fade(Music::STOP);
-}
-
-CmdPause::CmdPause()
-    : Command(PAUSE)
-{}
-
-void CmdPause::run(GameState* g)
-{
-    g->pause();
-}
-
-CmdUnpause::CmdUnpause()
-    : Command(UNPAUSE)
-{}
-
-void CmdUnpause::run(GameState* g)
-{
-    g->unpause();
-}
-
-CmdAddGameState::CmdAddGameState(GameState* state_to_add_in)
-    : Command(ADD_GAMESTATE),
-      state_to_add(state_to_add_in)
-{}
-
-void CmdAddGameState::run(GameState* g)
-{
-    g->engine->push_state(state_to_add);
-}
-
-CmdRemoveGameState::CmdRemoveGameState(GameState* state_to_remove_in)
-    : Command(REMOVE_GAMESTATE),
-    state_to_remove(state_to_remove_in)
-{}
-
-void CmdRemoveGameState::run(GameState* g)
-{
-    state_to_remove->running = false;
-}
-
-CmdGo::CmdGo(std::string new_room_in)
+CmdGo::CmdGo()
     : Command(GO),
-      new_room(new_room_in)
+      new_room("")
 {
+
+}
+
+bool CmdGo::try_to_go(DirectionId direction, std::vector<std::string>* errors, World* world)
+{
+    bool can_go = true;
+    if(Object* room = world->get_current_room())
+    {
+        ComponentRoom* room_component = (ComponentRoom*)room->get_component(Component::ROOM);
+        if(room_component && room_component->directions[direction] != "")
+            new_room = room_component->directions[direction];
+        else
+            can_go = false;
+    }
+    else
+        can_go = false;
+    if(!can_go)
+        errors->push_back("You can't go " + dir[direction].name + " from here, baka!");
+    return can_go;
+}
+
+bool CmdGo::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args = {};
+
+    if(matches(str, "go in #", args) || 
+       matches(str, "go out #", args) ||
+       matches(str, "go through #", args) ||
+       matches(str, "go into #", args) ||
+       matches(str, "jump into #", args) ||
+       matches(str, "enter #", args))
+    {
+        Object* o = get_object(args[0], world);
+        if(o)
+        {
+            ComponentPortal* c_port = (ComponentPortal*)o->get_component(Component::PORTAL);
+            if(c_port)
+            {
+                ComponentOpenClose* c_open_close = (ComponentOpenClose*)o->get_component(Component::OPEN_CLOSE);
+                if(c_open_close && !c_open_close->open)
+                {
+                    errors->push_back("The " + o->pretty_name + " is closed.");
+                }
+                else
+                {
+                    new_room = c_port->destination;
+                    match = true;
+                }
+            }
+            else
+            {
+                errors->push_back("You can't go into the " + o->pretty_name + ".");
+            }
+        }
+        else
+        {
+            errors->push_back("You can find no " + join(args[0], ' ') + " to go in.");
+        }
+    }
+
+    if(!match &&
+            (  matches(str, "go north", args)
+            || matches(str, "go n", args)
+            || matches(str, "north", args)
+            || matches(str, "n", args)))
+    {
+        match = try_to_go(NORTH, errors, world);
+    }
+
+    if(!match &&
+            ( matches(str, "go east", args)
+            || matches(str, "go e", args)
+            || matches(str, "east", args)
+            || matches(str, "e", args)))
+
+    {
+        match = try_to_go(EAST, errors, world);
+    }
+
+    if(!match &&
+            ( matches(str, "go south", args)
+            || matches(str, "go s", args)
+            || matches(str, "south", args)
+            || matches(str, "s", args)))
+    {
+        match = try_to_go(SOUTH, errors, world);
+    }
+
+    if(!match &&
+            ( matches(str, "go west", args)
+            || matches(str, "go w", args)
+            || matches(str, "west", args)
+            || matches(str, "w", args)))
+    {
+        match = try_to_go(WEST, errors, world);
+    }
+
+    if(!match && 
+            ( matches(str, "go up", args)
+            || matches(str, "go u", args)
+            || matches(str, "climb up", args)
+            || matches(str, "climb", args)
+            || matches(str, "climb #", args)
+            || matches(str, "up", args)
+            || matches(str, "u", args)))
+    {
+        match = try_to_go(UP, errors, world);
+    }
+
+    if(!match &&
+            ( matches(str, "go down", args)
+            || matches(str, "go d", args)
+            || matches(str, "climb down", args)
+            || matches(str, "climb down #", args)
+            || matches(str, "down", args)
+            || matches(str, "d", args)))
+    {
+        match = try_to_go(DOWN, errors, world);
+    }
+
+    if(!match && matches(str, "go #", args))
+    {
+        errors->push_back(join(args[0], ' ') + " isn't a valid direction.");
+    }
+
+    return match;
 }
 
 void CmdGo::run(GameState* g)
@@ -185,17 +208,17 @@ void CmdGo::run(GameState* g)
         ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
         g->world->set_current_room(new_room);
         ComponentMusic* music_entering = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
-        if(music_leaving)
+        /*if(music_leaving)
             g->engine->audio->pause_music(music_leaving->music);
         if(music_entering)
-            g->engine->audio->play_music(music_entering->music, music_entering->start_time);
+            g->engine->audio->play_music(music_entering->music, music_entering->start_time);*/
 
-        std::shared_ptr<CmdLookAround> look_around = std::make_shared<CmdLookAround>();
-        g->send_front(look_around);
+        CmdLookAround look_around;
+        look_around.run(g);
     }
     else
     {
-        g->send_front(std::make_shared<CmdDisp>("Error: room " + new_room + " doesn't exist."));
+        g->engine->terminal->disp("Error: room " + new_room + " doesn't exist.");
     }
 }
 
@@ -204,20 +227,30 @@ CmdQuit::CmdQuit()
 {
 }
 
+bool CmdQuit::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "quit", args)
+        || matches(str, "q", args)
+        || matches(str, "exit", args)
+        || matches(str, "bye bye", args))
+    {
+        /*GameStateMenu* menu = new GameStateMenu(
+                        g->engine,
+                        g,
+                        "Are you sure you want to quit? (y/n)",
+                        {{"y", {new CmdQuit()}},
+                         {"n", {}}});
+        commands.push_back(new CmdAddGameState(menu));*/
+        match = true;
+    }
+    return match;
+}
+
 void CmdQuit::run(GameState* g)
 {
     g->engine->running = false;
-}
-
-CmdCustom::CmdCustom(std::function<void(GameState*)> fn_in)
-    : Command(CUSTOM),
-      fn(fn_in)
-{
-}
-
-void CmdCustom::run(GameState* g)
-{
-    fn(g);
 }
 
 CmdLookAround::CmdLookAround()
@@ -261,6 +294,20 @@ void recursive_show(GameState* g, Object* o, bool show_children, bool appearance
     }
 
     o->discovered = true;
+}
+
+bool CmdLookAround::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "look around", args)
+            || matches(str, "look", args)
+            || matches(str, "l", args)
+            || matches(str, "x", args))
+    {
+        match = true;
+    }
+    return match;
 }
 
 void CmdLookAround::run(GameState* g)
@@ -325,31 +372,89 @@ CmdExamine::CmdExamine()
     : Command(EXAMINE)
 { }
 
+bool CmdExamine::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "examine #", args)
+        || matches(str, "inspect #", args)
+        || matches(str, "look at #", args)
+        || matches(str, "look #", args)
+        || matches(str, "l #", args)
+        || matches(str, "x #", args))
+    {
+        Object* obj = get_object(args[0], world);
+        if(obj)
+        {
+            objects = { obj };
+            match = true;
+        }
+        else
+            errors->push_back("There is no " + join(args[0], ' ') + " for you to examine here.");
+    }
+    return match;
+}
+
 void CmdExamine::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
-        recursive_show(g, objects[i], true, false, true);
+    if(objects.size() == 1)
+        recursive_show(g, objects[0], true, false, true);
 }
 
 CmdTake::CmdTake()
     : Command(TAKE)
 { }
 
-void CmdTake::run(GameState* g)
+bool CmdTake::match(std::string str, std::vector<std::string>* errors, World* world)
 {
-    for(int i = 0; i < objects.size(); i++)
+    bool match = false;
+    arg_list args;
+    if(matches(str, "take #", args)
+            || matches(str, "get #", args)
+            || matches(str, "pick up #", args)
+            || matches(str, "pick # up", args)
+            || matches(str, "grab #", args)
+            || matches(str, "snatch #", args)
+            || matches(str, "obtain #", args)
+            || matches(str, "grasp #", args))
     {
-        if(objects[i]->parent == g->world->get_player())
-        {
-            g->engine->terminal->disp("You already have the " + objects[i]->pretty_name + ".");
-        }
+        Object* obj = get_object(args[0], world);
+        if(!obj)
+            errors->push_back("There's no " + join(args[0], ' ') + " for you to take here.");
         else
         {
-            if(objects[i]->parent)
-                objects[i]->parent->remove_child(objects[i]);
+            if(obj->has_component(Component::TAKEABLE))
+            {
+                ComponentTie* c_tie = (ComponentTie*)obj->get_component(Component::TIE);
+                if(c_tie && c_tie->tie_to.size() > 0)
+                    errors->push_back("The " + obj->pretty_name + " is tied to the " + c_tie->tie_to[0]->pretty_name + ".");
+                else
+                {
+                    objects = { obj };
+                    match = true;
+                }
+            }
+            else
+                errors->push_back("You can't pick up the " + obj->pretty_name + ".");
+        }
+    }
+    return match;
+}
+
+void CmdTake::run(GameState* g)
+{
+    if(objects.size() == 1)
+    {
+        Object* object = objects[0];
+        if(object->parent == g->world->get_player())
+            g->engine->terminal->disp("You already have the " + object->pretty_name + ".");
+        else
+        {
+            if(object->parent)
+                object->parent->remove_child(object);
             if(g->world->get_player())
-                g->world->get_player()->add_child(objects[i]);
-            g->engine->terminal->disp("You take the " + objects[i]->pretty_name + ".");
+                g->world->get_player()->add_child(object);
+            g->engine->terminal->disp("You take the " + object->pretty_name + ".");
         }
     }
 }
@@ -358,11 +463,42 @@ CmdHit::CmdHit()
     : Command(HIT)
 { }
 
+bool CmdHit::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+
+    if(matches(str, "hit #", args)
+            || matches(str, "flip #", args)
+            || matches(str, "toggle #", args)
+            || matches(str, "pull #", args)
+            || matches(str, "push #", args)
+            || matches(str, "yank #", args)
+            || matches(str, "depress #", args))
+    {
+        Object* obj = get_object(args[0], world);
+        if(obj)
+        {
+            ComponentHittable* c_hittable = (ComponentHittable*)obj->get_component(Component::HITTABLE);
+            if(c_hittable)
+            {
+                this->objects = { obj };
+                match = true;
+            }
+            else
+                errors->push_back("You can't hit the " + join(args[0], ' ') + ", baka!");
+        }
+        else
+            errors->push_back("There's no " + join(args[0], ' ') + " for you to hit here.");
+    }
+    return match;
+}
+
 void CmdHit::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    if(objects.size() == 1)
     {
-        ComponentHittable* c_hittable = (ComponentHittable*)objects[i]->get_component(Component::HITTABLE);
+        ComponentHittable* c_hittable = (ComponentHittable*)objects[0]->get_component(Component::HITTABLE);
         if(c_hittable)
             c_hittable->flipped = !c_hittable->flipped;
     }
@@ -372,18 +508,47 @@ CmdWear::CmdWear()
     : Command(WEAR)
 { }
 
+bool CmdWear::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+
+    if(matches(str, "wear #", args)
+            || matches(str, "put on #", args)
+            || matches(str, "put # on", args)
+            || matches(str, "don #", args)
+            || matches(str, "dress in #", args))
+    {
+
+        Object* obj = get_object(args[0], world);
+        if(obj)
+        {
+            if(obj->has_component(Component::WEARABLE))
+            {
+                this->objects = { obj };
+                match = true;
+            }
+            else
+                errors->push_back("You can't wear a " + obj->pretty_name + ", silly~");
+        }
+        else
+            errors->push_back("You see no such thing.");
+    }
+    return match;
+}
+
 void CmdWear::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    if(objects.size() == 1)
     {
-        if(objects[i]->parent)
-            objects[i]->parent->remove_child(objects[i]);
+        if(objects[0]->parent)
+            objects[0]->parent->remove_child(objects[0]);
         if(g->world->get_player())
         {
-            g->world->get_player()->add_child(objects[i]);
-            ((Player*)g->world->get_player())->clothing = objects[i]->name;
+            g->world->get_player()->add_child(objects[0]);
+            ((Player*)g->world->get_player())->clothing = objects[0]->name;
         }
-        g->engine->terminal->disp("You put on the " + objects[i]->pretty_name + ".");
+        g->engine->terminal->disp("You put on the " + objects[0]->pretty_name + ".");
     }
 }
 
@@ -391,19 +556,40 @@ CmdRead::CmdRead()
     : Command(READ)
 { }
 
+bool CmdRead::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "read #", args)
+        || matches(str, "peruse #", args)
+        || matches(str, "browse #", args))
+    {
+        Object* obj = get_object(args[0], world);
+        if(obj)
+        {
+            objects = { obj };
+            match = true;
+        }
+        else
+            errors->push_back("There's no " + join(args[0], ' ') + "for you to read.");
+    }
+    return match;
+}
+
 void CmdRead::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    if(objects.size() == 1)
     {
-        ComponentText* c_text = (ComponentText*)objects[i]->get_component(Component::TEXT);
+        Object* object = objects[0];
+        ComponentText* c_text = (ComponentText*)object->get_component(Component::TEXT);
         if(c_text)
         {
-            g->send_front(std::make_shared<CmdDisp>("The " + objects[i]->pretty_name + " reads:"));
-            g->send_front(std::make_shared<CmdDisp>(c_text->text));
+            g->engine->terminal->disp("The " + object->pretty_name + " reads:");
+            g->engine->terminal->disp(c_text->text);
         }
         else
         {
-            g->send_front(std::make_shared<CmdDisp>("There's nothing to read on the " + objects[i]->pretty_name + "."));
+            g->engine->terminal->disp("There's nothing to read on the " + object->pretty_name + ".");
         }
     }
 }
@@ -412,26 +598,44 @@ CmdMove::CmdMove()
     : Command(MOVE)
 { }
 
+bool CmdMove::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "move #", args))
+    {
+        Object* obj = get_object(args[0], world);
+        if(obj)
+        {
+            objects = { obj };
+            match = true;
+        }
+        else
+            errors->push_back("You can find no " + join(args[0], ' ') + " to move here.");
+    }
+    return match;
+}
+
 void CmdMove::run(GameState* g)
 {
-    for(int i = 0; i < objects.size(); i++)
+    if(objects.size() == 1)
     {
-        ComponentMoveable* c_move = (ComponentMoveable*)objects[i]->get_component(Component::MOVEABLE);
-        ComponentDescription* c_desc = (ComponentDescription*)objects[i]->get_component(Component::DESCRIPTION);
+        ComponentMoveable* c_move = (ComponentMoveable*)objects[0]->get_component(Component::MOVEABLE);
+        ComponentDescription* c_desc = (ComponentDescription*)objects[0]->get_component(Component::DESCRIPTION);
         if(c_move)
         {
             if(c_move->new_parent)
             {
-                objects[i]->parent->remove_child(objects[i]);
-                c_move->new_parent->add_child(objects[i]);
+                objects[0]->parent->remove_child(objects[0]);
+                c_move->new_parent->add_child(objects[0]);
             }
             if(c_desc)
-                c_desc->current_appearance = "There is a " + objects[i]->pretty_name + " here.";
-            g->engine->terminal->disp("With considerable effort, you move the " + objects[i]->pretty_name + " aside.");
+                c_desc->current_appearance = "There is a " + objects[0]->pretty_name + " here.";
+            g->engine->terminal->disp("With considerable effort, you move the " + objects[0]->pretty_name + " aside.");
         }
         else
         {
-            g->engine->terminal->disp("Try as you might, the " + objects[i]->pretty_name + " will not budge.");
+            g->engine->terminal->disp("Try as you might, the " + objects[0]->pretty_name + " will not budge.");
         }
     }
 }
@@ -440,205 +644,341 @@ CmdTalkTo::CmdTalkTo()
     : Command(TALK_TO)
 { }
 
-void CmdTalkTo::run(GameState* g)
+bool CmdTalkTo::match(std::string str, std::vector<std::string>* errors, World* world)
 {
-    for(int i = 0; i < objects.size(); i++)
+    bool match = false;
+    arg_list args;
+    if(matches(str, "talk to #", args)
+            || matches(str, "talk with #", args)
+            || matches(str, "converse with #", args))
     {
-        ComponentTalkable* c_talk = (ComponentTalkable*)objects[i]->get_component(Component::TALKABLE);
-        if(c_talk)
+
+        Object* obj = get_object(args[0], world);
+        if(obj)
         {
-           for(auto j = c_talk->talkable_data.begin(); j != c_talk->talkable_data.end(); j++) 
-           {
-               bool other = (j->size() > 0 && (*j)[0] == '-');
-               std::string output_text = "("
-                   + (other ? objects[i]->pretty_name : g->world->get_player()->pretty_name)
-                   + ") "
-                   + (other ? j->substr(1, j->size() - 1) : *j);
-               g->send_front(std::make_shared<CmdDisp>(output_text));
-               g->send_front(std::make_shared<CmdPause>());
-           }
+            //talk_to->object = obj;
+            match = true;
         }
         else
-        {
-            g->send_front(std::make_shared<CmdDisp>(">he thinks he can talk to a " + objects[i]->pretty_name));
-        }
+            errors->push_back("You can't find a " + join(args[0], ' ') + " to talk to.");
     }
+    return match;
 }
 
-CmdEat::CmdEat(Object* food_in)
-    : Command(EAT),
-    food(food_in)
+void CmdTalkTo::run(GameState* g)
 {
-    objects.push_back(food);
+    /*ComponentTalkable* c_talk = (ComponentTalkable*)object->get_component(Component::TALKABLE);
+    if(c_talk)
+    {
+       for(auto j = c_talk->talkable_data.begin(); j != c_talk->talkable_data.end(); j++) 
+       {
+           bool other = (j->size() > 0 && (*j)[0] == '-');
+           std::string output_text = "("
+               + (other ? object->pretty_name : g->world->get_player()->pretty_name)
+               + ") "
+               + (other ? j->substr(1, j->size() - 1) : *j);
+           g->engine->terminal->disp(output_text);
+           g->engine->terminal->pause();
+       }
+    }
+    else
+    {
+        g->terminal->disp(">he thinks he can talk to a " + object->pretty_name));
+    }*/
+}
+
+CmdEat::CmdEat()
+    : Command(EAT)
+{
+}
+
+bool CmdEat::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "eat #", args))
+    {
+        Object* obj = get_object(args[0], world);
+        if(obj)
+        {
+            if(obj->has_component(Component::EDIBLE))
+            {
+                objects = {obj};
+                match = true;
+            }
+            else
+                errors->push_back("The " + obj->pretty_name + " is not edible.");
+        }
+        else
+            errors->push_back("There is no " + join(args[0], ' ') + " here.");
+    }
+    return match;
 }
 
 void CmdEat::run(GameState* g)
 {
-    if(!food)
+    if(objects.size() == 1)
     {
-        g->send_front(std::make_shared<CmdDisp>("Eat what?"));
-    }
-    else if(!food->has_component(Component::EDIBLE))
-    {
-        g->send_front(std::make_shared<CmdDisp>("The " + food->pretty_name + " isn't edible."));
-    }
-    else
-    {
-        g->send_front(std::make_shared<CmdDisp>("You eat the " + food->pretty_name + " and find it most satisfactory."));
-        if(food->parent)
-            food->parent->remove_child(food);
-        food->active = false;
+        g->engine->terminal->disp("You eat the " + objects[0]->pretty_name + " and find it most satisfactory.");
+        if(objects[0]->parent)
+            objects[0]->parent->remove_child(objects[0]);
+        objects[0]->active = false;
     }
 }
 
-CmdGive::CmdGive(Object* obj_in, Object* actor_in)
-    : Command(GIVE),
-    obj(obj_in),
-    actor(actor_in)
+CmdGive::CmdGive()
+    : Command(GIVE)
 {
-    objects.push_back(obj);
-    objects.push_back(actor);
+
+}
+
+bool CmdGive::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "give # to #", args)
+        || matches(str, "feed # to #", args))
+    {
+        Object* obj = get_object(args[0], world);
+        Object* actor = get_object(args[1], world);
+        if(actor)
+        {
+            if(actor->has_component(Component::TALKABLE))
+            {
+                if(obj)
+                {
+                    if(obj->has_component(Component::TAKEABLE))
+                    {
+                        match = true;
+                        objects = { actor, obj };
+                    }
+                    else
+                        errors->push_back("The " + obj->pretty_name + " can't be taken.");
+                }
+                else
+                    errors->push_back("There is no " + join(args[0], ' ') + " here.");
+            }
+            else
+                errors->push_back(">He thinks he can give something to a " + actor->pretty_name);
+        }
+        else
+            errors->push_back("There is no " + join(args[1], ' ') + "here.");
+    }
+    return match;
 }
 
 void CmdGive::run(GameState* g)
 {
-    if(!obj)
+    if(objects.size() == 2)
     {
-        g->send_front(std::make_shared<CmdDisp>("Object not found."));
-    }
-    else if(!actor)
-    {
-        g->send_front(std::make_shared<CmdDisp>("Actor not found."));
-    }
-    else if(!obj->has_component(Component::TAKEABLE))
-    {
-        g->send_front(std::make_shared<CmdDisp>("A " + obj->pretty_name + " can't be taken."));
-    }
-    else if(!actor->has_component(Component::TALKABLE))
-    {
-        g->send_front(std::make_shared<CmdDisp>(">implying one can give a " + obj->pretty_name + " to a " + actor->pretty_name));
-    }
-    else
-    {
-        g->send_front(std::make_shared<CmdDisp>("You give the " + obj->pretty_name + " to " + actor->pretty_name + "."));
-        if(obj->parent)
-            obj->parent->remove_child(obj);
-        obj->active = false;
+        g->engine->terminal->disp("You give the " + objects[1]->pretty_name + " to " + objects[0]->pretty_name + ".");
+        if(objects[1]->parent)
+            objects[1]->parent->remove_child(objects[1]);
+        objects[1]->active = false;
     }
 }
 
-CmdOpen::CmdOpen(Object* obj_in)
-    : Command(OPEN),
-    obj(obj_in)
+CmdOpen::CmdOpen()
+    : Command(OPEN)
 {
-    objects.push_back(obj);
+
+}
+
+bool CmdOpen::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "open #", args))
+    {
+        Object* obj = get_object(args[0], world);
+        if(obj)
+        {
+            ComponentOpenClose* c_open = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
+            if(c_open)
+            {
+                if(!c_open->open)
+                {
+                    match = true;
+                    objects = { obj };
+                }
+                else
+                    errors->push_back("It's already open.");
+            }
+            else
+                errors->push_back("It can't be opened.");
+        }
+        else
+            errors->push_back("You see no such thing.");
+    }
+    return match;
 }
 
 void CmdOpen::run(GameState* g)
 {
-    if(!obj)
+    if(objects.size() == 1)
     {
-        g->send_front(std::make_shared<CmdDisp>("No object to open"));
-    }
-    else
-    {
-       ComponentOpenClose* c_open_close = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
-       
-        if(!c_open_close)
-        {
-            g->send_front(std::make_shared<CmdDisp>("You can't open the " + obj->pretty_name + "!"));
-        }
-        else if(c_open_close->open)
-        {
-            g->send_front(std::make_shared<CmdDisp>("The " + obj->pretty_name + " is already open."));
-        }
-        else
-        {
-            c_open_close->open = true;
-            g->engine->terminal->disp("You open the " + obj->pretty_name + ".");
-            recursive_show(g, obj, true, false, false);
-        }
+        ComponentOpenClose* c_open = (ComponentOpenClose*)objects[0]->get_component(Component::OPEN_CLOSE);
+        c_open->open = true;
+        g->engine->terminal->disp("You open the " + objects[0]->pretty_name + ".");
+        recursive_show(g, objects[1], true, false, false);
     }
 }
 
-CmdClose::CmdClose(Object* obj_in)
-    : Command(CLOSE),
-    obj(obj_in)
+CmdClose::CmdClose()
+    : Command(CLOSE)
 {
-    objects.push_back(obj);
+}
+
+bool CmdClose::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "close #", args))
+    {
+        Object* obj = get_object(args[0], world);
+        if(obj)
+        {
+            ComponentOpenClose* c_open = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
+            if(c_open)
+            {
+                if(c_open->open)
+                {
+                    match = true;
+                    objects = {obj};
+                }
+                else
+                    errors->push_back("It's already closed.");
+            }
+            else
+                errors->push_back("It can't be closed.");
+        }
+        else
+            errors->push_back("You see no such thing.");
+    }
+    return match;
 }
 
 void CmdClose::run(GameState* g)
 {
-    if(!obj)
+    if(objects.size() == 1)
     {
-        g->send_front(std::make_shared<CmdDisp>("No object to close"));
-    }
-    else
-    {
-       ComponentOpenClose* c_open_close = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
+       ComponentOpenClose* c_open_close = (ComponentOpenClose*)objects[0]->get_component(Component::OPEN_CLOSE);
        
         if(!c_open_close)
-        {
-            g->send_front(std::make_shared<CmdDisp>("You can't close the " + obj->pretty_name + "!"));
-        }
+            g->engine->terminal->disp("You can't close the " + objects[0]->pretty_name + "!");
         else if(!c_open_close->open)
-        {
-            g->send_front(std::make_shared<CmdDisp>("The " + obj->pretty_name + " is already closed."));
-        }
+            g->engine->terminal->disp("The " + objects[0]->pretty_name + " is already closed.");
         else
         {
             c_open_close->open = false;
-            g->engine->terminal->disp("You close the " + obj->pretty_name + ".");
+            g->engine->terminal->disp("You close the " + objects[0]->pretty_name + ".");
             //recursive_show(g, obj, true, false, false);
         }
     }
 }
 
-CmdTieTo::CmdTieTo(Object* tie_in, Object* tie_to_in)
-    : Command(TIE_TO),
-    tie(tie_in),
-    tie_to(tie_to_in)
+CmdTieTo::CmdTieTo()
+    : Command(TIE_TO)
 {
+}
+
+bool CmdTieTo::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "tie # to #", args)
+            || matches(str, "tie # around #", args)
+            || matches(str, "attach # to #", args)
+            || matches(str, "fasten # to #", args)
+            || matches(str, "mount # to #", args))
+    {
+        Object* tie = get_object(args[0], world);
+        Object* tie_to = get_object(args[1], world);
+        if(tie_to)
+        {
+            if(tie_to->has_component(Component::TIE_TO))
+            {
+                if(tie)
+                {
+                    if(tie->has_component(Component::TIE))
+                    {
+                        match = true;
+                        objects = {tie, tie_to};
+                    }
+                    else
+                        errors->push_back("The " + tie->pretty_name + " can't be tied.");
+                }
+                else
+                    errors->push_back("There's no " + join(args[0], ' ') + " for you to tie.");
+            }
+            else
+                errors->push_back("Nothing can be tied to the " + tie_to->pretty_name + ".");
+        }
+        else
+            errors->push_back("There's no " + join(args[1], ' ') + " for you to tie something to.");
+    }
+    return match;
 }
 
 void CmdTieTo::run(GameState* g)
 {
-    if(tie && tie_to)
+    if(objects.size() == 2)
     {
-        if(tie->pre_command(this) && tie_to->pre_command(this))
-        {
-            ComponentTie* c_tie = (ComponentTie*)tie->get_component(Component::TIE);
-            ComponentTieTo* c_tie_to = (ComponentTieTo*)tie_to->get_component(Component::TIE_TO);
-            ComponentDescription* c_desc = (ComponentDescription*)tie->get_component(Component::DESCRIPTION);
+        Object* tie = objects[0];
+        Object* tie_to = objects[1];
+        ComponentTie* c_tie = (ComponentTie*)tie->get_component(Component::TIE);
+        ComponentTieTo* c_tie_to = (ComponentTieTo*)tie_to->get_component(Component::TIE_TO);
+        ComponentDescription* c_desc = (ComponentDescription*)tie->get_component(Component::DESCRIPTION);
 
-            if(c_tie && c_tie_to)
-            {
-                c_tie->tie_to.push_back(tie_to);
-                c_tie_to->tie.push_back(tie);
-                if(tie->parent)
-                    tie->parent->remove_child(tie);
-                tie_to->add_child(tie);
-                if(c_desc)
-                    c_desc->current_appearance = "There is a " + tie->pretty_name + " tied to the " + tie_to->pretty_name + ".";
-                g->engine->terminal->disp("You tie the " + tie->pretty_name + " to the " + tie_to->pretty_name + ".");
-            }
-            tie->post_command(this);
-            tie_to->post_command(this);
+        if(c_tie && c_tie_to)
+        {
+            c_tie->tie_to.push_back(tie_to);
+            c_tie_to->tie.push_back(tie);
+            if(tie->parent)
+                tie->parent->remove_child(tie);
+            tie_to->add_child(tie);
+            if(c_desc)
+                c_desc->current_appearance = "There is a " + tie->pretty_name + " tied to the " + tie_to->pretty_name + ".";
+            g->engine->terminal->disp("You tie the " + tie->pretty_name + " to the " + tie_to->pretty_name + ".");
         }
     }
 }
 
-CmdInv::CmdInv(Object* player_in)
-    : Command(INVENTORY),
-    player(player_in)
+CmdInv::CmdInv()
+    : Command(INVENTORY)
 {
+}
+
+bool CmdInv::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "i", args)
+            || matches(str, "inv", args)
+            || matches(str, "inventory", args))
+    {
+        Object* player = world->get_player();
+        if(player)
+        {
+            if(player->has_component(Component::INVENTORY))
+            {
+                match = true;
+                objects = { player };
+            }
+            else
+                errors->push_back(player->pretty_name + " has no inventory.");
+        }
+        else
+            errors->push_back("There is no player.");
+    }
+    return match;
 }
 
 void CmdInv::run(GameState* g)
 {
-    if(player && player->has_component(Component::INVENTORY))
+    if(objects.size() == 1)
     {
+        Object* player = objects[0];
         std::string clothing_name = ((Player*)player)->clothing;
         g->engine->terminal->disp(std::string("You are carrying")
                 + (player->children.size() > 0 ? ":" : " nothing."));
@@ -652,33 +992,77 @@ void CmdInv::run(GameState* g)
     }
 }
 
-CmdThrow::CmdThrow(Object* projectile_in, Object* target_in)
-    : Command(THROW),
-    projectile(projectile_in),
-    target(target_in)
+CmdThrow::CmdThrow()
+    : Command(THROW)
 {
+}
+
+bool CmdThrow::match(std::string str, std::vector<std::string>* errors, World* world)
+{
+    bool match = false;
+    arg_list args;
+    if(matches(str, "throw # at #", args)
+            || matches(str, "drop # on #", args))
+    {
+        Object* player = world->get_player();
+        Object* projectile = get_object(args[0], world);
+        Object* target = get_object(args[1], world);
+        if(projectile)
+        {
+            if(projectile->parent == player)
+            {
+                if(target)
+                {
+                    match = true;
+                    objects = {projectile, target};
+                }
+                else
+                    errors->push_back("There ain't no " + join(args[1], ' ') + " to throw shit at, nigga.");
+            }
+            else
+                errors->push_back("You ain't carrying the " + projectile->pretty_name + ".");
+        }
+        else
+            errors->push_back("You have no " + join(args[0], ' ') + " to throw.");
+    }
+    else if(matches(str, "throw #", args)
+            || matches(str, "drop #", args))
+    {
+        Object* player = world->get_player();
+        Object* projectile = get_object(args[0], world);
+        if(projectile)
+        {
+            if(projectile->parent == player)
+            {
+                objects = { projectile };
+                match = true;
+            }
+            else
+                errors->push_back("You ain't carrying the " + projectile->pretty_name + ".");
+        }
+        else
+            errors->push_back("You have no " + join(args[0], ' ') + " to throw.");
+    }
+    return match;
 }
 
 void CmdThrow::run(GameState* g)
 {
-    if(projectile)
+    if(objects.size() >= 1)
     {
         Object* player = g->world->get_player();
-        if(projectile->parent == player)
+        Object* projectile = objects[0];
+        if(objects.size() == 2)
         {
-            if(target)
-            {
-                g->engine->terminal->disp("You throw the " + projectile->pretty_name + " at the " + target->pretty_name + ".");
+            Object* target = objects[1];
+            g->engine->terminal->disp("You throw the " + projectile->pretty_name + " at the " + target->pretty_name + ".");
 //                if(target->has_component(Component::BREAKABLE))
-                    //g->send_front(std::make_shared<CmdBreak>(target));
-            }
-            else
-                g->engine->terminal->disp("You throw the " + projectile->pretty_name + ".");
-            player->remove_child(projectile);
-            g->world->get_current_room()->add_child(projectile);
+                //g->send_front(std::make_shared<CmdBreak>(target));
         }
         else
-            g->engine->terminal->disp("You're not carrying the " + projectile->pretty_name + ".");
+            g->engine->terminal->disp("You throw the " + projectile->pretty_name + ".");
+        player->remove_child(projectile);
+        g->world->get_current_room()->add_child(projectile);
     }
 }
 

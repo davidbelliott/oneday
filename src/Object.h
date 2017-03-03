@@ -35,8 +35,10 @@ public:
     std::vector<std::string> aliases;
 
     // Command callbacks
-    std::function<bool(Command*)> pre_command;
-    std::function<void(Command*)> post_command;
+    std::function<bool(Command*)> before;
+
+    // Called after parse.
+    std::function<void(Command*)> after;
 
 	Object(std::string name_in);
 	Object();
@@ -57,6 +59,5 @@ public:
 	virtual int get_flag(std::string name);
 	virtual void set_flag(std::string name, int value);
     virtual void set_name(std::string name_in);
-    virtual void update(sf::Time dt);
 };
 

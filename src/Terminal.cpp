@@ -1,10 +1,10 @@
 #include "Config.h"
 #include "Terminal.h"
-#include "Engine.h"
 #include <iostream>
 #include <cstdlib>
 #include <string>
 #include <functional>
+#include <ncurses.h>
 
 std::string word_wrap(std::string s, int width)
 {
@@ -40,24 +40,31 @@ std::string word_wrap(std::string s, int width)
  }
 
 
-Terminal::Terminal(Engine* owner_engine_in)
-:   state({ 0, sf::Color::White, sf::Color::Black, OUTPUT }),
-    window(new sf::RenderWindow(sf::VideoMode(config::window_width, config::window_height), "One Day in the Life of Young Jamal", sf::Style::None)),
-    buffer(new CharBuffer()),
-    owner_engine(owner_engine_in),
-    cur_user_string("")
+Terminal::Terminal()
+//:   //canvas(nullptr),
+    //display(nullptr)
 {
+    initscr();
+    cbreak();
+    scrollok(stdscr, true);
+    //canvas = caca_create_canvas(config::screen_w_chars, config::screen_h_chars);
+    //display = caca_create_display(canvas);
 }
 
 
 Terminal::~Terminal()
 {
-    delete buffer;
+    endwin();
+    //caca_free_display(display);
+    //caca_free_canvas(canvas);
 }
 
 void Terminal::output(int start_x, int start_y, std::string str, int spread)
 {
-    int x = start_x;
+    mvprintw(start_y, start_x, str.c_str());
+    //std::cout << str;
+    //caca_put_str(canvas, start_x, start_y, str.c_str());
+    /*int x = start_x;
     int y = start_y;
 	for (int i = 0; i < str.size(); i++)
 	{
@@ -78,10 +85,10 @@ void Terminal::output(int start_x, int start_y, std::string str, int spread)
 		{
 			x++;
 		}
-	}
+	}*/
 }
 
-void Terminal::input_mode()
+/*void Terminal::input_mode()
 {
     //set_color(config::colors[config::color_user_input]);
     disp(">", false);
@@ -92,12 +99,14 @@ void Terminal::output_mode()
 {
     //set_color(config::colors[config::color_default_fg]);
     state.mode = OUTPUT;
-}
+}*/
 
 void Terminal::disp(std::string str, bool newline)
 {
-	//std::cout << string << std::endl;
-    buffer->scroll_value = buffer->scroll_value_max;
+    printw((str + (newline ? "\n" : "")).c_str());
+    //std::cout << str << std::endl;
+    //caca_put_str(canvas, 0, 0, str.c_str());
+    /*buffer->scroll_value = buffer->scroll_value_max;
     int x = buffer->get_x(state.cursor_index);
     int y = buffer->get_y(state.cursor_index);
     if(newline)
@@ -125,6 +134,7 @@ void Terminal::disp(std::string str, bool newline)
             }
             int index = buffer->get_index(x, y);
             if (index < buffer->contents.size() && str[i] != '\0')
+
             {
                 Char c = Char(str[i]);
                 c.fg = state.foreground_color;
@@ -144,40 +154,30 @@ void Terminal::disp(std::string str, bool newline)
             }
         }
 	}
-    state.cursor_index = buffer->get_index(x, y);
+    state.cursor_index = buffer->get_index(x, y);*/
 }
 
 void Terminal::clr()
 {
-    buffer->clear();
-    state.cursor_index = 0;
+    //buffer->clear();
+    //state.cursor_index = 0;
 }
 
 void Terminal::backspace()
 {
     //Index where the cursor rests after backspace
-    int stop_index = state.cursor_index; 
+    /*int stop_index = state.cursor_index; 
     if(stop_index > 0)
     {
         stop_index -= 1;
         buffer->setChar(stop_index, '\0');
     }
-    state.cursor_index = stop_index;
+    state.cursor_index = stop_index;*/
 }
 
-void Terminal::set_color(sf::Color color)
+void Terminal::refresh_display()
 {
-    state.foreground_color = color;
-}
-
-void Terminal::set_bg_color(sf::Color color)
-{
-    state.background_color = color;
-}
-
-void Terminal::display()
-{
-    window->clear(state.background_color);
+    /*window->clear(state.background_color);
 
     buffer->draw(window);
 
@@ -189,10 +189,11 @@ void Terminal::display()
         cursor_shape.setPosition(buffer->get_x(state.cursor_index) * config::char_width + config::padding, buffer->get_y(state.cursor_index) * config::char_height);
         window->draw(cursor_shape);
     }
-    window->display();
+    window->display();*/
+    //caca_refresh_display(display);
 }
 
-void Terminal::get_input()
+/*void Terminal::get_input()
 {
     sf::Event sf_event;
     while(window->pollEvent(sf_event))
@@ -210,9 +211,26 @@ void Terminal::get_input()
             this->notify(event);
         }
     }
+}*/
+
+std::string Terminal::get_input()
+{
+    /*std::string input;
+    std::getline(std::cin, input, '\n');
+    return input;*/
+    printw(">");
+    char str[80];
+    getstr(str);
+    return std::string(str);
 }
 
-void Terminal::notify(event_ptr event)
+void Terminal::pause()
+{
+    getch();
+    //caca_get_event(display, CACA_EVENT_KEY_PRESS, NULL, -1);
+}
+
+/*void Terminal::notify(event_ptr event)
 {
     if(event->type == Event::TEXT_ENTERED)
     {
@@ -222,9 +240,9 @@ void Terminal::notify(event_ptr event)
             if(c == '\n' || c == '\r')
             {
                 disp("");
-                owner_engine->notify(std::make_shared<EventUserLine>(cur_user_string));
+                //owner_engine->notify(std::make_shared<EventUserLine>(cur_user_string));
                 cur_user_string = "";
-                output_mode();
+                //output_mode();
             }
             else if(c == '\b')
             {
@@ -243,4 +261,4 @@ void Terminal::notify(event_ptr event)
             }
         }
     }
-}
+}*/

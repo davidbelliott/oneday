@@ -1,9 +1,15 @@
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS := -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
-CC_FLAGS := -g
+LD_FLAGS := -lncurses# `pkg-config --libs caca` #-I ../libcaca ../libcaca/src
+CC_FLAGS := -g#-lncurses `pkg-config --cflags caca` #-I ../libcaca ../libcaca/src
+
+all: bin/oneday
+
 bin/oneday: $(OBJ_FILES)
-	g++ $(LD_FLAGS) -o $@ $^
+	g++ $(OBJ_FILES) $(LD_FLAGS) -o bin/oneday
 
 obj/%.o: src/%.cpp
-	g++  $(CC_FLAGS) -c -o $@ $<
+	g++ -c $< $(CC_FLAGS) -o $@
+
+clean:
+	rm obj/* bin/oneday

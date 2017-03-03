@@ -1,3 +1,6 @@
 #pragma once
 
-void execute();
+#include "World.h"
+#include "Engine.h"
+
+World* generate_world(Engine* engine);
