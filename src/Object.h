@@ -35,21 +35,10 @@ public:
     std::vector<std::string> aliases;
 
     // Command callbacks
-    // Called before parsing the given string, when the given string contains
-    // the name of the relevant object. Return true: continue parsing process.
-    // False: no further processing necessary.
-    std::function<bool(std::string)> pre_parse;
-
-    // Called on parse success.
-    // true: run the command.
-    // false: do not run the command.
-    std::function<bool(Command*)> parse_success;
-
-    // Called on parse error.
-    std::function<void(std::string)> parse_error;
+    std::function<bool(Command*)> before;
 
     // Called after parse.
-    std::function<void(Command*)> post_parse;
+    std::function<void(Command*)> after;
 
 	Object(std::string name_in);
 	Object();

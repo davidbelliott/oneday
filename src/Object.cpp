@@ -25,8 +25,8 @@ Object::Object(std::string name_in)
       components(),
       active(true),
       discovered(false),
-      pre_parse([](std::string) { return true; } ),
-      post_parse([](Command* cmd) { } )
+      before([](Command* cmd) { return true; } ),
+      after([](Command* cmd) { } )
 {
 }
 

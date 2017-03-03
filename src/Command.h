@@ -51,6 +51,8 @@ public:
 
     CommandType type;
 
+    std::vector<Object*> objects;
+
     Command(CommandType type_in);
     virtual ~Command();
 
@@ -60,6 +62,9 @@ public:
 
     // Runs the command.
     virtual void run(GameState* g);
+
+    // Runs the command with before and after callbacks.
+    virtual void run_with_callbacks(GameState* g);
 };
 
 class CmdGo : public Command
@@ -84,7 +89,6 @@ class CmdQuit : public Command
 class CmdHit : public Command
 {
     public:
-        Object* object;
         CmdHit();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -101,8 +105,6 @@ class CmdShout : public Command
 class CmdRead : public Command
 {
     public:
-        Object* object;
-
         CmdRead();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -137,8 +139,6 @@ class CmdLookAround : public Command
 class CmdExamine : public Command
 {
     public:
-        Object* object;
-
         CmdExamine();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -147,8 +147,6 @@ class CmdExamine : public Command
 class CmdTake : public Command
 {
     public:
-        Object* object;
-
         CmdTake();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -157,8 +155,6 @@ class CmdTake : public Command
 class CmdWear : public Command
 {
     public:
-        Object* object;
-
         CmdWear();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -167,8 +163,6 @@ class CmdWear : public Command
 class CmdMove : public Command
 {
     public:
-        Object* object;
-
         CmdMove();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -177,8 +171,6 @@ class CmdMove : public Command
 class CmdEat : public Command
 {
     public:
-        Object* food;
-
         CmdEat();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -187,9 +179,6 @@ class CmdEat : public Command
 class CmdGive : public Command
 {
     public:
-        Object* obj;
-        Object* actor;
-
         CmdGive();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -198,8 +187,6 @@ class CmdGive : public Command
 class CmdOpen : public Command
 {
     public:
-        Object* obj;
-
         CmdOpen();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -208,8 +195,6 @@ class CmdOpen : public Command
 class CmdClose : public Command
 {
     public:
-        Object* obj;
-
         CmdClose();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -218,9 +203,6 @@ class CmdClose : public Command
 class CmdTieTo : public Command
 {
     public:
-        Object* tie;
-        Object* tie_to;
-
         CmdTieTo();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -229,8 +211,6 @@ class CmdTieTo : public Command
 class CmdInv : public Command
 {
     public:
-        Object* player;
-
         CmdInv();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);
@@ -239,9 +219,6 @@ class CmdInv : public Command
 class CmdThrow : public Command
 {
     public:
-        Object* projectile;
-        Object* target;
-
         CmdThrow();
         bool match(std::string str, std::vector<std::string>* errors, World* world);
         void run(GameState* g);

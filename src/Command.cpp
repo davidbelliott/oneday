@@ -8,7 +8,8 @@
 #include <set>
 
 Command::Command(CommandType type_in)
-    : type(type_in)
+    : type(type_in),
+      objects({})
 {
 }
 
@@ -52,6 +53,19 @@ Command::~Command()
 void Command::run(GameState* g)
 {
 
+}
+
+void Command::run_with_callbacks(GameState* g)
+{
+    bool run = true;
+    for(int i = 0; i < objects.size() && run; i++)
+        run = objects[i]->before(this);
+    if(run)
+    {
+        this->run(g);
+        for(int i = 0; i < objects.size(); i++)
+            objects[i]->after(this);
+    }
 }
 
 CmdGo::CmdGo()
@@ -372,7 +386,7 @@ bool CmdExamine::match(std::string str, std::vector<std::string>* errors, World*
         Object* obj = get_object(args[0], world);
         if(obj)
         {
-            object = obj;
+            objects = { obj };
             match = true;
         }
         else
@@ -383,7 +397,8 @@ bool CmdExamine::match(std::string str, std::vector<std::string>* errors, World*
 
 void CmdExamine::run(GameState* g)
 {
-    recursive_show(g, object, true, false, true);
+    if(objects.size() == 1)
+        recursive_show(g, objects[0], true, false, true);
 }
 
 CmdTake::CmdTake()
@@ -415,7 +430,7 @@ bool CmdTake::match(std::string str, std::vector<std::string>* errors, World* wo
                     errors->push_back("The " + obj->pretty_name + " is tied to the " + c_tie->tie_to[0]->pretty_name + ".");
                 else
                 {
-                    this->object = obj;
+                    objects = { obj };
                     match = true;
                 }
             }
@@ -428,17 +443,19 @@ bool CmdTake::match(std::string str, std::vector<std::string>* errors, World* wo
 
 void CmdTake::run(GameState* g)
 {
-    if(object->parent == g->world->get_player())
+    if(objects.size() == 1)
     {
-        g->engine->terminal->disp("You already have the " + object->pretty_name + ".");
-    }
-    else
-    {
-        if(object->parent)
-            object->parent->remove_child(object);
-        if(g->world->get_player())
-            g->world->get_player()->add_child(object);
-        g->engine->terminal->disp("You take the " + object->pretty_name + ".");
+        Object* object = objects[0];
+        if(object->parent == g->world->get_player())
+            g->engine->terminal->disp("You already have the " + object->pretty_name + ".");
+        else
+        {
+            if(object->parent)
+                object->parent->remove_child(object);
+            if(g->world->get_player())
+                g->world->get_player()->add_child(object);
+            g->engine->terminal->disp("You take the " + object->pretty_name + ".");
+        }
     }
 }
 
@@ -465,7 +482,7 @@ bool CmdHit::match(std::string str, std::vector<std::string>* errors, World* wor
             ComponentHittable* c_hittable = (ComponentHittable*)obj->get_component(Component::HITTABLE);
             if(c_hittable)
             {
-                this->object = obj;
+                this->objects = { obj };
                 match = true;
             }
             else
@@ -479,9 +496,12 @@ bool CmdHit::match(std::string str, std::vector<std::string>* errors, World* wor
 
 void CmdHit::run(GameState* g)
 {
-    ComponentHittable* c_hittable = (ComponentHittable*)object->get_component(Component::HITTABLE);
-    if(c_hittable)
-        c_hittable->flipped = !c_hittable->flipped;
+    if(objects.size() == 1)
+    {
+        ComponentHittable* c_hittable = (ComponentHittable*)objects[0]->get_component(Component::HITTABLE);
+        if(c_hittable)
+            c_hittable->flipped = !c_hittable->flipped;
+    }
 }
 
 CmdWear::CmdWear()
@@ -505,7 +525,7 @@ bool CmdWear::match(std::string str, std::vector<std::string>* errors, World* wo
         {
             if(obj->has_component(Component::WEARABLE))
             {
-                this->object = obj;
+                this->objects = { obj };
                 match = true;
             }
             else
@@ -519,14 +539,17 @@ bool CmdWear::match(std::string str, std::vector<std::string>* errors, World* wo
 
 void CmdWear::run(GameState* g)
 {
-    if(object->parent)
-        object->parent->remove_child(object);
-    if(g->world->get_player())
+    if(objects.size() == 1)
     {
-        g->world->get_player()->add_child(object);
-        ((Player*)g->world->get_player())->clothing = object->name;
+        if(objects[0]->parent)
+            objects[0]->parent->remove_child(objects[0]);
+        if(g->world->get_player())
+        {
+            g->world->get_player()->add_child(objects[0]);
+            ((Player*)g->world->get_player())->clothing = objects[0]->name;
+        }
+        g->engine->terminal->disp("You put on the " + objects[0]->pretty_name + ".");
     }
-    g->engine->terminal->disp("You put on the " + object->pretty_name + ".");
 }
 
 CmdRead::CmdRead()
@@ -544,7 +567,7 @@ bool CmdRead::match(std::string str, std::vector<std::string>* errors, World* wo
         Object* obj = get_object(args[0], world);
         if(obj)
         {
-            this->object = obj;
+            objects = { obj };
             match = true;
         }
         else
@@ -555,15 +578,19 @@ bool CmdRead::match(std::string str, std::vector<std::string>* errors, World* wo
 
 void CmdRead::run(GameState* g)
 {
-    ComponentText* c_text = (ComponentText*)object->get_component(Component::TEXT);
-    if(c_text)
+    if(objects.size() == 1)
     {
-        g->engine->terminal->disp("The " + object->pretty_name + " reads:");
-        g->engine->terminal->disp(c_text->text);
-    }
-    else
-    {
-        g->engine->terminal->disp("There's nothing to read on the " + object->pretty_name + ".");
+        Object* object = objects[0];
+        ComponentText* c_text = (ComponentText*)object->get_component(Component::TEXT);
+        if(c_text)
+        {
+            g->engine->terminal->disp("The " + object->pretty_name + " reads:");
+            g->engine->terminal->disp(c_text->text);
+        }
+        else
+        {
+            g->engine->terminal->disp("There's nothing to read on the " + object->pretty_name + ".");
+        }
     }
 }
 
@@ -580,7 +607,7 @@ bool CmdMove::match(std::string str, std::vector<std::string>* errors, World* wo
         Object* obj = get_object(args[0], world);
         if(obj)
         {
-            this->object = obj;
+            objects = { obj };
             match = true;
         }
         else
@@ -591,22 +618,25 @@ bool CmdMove::match(std::string str, std::vector<std::string>* errors, World* wo
 
 void CmdMove::run(GameState* g)
 {
-    ComponentMoveable* c_move = (ComponentMoveable*)object->get_component(Component::MOVEABLE);
-    ComponentDescription* c_desc = (ComponentDescription*)object->get_component(Component::DESCRIPTION);
-    if(c_move)
+    if(objects.size() == 1)
     {
-        if(c_move->new_parent)
+        ComponentMoveable* c_move = (ComponentMoveable*)objects[0]->get_component(Component::MOVEABLE);
+        ComponentDescription* c_desc = (ComponentDescription*)objects[0]->get_component(Component::DESCRIPTION);
+        if(c_move)
         {
-            object->parent->remove_child(object);
-            c_move->new_parent->add_child(object);
+            if(c_move->new_parent)
+            {
+                objects[0]->parent->remove_child(objects[0]);
+                c_move->new_parent->add_child(objects[0]);
+            }
+            if(c_desc)
+                c_desc->current_appearance = "There is a " + objects[0]->pretty_name + " here.";
+            g->engine->terminal->disp("With considerable effort, you move the " + objects[0]->pretty_name + " aside.");
         }
-        if(c_desc)
-            c_desc->current_appearance = "There is a " + object->pretty_name + " here.";
-        g->engine->terminal->disp("With considerable effort, you move the " + object->pretty_name + " aside.");
-    }
-    else
-    {
-        g->engine->terminal->disp("Try as you might, the " + object->pretty_name + " will not budge.");
+        else
+        {
+            g->engine->terminal->disp("Try as you might, the " + objects[0]->pretty_name + " will not budge.");
+        }
     }
 }
 
@@ -658,8 +688,7 @@ void CmdTalkTo::run(GameState* g)
 }
 
 CmdEat::CmdEat()
-    : Command(EAT),
-    food(nullptr)
+    : Command(EAT)
 {
 }
 
@@ -674,7 +703,7 @@ bool CmdEat::match(std::string str, std::vector<std::string>* errors, World* wor
         {
             if(obj->has_component(Component::EDIBLE))
             {
-                this->food = obj;
+                objects = {obj};
                 match = true;
             }
             else
@@ -688,27 +717,17 @@ bool CmdEat::match(std::string str, std::vector<std::string>* errors, World* wor
 
 void CmdEat::run(GameState* g)
 {
-    if(!food)
+    if(objects.size() == 1)
     {
-        g->engine->terminal->disp("Eat what?");
-    }
-    else if(!food->has_component(Component::EDIBLE))
-    {
-        g->engine->terminal->disp("The " + food->pretty_name + " isn't edible.");
-    }
-    else
-    {
-        g->engine->terminal->disp("You eat the " + food->pretty_name + " and find it most satisfactory.");
-        if(food->parent)
-            food->parent->remove_child(food);
-        food->active = false;
+        g->engine->terminal->disp("You eat the " + objects[0]->pretty_name + " and find it most satisfactory.");
+        if(objects[0]->parent)
+            objects[0]->parent->remove_child(objects[0]);
+        objects[0]->active = false;
     }
 }
 
 CmdGive::CmdGive()
-    : Command(GIVE),
-    obj(nullptr),
-    actor(nullptr)
+    : Command(GIVE)
 {
 
 }
@@ -720,8 +739,8 @@ bool CmdGive::match(std::string str, std::vector<std::string>* errors, World* wo
     if(matches(str, "give # to #", args)
         || matches(str, "feed # to #", args))
     {
-        obj = get_object(args[0], world);
-        actor = get_object(args[1], world);
+        Object* obj = get_object(args[0], world);
+        Object* actor = get_object(args[1], world);
         if(actor)
         {
             if(actor->has_component(Component::TALKABLE))
@@ -731,6 +750,7 @@ bool CmdGive::match(std::string str, std::vector<std::string>* errors, World* wo
                     if(obj->has_component(Component::TAKEABLE))
                     {
                         match = true;
+                        objects = { actor, obj };
                     }
                     else
                         errors->push_back("The " + obj->pretty_name + " can't be taken.");
@@ -749,22 +769,17 @@ bool CmdGive::match(std::string str, std::vector<std::string>* errors, World* wo
 
 void CmdGive::run(GameState* g)
 {
-    if(!obj)
-        g->engine->terminal->disp("Object not found.");
-    else if(!actor)
-        g->engine->terminal->disp("Actor not found.");
-    else
+    if(objects.size() == 2)
     {
-        g->engine->terminal->disp("You give the " + obj->pretty_name + " to " + actor->pretty_name + ".");
-        if(obj->parent)
-            obj->parent->remove_child(obj);
-        obj->active = false;
+        g->engine->terminal->disp("You give the " + objects[1]->pretty_name + " to " + objects[0]->pretty_name + ".");
+        if(objects[1]->parent)
+            objects[1]->parent->remove_child(objects[1]);
+        objects[1]->active = false;
     }
 }
 
 CmdOpen::CmdOpen()
-    : Command(OPEN),
-    obj(nullptr)
+    : Command(OPEN)
 {
 
 }
@@ -775,7 +790,7 @@ bool CmdOpen::match(std::string str, std::vector<std::string>* errors, World* wo
     arg_list args;
     if(matches(str, "open #", args))
     {
-        obj = get_object(args[0], world);
+        Object* obj = get_object(args[0], world);
         if(obj)
         {
             ComponentOpenClose* c_open = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
@@ -784,6 +799,7 @@ bool CmdOpen::match(std::string str, std::vector<std::string>* errors, World* wo
                 if(!c_open->open)
                 {
                     match = true;
+                    objects = { obj };
                 }
                 else
                     errors->push_back("It's already open.");
@@ -799,20 +815,17 @@ bool CmdOpen::match(std::string str, std::vector<std::string>* errors, World* wo
 
 void CmdOpen::run(GameState* g)
 {
-    if(!obj)
-        g->engine->terminal->disp("No object to open");
-    else
+    if(objects.size() == 1)
     {
-        ComponentOpenClose* c_open = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
+        ComponentOpenClose* c_open = (ComponentOpenClose*)objects[0]->get_component(Component::OPEN_CLOSE);
         c_open->open = true;
-        g->engine->terminal->disp("You open the " + obj->pretty_name + ".");
-        recursive_show(g, obj, true, false, false);
+        g->engine->terminal->disp("You open the " + objects[0]->pretty_name + ".");
+        recursive_show(g, objects[1], true, false, false);
     }
 }
 
 CmdClose::CmdClose()
-    : Command(CLOSE),
-    obj(nullptr)
+    : Command(CLOSE)
 {
 }
 
@@ -822,7 +835,7 @@ bool CmdClose::match(std::string str, std::vector<std::string>* errors, World* w
     arg_list args;
     if(matches(str, "close #", args))
     {
-        obj = get_object(args[0], world);
+        Object* obj = get_object(args[0], world);
         if(obj)
         {
             ComponentOpenClose* c_open = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
@@ -831,6 +844,7 @@ bool CmdClose::match(std::string str, std::vector<std::string>* errors, World* w
                 if(c_open->open)
                 {
                     match = true;
+                    objects = {obj};
                 }
                 else
                     errors->push_back("It's already closed.");
@@ -846,29 +860,25 @@ bool CmdClose::match(std::string str, std::vector<std::string>* errors, World* w
 
 void CmdClose::run(GameState* g)
 {
-    if(!obj)
-        g->engine->terminal->disp("No object to close");
-    else
+    if(objects.size() == 1)
     {
-       ComponentOpenClose* c_open_close = (ComponentOpenClose*)obj->get_component(Component::OPEN_CLOSE);
+       ComponentOpenClose* c_open_close = (ComponentOpenClose*)objects[0]->get_component(Component::OPEN_CLOSE);
        
         if(!c_open_close)
-            g->engine->terminal->disp("You can't close the " + obj->pretty_name + "!");
+            g->engine->terminal->disp("You can't close the " + objects[0]->pretty_name + "!");
         else if(!c_open_close->open)
-            g->engine->terminal->disp("The " + obj->pretty_name + " is already closed.");
+            g->engine->terminal->disp("The " + objects[0]->pretty_name + " is already closed.");
         else
         {
             c_open_close->open = false;
-            g->engine->terminal->disp("You close the " + obj->pretty_name + ".");
+            g->engine->terminal->disp("You close the " + objects[0]->pretty_name + ".");
             //recursive_show(g, obj, true, false, false);
         }
     }
 }
 
 CmdTieTo::CmdTieTo()
-    : Command(TIE_TO),
-    tie(nullptr),
-    tie_to(nullptr)
+    : Command(TIE_TO)
 {
 }
 
@@ -882,8 +892,8 @@ bool CmdTieTo::match(std::string str, std::vector<std::string>* errors, World* w
             || matches(str, "fasten # to #", args)
             || matches(str, "mount # to #", args))
     {
-        tie = get_object(args[0], world);
-        tie_to = get_object(args[1], world);
+        Object* tie = get_object(args[0], world);
+        Object* tie_to = get_object(args[1], world);
         if(tie_to)
         {
             if(tie_to->has_component(Component::TIE_TO))
@@ -893,6 +903,7 @@ bool CmdTieTo::match(std::string str, std::vector<std::string>* errors, World* w
                     if(tie->has_component(Component::TIE))
                     {
                         match = true;
+                        objects = {tie, tie_to};
                     }
                     else
                         errors->push_back("The " + tie->pretty_name + " can't be tied.");
@@ -911,34 +922,30 @@ bool CmdTieTo::match(std::string str, std::vector<std::string>* errors, World* w
 
 void CmdTieTo::run(GameState* g)
 {
-    if(tie && tie_to)
+    if(objects.size() == 2)
     {
-        if(tie->pre_command(this) && tie_to->pre_command(this))
-        {
-            ComponentTie* c_tie = (ComponentTie*)tie->get_component(Component::TIE);
-            ComponentTieTo* c_tie_to = (ComponentTieTo*)tie_to->get_component(Component::TIE_TO);
-            ComponentDescription* c_desc = (ComponentDescription*)tie->get_component(Component::DESCRIPTION);
+        Object* tie = objects[0];
+        Object* tie_to = objects[1];
+        ComponentTie* c_tie = (ComponentTie*)tie->get_component(Component::TIE);
+        ComponentTieTo* c_tie_to = (ComponentTieTo*)tie_to->get_component(Component::TIE_TO);
+        ComponentDescription* c_desc = (ComponentDescription*)tie->get_component(Component::DESCRIPTION);
 
-            if(c_tie && c_tie_to)
-            {
-                c_tie->tie_to.push_back(tie_to);
-                c_tie_to->tie.push_back(tie);
-                if(tie->parent)
-                    tie->parent->remove_child(tie);
-                tie_to->add_child(tie);
-                if(c_desc)
-                    c_desc->current_appearance = "There is a " + tie->pretty_name + " tied to the " + tie_to->pretty_name + ".";
-                g->engine->terminal->disp("You tie the " + tie->pretty_name + " to the " + tie_to->pretty_name + ".");
-            }
-            tie->post_command(this);
-            tie_to->post_command(this);
+        if(c_tie && c_tie_to)
+        {
+            c_tie->tie_to.push_back(tie_to);
+            c_tie_to->tie.push_back(tie);
+            if(tie->parent)
+                tie->parent->remove_child(tie);
+            tie_to->add_child(tie);
+            if(c_desc)
+                c_desc->current_appearance = "There is a " + tie->pretty_name + " tied to the " + tie_to->pretty_name + ".";
+            g->engine->terminal->disp("You tie the " + tie->pretty_name + " to the " + tie_to->pretty_name + ".");
         }
     }
 }
 
 CmdInv::CmdInv()
-    : Command(INVENTORY),
-    player(nullptr)
+    : Command(INVENTORY)
 {
 }
 
@@ -950,12 +957,13 @@ bool CmdInv::match(std::string str, std::vector<std::string>* errors, World* wor
             || matches(str, "inv", args)
             || matches(str, "inventory", args))
     {
-        player = world->get_player();
+        Object* player = world->get_player();
         if(player)
         {
             if(player->has_component(Component::INVENTORY))
             {
                 match = true;
+                objects = { player };
             }
             else
                 errors->push_back(player->pretty_name + " has no inventory.");
@@ -968,8 +976,9 @@ bool CmdInv::match(std::string str, std::vector<std::string>* errors, World* wor
 
 void CmdInv::run(GameState* g)
 {
-    if(player && player->has_component(Component::INVENTORY))
+    if(objects.size() == 1)
     {
+        Object* player = objects[0];
         std::string clothing_name = ((Player*)player)->clothing;
         g->engine->terminal->disp(std::string("You are carrying")
                 + (player->children.size() > 0 ? ":" : " nothing."));
@@ -984,9 +993,7 @@ void CmdInv::run(GameState* g)
 }
 
 CmdThrow::CmdThrow()
-    : Command(THROW),
-    projectile(nullptr),
-    target(nullptr)
+    : Command(THROW)
 {
 }
 
@@ -998,14 +1005,17 @@ bool CmdThrow::match(std::string str, std::vector<std::string>* errors, World* w
             || matches(str, "drop # on #", args))
     {
         Object* player = world->get_player();
-        projectile = get_object(args[0], world);
-        target = get_object(args[1], world);
+        Object* projectile = get_object(args[0], world);
+        Object* target = get_object(args[1], world);
         if(projectile)
         {
             if(projectile->parent == player)
             {
                 if(target)
+                {
                     match = true;
+                    objects = {projectile, target};
+                }
                 else
                     errors->push_back("There ain't no " + join(args[1], ' ') + " to throw shit at, nigga.");
             }
@@ -1019,12 +1029,12 @@ bool CmdThrow::match(std::string str, std::vector<std::string>* errors, World* w
             || matches(str, "drop #", args))
     {
         Object* player = world->get_player();
-        projectile = get_object(args[0], world);
+        Object* projectile = get_object(args[0], world);
         if(projectile)
         {
             if(projectile->parent == player)
             {
-                target = nullptr;
+                objects = { projectile };
                 match = true;
             }
             else
@@ -1038,24 +1048,21 @@ bool CmdThrow::match(std::string str, std::vector<std::string>* errors, World* w
 
 void CmdThrow::run(GameState* g)
 {
-    if(projectile)
+    if(objects.size() >= 1)
     {
         Object* player = g->world->get_player();
-        if(projectile->parent == player)
+        Object* projectile = objects[0];
+        if(objects.size() == 2)
         {
-            if(target)
-            {
-                g->engine->terminal->disp("You throw the " + projectile->pretty_name + " at the " + target->pretty_name + ".");
+            Object* target = objects[1];
+            g->engine->terminal->disp("You throw the " + projectile->pretty_name + " at the " + target->pretty_name + ".");
 //                if(target->has_component(Component::BREAKABLE))
-                    //g->send_front(std::make_shared<CmdBreak>(target));
-            }
-            else
-                g->engine->terminal->disp("You throw the " + projectile->pretty_name + ".");
-            player->remove_child(projectile);
-            g->world->get_current_room()->add_child(projectile);
+                //g->send_front(std::make_shared<CmdBreak>(target));
         }
         else
-            g->engine->terminal->disp("You're not carrying the " + projectile->pretty_name + ".");
+            g->engine->terminal->disp("You throw the " + projectile->pretty_name + ".");
+        player->remove_child(projectile);
+        g->world->get_current_room()->add_child(projectile);
     }
 }
 

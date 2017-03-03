@@ -51,8 +51,6 @@ void GameStateText::update(unsigned int millis)
     {
         Command* command = parser->parse(line, this);
         if(command)
-        {
-            command->run(this);
-        }
+            command->run_with_callbacks(this);
     }
 }
