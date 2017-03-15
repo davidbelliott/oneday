@@ -203,11 +203,12 @@ bool CmdGo::match(std::string str, std::vector<std::string>* errors, World* worl
 
 void CmdGo::run(GameState* g)
 {
-    if(g->world->get_indirect_child(new_room, 0))
+    Object* rm = nullptr;
+    if((rm = g->world->get_indirect_child(new_room, 0)) && rm->before(this))
     {
         ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
         g->world->set_current_room(new_room);
-        ComponentMusic* music_entering = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
+        ComponentMusic* music_entering = (ComponentMusic*)rm->get_component(Component::MUSIC);
         /*if(music_leaving)
             g->engine->audio->pause_music(music_leaving->music);
         if(music_entering)
@@ -215,6 +216,7 @@ void CmdGo::run(GameState* g)
 
         CmdLookAround look_around;
         look_around.run(g);
+        rm->after(this);
     }
     else
     {
