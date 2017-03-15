@@ -32,6 +32,8 @@ public:
     /* Updates for the given time interval. */
     void update(unsigned int millis);
 
+    void update_audio(sf::Time dt);
+
     /* Draws the current gamestate and displays the window. */
     void draw();
 

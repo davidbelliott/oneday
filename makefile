@@ -1,6 +1,6 @@
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS := -lncurses -lsfml-audio -lsfml-system
+LD_FLAGS := -lncurses -lsfml-audio -lsfml-system -pthread
 CC_FLAGS := -g#-lncurses `pkg-config --cflags caca` #-I ../libcaca ../libcaca/src
 
 all: bin/oneday

@@ -59,6 +59,11 @@ void Engine::update(unsigned int millis)
     }
 }
 
+void Engine::update_audio(sf::Time dt)
+{
+    audio->update(dt);
+}
+
 void Engine::draw()
 {
     if(!game_states.empty())

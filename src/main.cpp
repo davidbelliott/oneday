@@ -4,8 +4,20 @@
 #include "GameStateText.h"
 #include "level_data.h"
 
-#include <caca.h>
+#include <thread>
 //#include <common-image.h>
+//
+void update_audio(Engine* engine)
+{
+    sf::Clock clock;
+    clock.restart();
+    while(engine->running)
+    {
+        sf::Time elapsed = clock.restart();
+        engine->update_audio(elapsed);
+        sf::sleep(sf::seconds(0.1));
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -16,15 +28,13 @@ int main(int argc, char *argv[])
     text->world = world;
     engine->push_state(text);
 
-    unsigned int dt;
+    std::thread audio_thread(update_audio, engine);
+
     while(engine->running)
     {
         // Collect input from the user
-        //engine->get_input();
-
         // Update gamestates based on elapsed time
-        dt = 1;
-        engine->update(dt);
+        engine->update(1);
 
         // Draw gamestates
         engine->draw();
@@ -32,6 +42,8 @@ int main(int argc, char *argv[])
         engine->prune();
         // Sleep for remaining time
     }
+
+    audio_thread.join();
     //engine->terminal->disp("Test");
     //engine->terminal->refresh_display();
     //engine->terminal->pause();

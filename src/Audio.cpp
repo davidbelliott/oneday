@@ -43,6 +43,21 @@ void Music::update(sf::Time dt)
     music.setVolume(cur_volume);
 }
 
+void Music::play()
+{
+    music.play();
+}
+
+void Music::pause()
+{
+    music.pause();
+}
+
+void Music::stop()
+{
+    music.stop();
+}
+
 Audio::Audio()
 {
 }

@@ -19,7 +19,7 @@ World* generate_world(Engine* engine)
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "del_mar";
+	world->cur_room = "jamal_bedroom";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";

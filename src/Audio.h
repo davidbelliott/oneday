@@ -35,6 +35,9 @@ class Music
 
     void update(sf::Time dt);
     void set_fade(Fade fade_in);
+    void play();
+    void pause();
+    void stop();
 };
 
 class Audio
