@@ -3,6 +3,7 @@
 class GameState;
 class Terminal;
 
+#include "Audio.h"
 #include "Event.h"
 #include "Command.h"
 #include "Observer.h"
@@ -13,6 +14,7 @@ class Engine : public Observer
 {
 public:
     Terminal* terminal;
+    Audio* audio;
     std::vector<GameState*> game_states;
 	bool running;
 

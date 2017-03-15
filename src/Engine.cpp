@@ -8,6 +8,7 @@
 Engine::Engine()
 :   running(true),
     terminal(new Terminal()),
+    audio(new Audio()),
     game_states()
 {
 }
@@ -16,6 +17,7 @@ Engine::Engine()
 Engine::~Engine()
 {
     delete terminal;
+    delete audio;
 }
 
 void Engine::push_state(GameState* state)

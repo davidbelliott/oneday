@@ -209,10 +209,10 @@ void CmdGo::run(GameState* g)
         ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
         g->world->set_current_room(new_room);
         ComponentMusic* music_entering = (ComponentMusic*)rm->get_component(Component::MUSIC);
-        /*if(music_leaving)
+        if(music_leaving)
             g->engine->audio->pause_music(music_leaving->music);
         if(music_entering)
-            g->engine->audio->play_music(music_entering->music, music_entering->start_time);*/
+            g->engine->audio->play_music(music_entering->music, music_entering->start_time);
 
         CmdLookAround look_around;
         look_around.run(g);

@@ -2,6 +2,7 @@
 #include "Directions.h"
 #include <memory>
 #include <set>
+#include <SFML/Audio.hpp>
 
 class Object;
 
@@ -170,6 +171,7 @@ class ComponentMusic : public Component
 
         std::string music;
         bool persistent;
+        sf::Time start_time;
 
         ComponentMusic(std::string filename_in)
             : Component(MUSIC),
