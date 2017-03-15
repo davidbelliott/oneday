@@ -143,8 +143,6 @@ std::string join(token_list list, char delim)
 
 bool match_tokens(token s_token, token p_token, arg_list* args)
 {
-    //std::cout << "Comparing token: " << s_token << " | " << p_token << std::endl;
-
     if(p_token != "#")
     {
         return (s_token == p_token);
@@ -158,15 +156,6 @@ bool match_tokens(token s_token, token p_token, arg_list* args)
 
 bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
 {
-    /*std::cout << "Comparing token list:";
-    for(int i = 0; i < statement.size(); i++)
-        std::cout << " " << statement[i];
-    std::cout << " | ";
-    for(int j = 0; j < pattern.size(); j++)
-        std::cout << " " << pattern[j];
-    std::cout << std::endl;*/
-
-
     if(statement.size() >= pattern.size())
     {
         if(pattern.size() == 0)
@@ -197,7 +186,6 @@ bool match_token_lists(token_list statement, token_list pattern, arg_list* args)
                     // statement doesn't match the pattern.
                     for(int i = 1; i < statement.size(); i++)
                     {
-                        //std::cout << "###" << i << "###\n";
                         if(match_token_lists(slice(statement, i), slice(pattern, 1), args))
                         {
                             args->push_front(token_list(statement.begin(), statement.begin() + i));

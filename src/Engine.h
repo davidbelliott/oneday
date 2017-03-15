@@ -16,6 +16,7 @@ public:
     Terminal* terminal;
     Audio* audio;
     std::vector<GameState*> game_states;
+    std::vector<GameState*> states_to_add;
 	bool running;
 
 	Engine();
@@ -30,7 +31,7 @@ public:
     void get_input();
 
     /* Updates for the given time interval. */
-    void update(unsigned int millis);
+    void update(sf::Time dt);
 
     void update_audio(sf::Time dt);
 

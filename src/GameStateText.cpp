@@ -42,7 +42,7 @@ void GameStateText::notify(event_ptr event)
 {
 }
 
-void GameStateText::update(unsigned int millis)
+void GameStateText::update(sf::Time dt)
 {
     std::string line = engine->terminal->get_input();
     if(line == "")

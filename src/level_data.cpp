@@ -1,7 +1,7 @@
 #include "level_data.h"
 #include "Engine.h"
 #include "GameStateText.h"
-//#include "GameStateThugFight.h"
+#include "GameStateThugFight.h"
 //#include "GameStateSubway.h"
 //#include "GameStateMenu.h"
 #include "Player.h"
@@ -19,7 +19,7 @@ World* generate_world(Engine* engine)
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "del_mar";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -319,14 +319,14 @@ World* generate_world(Engine* engine)
     del_mar->add_component(new ComponentDescription("A temporary lane."));
     del_mar->after = [=](Command* cmd)
     {
-        if(cmd->type == Command::LOOK_AROUND && world->get_flag("thug_fight_outcome") == 0)
+        if(cmd->type == Command::GO && world->get_flag("thug_fight_outcome") == 0)
         {
             engine->terminal->disp("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!");
             engine->terminal->pause();
             engine->terminal->disp("Each time a fist hits you, hit A, S, D, or F to tense the corresponding ab and deflect the blow.");
             engine->terminal->disp("Undeflected blows will push your abs back until you perish.");
             engine->terminal->pause();
-            //text->send_front(std::make_shared<CmdAddGameState>(new GameStateThugFight(engine)));
+            engine->push_state(new GameStateThugFight(engine));
             world->set_flag("thug_fight_outcome", 1);
         }
         return true;

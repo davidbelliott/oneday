@@ -5,15 +5,13 @@ class Engine;
 #include "Config.h"
 #include <string>
 #include <vector>
+#include <caca.h>
 
 std::string word_wrap(std::string str, int width);
 
 class Terminal
 {
 public:
-
-    //caca_display_t* display;
-    //caca_canvas_t* canvas;
 
     std::string cur_user_string;
 
@@ -36,22 +34,9 @@ public:
 	/*Outputs the specified string at the current cursor location. Adds a newline if newline is true.*/
 	void disp(std::string string, bool newline = true);
 
-	/*Clears the screen.*/
+	/*Clears the screen completely.*/
 	void clr();
 
-    /*Removes last character (if one exists) and moves the cursor back one space (if possible).*/
-    void backspace();
-
-    /*Sets whether or not to display the cursor rectangle at the current cursor x and y.*/
-    void set_disp_cursor(bool disp_cursor_in);
-
-    /* Gets input from the window, packages as Events, and sends to the engine. */
-    //void get_input();
-
-    /* Inherited from Observer. Terminal calls this on itself. */
-    //void notify(event_ptr event);
-
-
-//private:
-
+    /*Covers the screen in spaces.*/
+    void ers();
 };

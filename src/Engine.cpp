@@ -51,11 +51,11 @@ void Engine::get_input()
     //terminal->get_input();
 }
 
-void Engine::update(unsigned int millis)
+void Engine::update(sf::Time dt)
 {
     if(!game_states.empty())
     {
-        game_states.back()->update(millis);
+        game_states.back()->update(dt);
     }
 }
 
@@ -86,6 +86,8 @@ void Engine::prune()
         else
             i++;
     }
+    game_states.insert(game_states.end(), states_to_add.begin(), states_to_add.end());
+    states_to_add.clear();
     if(game_states.empty())
         running = false;
 }

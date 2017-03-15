@@ -29,7 +29,7 @@ void GameState::notify(event_ptr event)
 
 }
 
-void GameState::update(unsigned int millis)
+void GameState::update(sf::Time dt)
 {
 
 }

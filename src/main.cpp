@@ -2,6 +2,7 @@
 #include "Terminal.h"
 #include "World.h"
 #include "GameStateText.h"
+#include "GameStateThugFight.h"
 #include "level_data.h"
 
 #include <thread>
@@ -30,17 +31,23 @@ int main(int argc, char *argv[])
 
     std::thread audio_thread(update_audio, engine);
 
+    sf::Clock clock;
+    clock.restart();
     while(engine->running)
     {
-        // Collect input from the user
+        clock.restart();
         // Update gamestates based on elapsed time
-        engine->update(1);
+        engine->update(sf::seconds(1.0 / 60.0));
 
         // Draw gamestates
         engine->draw();
 
         engine->prune();
         // Sleep for remaining time
+        while(clock.getElapsedTime().asSeconds() < 1.0 / 60.0)
+        {
+            sf::sleep(sf::milliseconds(1.0f));
+        }
     }
 
     audio_thread.join();

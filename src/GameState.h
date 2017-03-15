@@ -26,7 +26,7 @@ public:
     virtual void notify(event_ptr event);
 
     /* Updates the gamestate with the given timestep. */
-    virtual void update(unsigned int millis);
+    virtual void update(sf::Time dt);
 
     /* Draws the gamestate. */
     virtual void draw();

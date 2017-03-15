@@ -14,6 +14,6 @@ std::string get_file_contents(const char* filename)
         in.read(&contents[0], contents.size());
         in.close();
     }
-    std::replace(contents.begin(), contents.end(), '@', '\0');
+    std::replace(contents.begin(), contents.end(), '@', ' ');
     return(contents);
 }

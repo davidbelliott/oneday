@@ -15,5 +15,5 @@ class GameStateText: public GameState
         virtual void cleanup();
 
         virtual void notify(event_ptr event);
-        virtual void update(unsigned int millis);
+        virtual void update(sf::Time dt);
 };
