@@ -40,6 +40,7 @@ GameStateThugFight::~GameStateThugFight()
 void GameStateThugFight::init()
 {
     paused = false;
+    engine->audio->play_music("res/100kilos.ogg");
     cur_beat = 0;
     total_beats = 150;
     load_beats();
@@ -60,20 +61,15 @@ void GameStateThugFight::init()
     wclear(window);
     nodelay(window, true);
     scrollok(window, false);
-    curs_set(0);
-    noecho();
 }
 
 
 void GameStateThugFight::cleanup()
 {
-    //wborder(window, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-    //wrefresh(window);
+    engine->audio->stop_music("res/100kilos.ogg");
     delwin(window);
     wrefresh(stdscr);
     redrawwin(stdscr);
-    curs_set(1);
-    echo();
 }
 
 void GameStateThugFight::notify(event_ptr event)
@@ -188,10 +184,6 @@ void GameStateThugFight::draw()
     for(int i = 0; i < 4; i++)
     {
         std::string ab_str_to_display = abs.tense[i].asSeconds() > 0.0 ? abs_tense_str : abs_str;
-        /*if(abs.tense_ab == i)
-            engine->terminal->set_color(config::colors[config::ORANGE]);
-        else
-            engine->terminal->set_color();*/
         engine->terminal->output(abs.health - 4, i * ab_height + 1, ab_str_to_display, window);
         std::string key_str_to_display = "";
         if(i == 0)
@@ -202,25 +194,20 @@ void GameStateThugFight::draw()
             key_str_to_display = "D";
         else if(i == 3)
             key_str_to_display = "F";
-        engine->terminal->output(0, i * ab_height + ab_height / 2, key_str_to_display, window);
+        engine->terminal->output(1, i * ab_height + ab_height / 2 + 1, key_str_to_display, window);
     }
-    //engine->terminal->set_color();
     for(int i = 0; i < 4; i++)
     {
         for(int j = std::max(0, (int)cur_beat - 2); j <= std::min(total_beats, (int)cur_beat + 8); j++)
         {
-            //engine->terminal->set_color(config::colors[fists[i].color_index]);
             if(beats[i][j] == UNBROKEN)
                 engine->terminal->output(get_fist_x(j) + 1, i * ab_height + 1, thug_fist, window); //engine->terminal->set_color();
         }
     }
     for(int i = 0; i < fragments.size(); i++)
     {
-        //engine->terminal->set_color(config::colors[fragments[i].color_index]);
         engine->terminal->output((int)fragments[i].x + 1, (int)fragments[i].y + 1, "*", window);
-        //engine->terminal->set_color();
     }
-    //engine->terminal->set_color();
     mvwprintw(window, 0, 1, "Jamal vs. Thugs");
     engine->terminal->output(1, 1, "TIME REMAINING: " + std::to_string(get_seconds_remaining()), window);
     wrefresh(window);
@@ -242,18 +229,23 @@ int GameStateThugFight::get_fist_x(int index)
 
 void GameStateThugFight::win()
 {
-    engine->pop_state();
     engine->terminal->disp("Cowed by your abdominal prowess, the thugs slink off.");
-    //send_front(std::make_shared<CmdRemoveGameState>(this));
+    engine->pop_state();
 }
 
 void GameStateThugFight::lose()
 {
-    engine->pop_state();
-    /*send(std::make_shared<CmdAddGameState>(new GameStateMenu(engine, this,
-                    "Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nYou had "
+    engine->terminal->disp("Your abdomen is hard and tender from the repeated blows. You give up the ghost.\nYou had "
                     + std::to_string(get_seconds_remaining())
-                    + " seconds remaining.\nTry again? (y/n)",
-                    {{"y", {std::make_shared<CmdAddGameState>(new GameStateThugFight(engine))}},
-                    {"n", {std::make_shared<CmdQuit>()}}})));*/
+                    + " seconds remaining.\nTry again? (y/n)");
+    std::string choice = engine->terminal->get_input();
+    while(choice != "y" && choice != "n")
+    {
+        engine->terminal->disp("I didn't understand that.\nType y (yes) or n (no).");
+        choice = engine->terminal->get_input();
+    }
+    if(choice == "n")
+        engine->running = false;
+    else
+        engine->change_state(new GameStateThugFight(engine));
 }

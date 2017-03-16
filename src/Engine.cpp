@@ -31,11 +31,16 @@ void Engine::pop_state()
     if(!game_states.empty())
     {
         GameState* remove = game_states.back();
-        game_states.pop_back();
         remove->cleanup();
         delete remove;
-        remove = nullptr;
+        game_states.pop_back();
     }
+}
+
+void Engine::change_state(GameState* state)
+{
+    pop_state();
+    push_state(state);
 }
 
 void Engine::notify(event_ptr event)

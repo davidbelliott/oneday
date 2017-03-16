@@ -22,6 +22,7 @@ public:
 	Engine();
 	virtual ~Engine();
 
+    void change_state(GameState* state);
     void push_state(GameState* state);
     void pop_state();
 
