@@ -47,9 +47,7 @@ Terminal::Terminal()
 {
     initscr();
     cbreak();
-    wresize(stdscr, config::screen_h_chars, config::screen_w_chars);
     scrollok(stdscr, true);
-    curs_set(0);
     //canvas = caca_create_canvas(config::screen_w_chars, config::screen_h_chars);
     //display = caca_create_display(canvas);
 }
@@ -62,10 +60,12 @@ Terminal::~Terminal()
     //caca_free_canvas(canvas);
 }
 
-void Terminal::output(int start_x, int start_y, std::string str, int spread)
+void Terminal::output(int start_x, int start_y, std::string str, WINDOW* window)
 {
     int x = start_x;
     int y = start_y;
+    int w, h;
+    getmaxyx(window, h, w);
     for(auto it = str.begin(); it != str.end(); ++it)
     {
         if(*it == '\n')
@@ -73,9 +73,9 @@ void Terminal::output(int start_x, int start_y, std::string str, int spread)
             y++;
             x = start_x;
         }
-        else
+        else if(x < w - 1 && y < h - 1)
         {
-            mvaddch(y, x, *it);
+            mvwaddch(window, y, x, *it);
             x++;
         }
     }
@@ -103,11 +103,9 @@ void Terminal::refresh_display()
 
 std::string Terminal::get_input()
 {
-    curs_set(1);
     printw(">");
     char str[80];
     getstr(str);
-    curs_set(0);
     return std::string(str);
 }
 

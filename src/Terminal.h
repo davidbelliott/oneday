@@ -5,7 +5,7 @@ class Engine;
 #include "Config.h"
 #include <string>
 #include <vector>
-#include <caca.h>
+#include <ncurses.h>
 
 std::string word_wrap(std::string str, int width);
 
@@ -23,7 +23,7 @@ public:
 
     /* Outputs the specified string at the specified x and y values. Leaves x and y at the position following
      * the last modified character. */
-    void output(int x, int y, std::string string, int spread = 0);
+    void output(int x, int y, std::string string, WINDOW* window);
 
     /* Gets a string of input from the user.*/
     std::string get_input();
