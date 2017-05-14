@@ -19,9 +19,9 @@ bool thugs_before(Command* cmd, GameState* g) {
     return false;
 }
 
-bool jamal_bathroom_before(Command* cmd, GameState* g) {
+bool sewer_before(Command* cmd, GameState* g) {
     bool execute = true;
-    if(cmd->type == Command::GO && static_cast<CmdGo*>(cmd)->new_room == "sewer")
+    if(cmd->type == Command::GO && g->world->cur_room == "jamal_bathroom")
     {
         if(((Player*)g->world->get_player())->clothing == "hazmat suit")
         {
@@ -38,8 +38,8 @@ bool jamal_bathroom_before(Command* cmd, GameState* g) {
     return execute;
 }
 
-bool jamal_corridor_before(Command* cmd, GameState* g) {
-    if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "jamal_front" && g->world->get_flag("thug_fight_outcome") == 0)
+bool jamal_front_before(Command* cmd, GameState* g) {
+    if(cmd->type == Command::GO && g->world->get_flag("thug_fight_outcome") == 0)
     {
         g->engine->terminal->disp("You hear the intense rustling of thugs outside your door. You'd best not go out this way.");
         return false;
@@ -97,16 +97,89 @@ void book_after(Command* cmd, GameState* g) {
     }
 }
 
+void hazmat_after(Command* cmd, GameState* g) {
+    if(cmd->type == Command::WEAR)
+        g->engine->terminal->disp("The suit is rough and tough like leather.");
+}
+
+Object* sewer_upper = NULL;
+Object* del_mar = NULL;
+Object* manhole_cover = NULL;
+ComponentRoom* sewer_upper_c_room = NULL;
+bool manhole_moved = false;
+bool manhole_cover_before(Command* cmd, GameState* g) {
+    if(cmd->type == Command::MOVE)
+    {
+        if(!manhole_moved)
+        {
+            sewer_upper_c_room->directions[UP] = "del_mar";
+            sewer_upper->remove_child(manhole_cover);
+            del_mar->add_child(manhole_cover);
+            manhole_moved = true;
+            return true;
+        }
+        else
+        {
+            g->engine->terminal->disp("Why would you want to move the manhole cover back?");
+            return false;
+        }
+    }
+    return true;
+}
+
+void manhole_cover_after(Command* cmd, GameState* g) {
+    if(cmd->type == Command::MOVE)
+    {
+    }
+}
+
+ComponentTalkable* youth_c_talkable = NULL;
+int n_talks = 0;
+void youth_after(Command* cmd, GameState* g) {
+    std::string output = "The youth looks at you ";
+    if(cmd->type == Command::TALK_TO)
+    {
+        n_talks = -1;
+        youth_c_talkable->talkable_data = {"-Ain't you done yet?"};
+    }
+    else
+    {
+        if(n_talks <= 3)
+        {
+            if(n_talks == -1)
+                output += "encouragingly";
+            else if(n_talks == 0)
+                output += "impassively";
+            else if(n_talks == 1)
+                output += "quizzically";
+            else if(n_talks == 2)
+                output += "indignantly";
+            else if(n_talks == 3)
+                output += "furiously";
+            output += ".";
+            g->engine->terminal->disp(output);
+        }
+        else
+        {
+            g->engine->terminal->disp("The youth strikes out and delivers a fatal kick to your pancreas.\nYou die.");
+            g->engine->terminal->pause();
+            g->engine->running = false;
+        }
+        if(n_talks >= 0)
+            n_talks++;
+    }
+}
+
 enum LilWayneStatus {
     SEIZURE,
     ANGRY,
     DEAD
 } lil_wayne_status = SEIZURE;
 
-bool lil_wayne_front_before(Command* cmd, GameState* g) {
+bool lil_wayne_inside_before(Command* cmd, GameState* g) {
     if(cmd->type == Command::GO)
     {
-        if(static_cast<CmdGo*>(cmd)->new_room == "lil_wayne_inside" && lil_wayne_status == ANGRY)
+        if(lil_wayne_status == ANGRY)
         {
             if(g->world->player->has_direct_child("hedge clippers"))
             {
@@ -164,7 +237,9 @@ void lil_wayne_after(Command* cmd, GameState* g) {
             //text->send_front(talk);
             g->engine->terminal->disp("Lil Wayne lunges for you, and you barely escape out the door.");
             g->engine->terminal->pause();
-            //text->send(std::make_shared<CmdGo>("lil_wayne_front"));
+            CmdGo go;
+            go.new_room = "lil_wayne_front";
+            go.run_with_callbacks(g);
         }
         else
         {
@@ -266,13 +341,12 @@ World* generate_world(Engine* engine)
     jamal_bathroom->pretty_name = "Jamal's bathroom";
     ComponentMusic* music_hard = new ComponentMusic("res/hypnotize.ogg");
     jamal_bathroom->add_component(music_hard);
-    jamal_bathroom->add_component(new ComponentDescription("This is where you defecate daily. This cesuo is a reeking pigsty."));
+    jamal_bathroom->add_component(new ComponentDescription("This is where you defecate daily. This 廁所 is a reeking pigsty."));
     jamal_bathroom->add_component(new ComponentRoom({{SOUTH, "jamal_bedroom"}}));
 
     Object* hole = new Object("hole");
     hole->add_component(new ComponentDescription("In the floor a hole is gaping, presumably where a toilet used to be.", "The hole looks big enough for a nigga."));
     hole->add_component(new ComponentPortal("sewer"));
-    jamal_bathroom->before = &jamal_bathroom_before;
             
     jamal_bathroom->add_child(hole);
 
@@ -288,7 +362,6 @@ World* generate_world(Engine* engine)
                 {WEST, "jamal_bedroom"},
                 {SOUTH, "jamal_kitchen"},
                 }));
-    jamal_corridor->before = &jamal_corridor_before;
 
     world->add_child(jamal_corridor);
 
@@ -296,7 +369,7 @@ World* generate_world(Engine* engine)
     kitchen->pretty_name = "the kitchen";
     kitchen->add_component(new ComponentDescription("This rickety cookery would make Martha Stewart turn over in her grave."));
     kitchen->add_component(new ComponentRoom({{NORTH, "jamal_corridor"}}));
-    kitchen->add_component(c_music);
+    kitchen->add_component(new ComponentMusic("res/vulcan.ogg"));
     world->add_child(kitchen);
 
     Object* stove = new Object("stove");
@@ -331,13 +404,13 @@ World* generate_world(Engine* engine)
     Object* library = new Object("library");
     library->pretty_name = "Thomas Pynchon's library";
     library->add_component(new ComponentDescription("This subterranean den is where the father of realism does his stuff.\nHe is beginning to feel like a rap god."));
-    ComponentRoom* c_room = new ComponentRoom({{NORTH, "jamal_staircase"}});
+    c_room = new ComponentRoom({{NORTH, "jamal_staircase"}});
     library->add_component(c_room);
     library->add_component(new ComponentMusic("res/dope.ogg"));
 
     Object* shelf = new Object("bookshelf");
     shelf->aliases = { "shelf" };
-    ComponentDescription* c_desc = new ComponentDescription("A massive bookshelf covers the wall to the west.", "The shelf is full of books written by dead white men.");
+    c_desc = new ComponentDescription("A massive bookshelf covers the wall to the west.", "The shelf is full of books written by dead white men.");
     shelf->add_component(c_desc);
     library->add_child(shelf);
 
@@ -385,17 +458,16 @@ World* generate_world(Engine* engine)
     hazmat->add_component(new ComponentDescription("A hazmat suit is hanging inside one locker.", "The hazmat suit is rough and tough like leather."));
     hazmat->add_component(new ComponentTakeable());
     hazmat->add_component(new ComponentWearable());
-    /*hazmat->after = [&](Command* cmd) {
-        if(cmd->type == Command::WEAR)
-            engine->terminal->disp("The suit is rough and tough like leather.");
-    };*/
+    hazmat->after = hazmat_after;
     lockers->add_child(hazmat);
+
 
     Object* sewer = new Object("sewer");
     sewer->pretty_name = "a sewer tunnel";
     sewer->add_component(music_hard);
     sewer->add_component(new ComponentRoom({{WEST, "sewer_west"},{EAST, "shaft"}}));
     sewer->add_component(new ComponentDescription("Filthy water flows around your ankles."));
+    sewer->before = sewer_before;
     world->add_child(sewer);
 
     Object* sewer_west = new Object("sewer_west");
@@ -409,10 +481,10 @@ World* generate_world(Engine* engine)
     ladder->add_component(new ComponentDescription("A metal ladder is mounted to the concrete wall of the vertical tunnel."));
     sewer_west->add_child(ladder);
 
-    Object* sewer_upper = new Object("sewer_upper");
+    sewer_upper = new Object("sewer_upper");
     sewer_upper->pretty_name = "a sewer access manhole";
     sewer_upper->add_component(new ComponentDescription("This is a vertical tunnel about a meter in diameter."));
-    ComponentRoom* sewer_upper_c_room = new ComponentRoom({{DOWN, "sewer_west"}});
+    sewer_upper_c_room = new ComponentRoom({{DOWN, "sewer_west"}});
     sewer_upper->add_component(sewer_upper_c_room);
     world->add_child(sewer_upper);
 
@@ -420,20 +492,13 @@ World* generate_world(Engine* engine)
     ladder0->add_component(new ComponentDescription("A metal ladder is mounted to the concrete wall of the vertical tunnel."));
     sewer_upper->add_child(ladder0);
 
-    Object* del_mar = new Object("del_mar");
+    del_mar = new Object("del_mar");
 
-    Object* manhole_cover = new Object("manhole cover");
+    manhole_cover = new Object("manhole cover");
     manhole_cover->aliases = {"manhole", "cover", "lid"};
     manhole_cover->add_component(new ComponentMoveable());
     manhole_cover->add_component(new ComponentDescription("A heavy manhole cover blocks your exit above, but it looks like you could move it."));
-    /*manhole_cover->after = [=](Command* cmd) {
-        if(cmd->type == Command::MOVE)
-        {
-            sewer_upper_c_room->directions[UP] = "del_mar";
-            sewer_upper->remove_child(manhole_cover);
-            del_mar->add_child(manhole_cover);
-        }
-    };*/
+    manhole_cover->before = manhole_cover_before;
     sewer_upper->add_child(manhole_cover);
 
     Object* sewer_deadend = new Object("sewer_deadend");
@@ -478,11 +543,10 @@ World* generate_world(Engine* engine)
     compton_street->add_component(music_lucini);
     world->add_child(compton_street);
 
-    int n_talks = 0;
     Object* urban_youth = new Object("urban youth");
     urban_youth->aliases = {"youth", "man", "person", "guy", "dude", "urban", "stranger", "him"};
     urban_youth->add_component(new ComponentDescription("An urban youth stands in the corner, his hands tucked inside hoodie pockets."));
-    ComponentTalkable* youth_c_talkable = new ComponentTalkable({"Why are you standing here?",
+    youth_c_talkable = new ComponentTalkable({"Why are you standing here?",
                 "-I'm here for the people, Jamal.",
                 "W...what do you mean?",
                 "-The man has kept us down for too long, Jamal.",
@@ -491,40 +555,7 @@ World* generate_world(Engine* engine)
                 "-Viper will host a rap contest in the Club. The winner goes to the White House.",
                 "-You must challenge him, and emerge the victor."});
     urban_youth->add_component(youth_c_talkable);
-    /*urban_youth->after = [&](Command* cmd) {
-        std::string output = "The youth looks at you ";
-        if(cmd->type == Command::TALK_TO)
-        {
-            n_talks = -1;
-            youth_c_talkable->talkable_data = {"-Ain't you done yet?"};
-        }
-        else
-        {
-            if(n_talks <= 3)
-            {
-                if(n_talks == -1)
-                    output += "encouragingly";
-                else if(n_talks == 0)
-                    output += "impassively";
-                else if(n_talks == 1)
-                    output += "quizzically";
-                else if(n_talks == 2)
-                    output += "indignantly";
-                else if(n_talks == 3)
-                    output += "furiously";
-                output += ".";
-                engine->terminal->disp(output);
-            }
-            else
-            {
-                engine->terminal->disp("The youth strikes out and delivers a fatal kick to your pancreas.\nYou die.");
-                engine->terminal->pause();
-                engine->running = false;
-            }
-            if(n_talks >= 0)
-                n_talks++;
-        }
-    };*/
+    urban_youth->after = youth_after;
     compton_street->add_child(urban_youth);
 
     Object* compton_street_north = new Object("compton_street_north");
@@ -540,7 +571,6 @@ World* generate_world(Engine* engine)
     lil_wayne_front->add_component(new ComponentDescription("You face the edifice within which young Tunechi dwells."));
     lil_wayne_front->add_component(new ComponentRoom({{NORTH, "lil_wayne_inside"}, {SOUTH, "compton_street_north"}}));
     lil_wayne_front->add_component(new ComponentMusic("res/6foot.ogg"));
-    lil_wayne_front->before = &lil_wayne_front_before;
     lil_wayne_front->after = &lil_wayne_front_after;
     world->add_child(lil_wayne_front);
 
@@ -550,6 +580,7 @@ World* generate_world(Engine* engine)
     lil_wayne_inside->add_component(new ComponentRoom({{SOUTH, "lil_wayne_front"}}));
     lil_wayne_inside->add_component(new ComponentDescription("It bears a vague resemblance to a wigwam."));
     lil_wayne_inside->add_component(new ComponentMusic("res/6foot.ogg"));
+    lil_wayne_inside->before = lil_wayne_inside_before;
     world->add_child(lil_wayne_inside);
 
     Object* lil_wayne = new Object("Lil Wayne");
@@ -631,6 +662,7 @@ World* generate_world(Engine* engine)
     jamal_front->pretty_name = "the front of Jamal's house";
     jamal_front->add_component(new ComponentRoom({{NORTH, "kolob_street_east"},
                 {SOUTH, "jamal_corridor"}}));
+    jamal_front->before = jamal_front_before;
     world->add_child(jamal_front);
 
     kolob_street_east = new Object("kolob_street_east");

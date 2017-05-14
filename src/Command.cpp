@@ -209,18 +209,14 @@ void CmdGo::run(GameState* g)
         ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
         g->world->set_current_room(new_room);
         ComponentMusic* music_entering = (ComponentMusic*)rm->get_component(Component::MUSIC);
-        if(music_leaving)
-            g->engine->audio->pause_music(music_leaving->music);
+        //if(music_leaving)
+            //g->engine->audio->pause_music(music_leaving->music);
         if(music_entering)
             g->engine->audio->play_music(music_entering->music, music_entering->start_time);
 
         CmdLookAround look_around;
         look_around.run(g);
         rm->after(this, g);
-    }
-    else
-    {
-        g->engine->terminal->disp("Error: room " + new_room + " doesn't exist.");
     }
 }
 
@@ -544,14 +540,14 @@ void CmdWear::run(GameState* g)
 {
     if(objects.size() == 1)
     {
-        if(objects[0]->parent)
-            objects[0]->parent->remove_child(objects[0]);
-        if(g->world->get_player())
-        {
-            g->world->get_player()->add_child(objects[0]);
-            ((Player*)g->world->get_player())->clothing = objects[0]->name;
-        }
-        g->engine->terminal->disp("You put on the " + objects[0]->pretty_name + ".");
+            if(objects[0]->parent)
+                objects[0]->parent->remove_child(objects[0]);
+            if(g->world->get_player())
+            {
+                g->world->get_player()->add_child(objects[0]);
+                ((Player*)g->world->get_player())->clothing = objects[0]->name;
+            }
+            g->engine->terminal->disp("You put on the " + objects[0]->pretty_name + ".");
     }
 }
 
@@ -661,6 +657,7 @@ bool CmdTalkTo::match(std::string str, std::vector<std::string>* errors, World* 
         {
             //talk_to->object = obj;
             match = true;
+            objects = {obj};
         }
         else
             errors->push_back("You can't find a " + join(args[0], ' ') + " to talk to.");
@@ -670,24 +667,28 @@ bool CmdTalkTo::match(std::string str, std::vector<std::string>* errors, World* 
 
 void CmdTalkTo::run(GameState* g)
 {
-    /*ComponentTalkable* c_talk = (ComponentTalkable*)object->get_component(Component::TALKABLE);
-    if(c_talk)
+    if(objects.size() >= 1)
     {
-       for(auto j = c_talk->talkable_data.begin(); j != c_talk->talkable_data.end(); j++) 
-       {
-           bool other = (j->size() > 0 && (*j)[0] == '-');
-           std::string output_text = "("
-               + (other ? object->pretty_name : g->world->get_player()->pretty_name)
-               + ") "
-               + (other ? j->substr(1, j->size() - 1) : *j);
-           g->engine->terminal->disp(output_text);
-           g->engine->terminal->pause();
-       }
+        Object* object = objects[0];
+        ComponentTalkable* c_talk = (ComponentTalkable*)object->get_component(Component::TALKABLE);
+        if(c_talk)
+        {
+           for(auto j = c_talk->talkable_data.begin(); j != c_talk->talkable_data.end(); j++) 
+           {
+               bool other = (j->size() > 0 && (*j)[0] == '-');
+               std::string output_text = "("
+                   + (other ? object->pretty_name : g->world->get_player()->pretty_name)
+                   + ") "
+                   + (other ? j->substr(1, j->size() - 1) : *j);
+               g->engine->terminal->disp(output_text);
+               g->engine->terminal->pause();
+           }
+        }
+        else
+        {
+            g->engine->terminal->disp(">he thinks he can talk to a " + object->pretty_name);
+        }
     }
-    else
-    {
-        g->terminal->disp(">he thinks he can talk to a " + object->pretty_name));
-    }*/
 }
 
 CmdEat::CmdEat()

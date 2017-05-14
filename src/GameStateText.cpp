@@ -3,6 +3,8 @@
 #include "Terminal.h"
 #include "World.h"
 #include "File.h"
+#include <stdio.h>
+#include <string.h>
 
 GameStateText::GameStateText(Engine* engine_in)
     : GameState(engine_in),
@@ -30,8 +32,9 @@ void GameStateText::init()
     send(std::make_shared<CmdDisp>("No canine utterances grace your ears, and you can smell no fresh bacon cooking in the kitchen."));
     send(std::make_shared<CmdDisp>("Type 'look' to look around."));*/
     engine->terminal->disp(title_string);
-    engine->terminal->disp("==IS ALSO NEARBY==");
-    engine->terminal->disp("You wake.");
+    mvprintw(7, 33, " IS ALSO NEARBY");
+    mvprintw(8, 33, "小價馬爾也在附近");
+    engine->terminal->disp("\nYou wake.");
 }
 
 void GameStateText::cleanup()

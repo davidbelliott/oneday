@@ -45,6 +45,7 @@ Terminal::Terminal()
 //:   //canvas(nullptr),
     //display(nullptr)
 {
+    setlocale(LC_CTYPE, "");
     initscr();
     cbreak();
     scrollok(stdscr, true);
