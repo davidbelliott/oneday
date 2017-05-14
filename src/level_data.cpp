@@ -9,13 +9,200 @@
 #include "Terminal.h"
 #include <iostream>
 
-bool jamal_bedroom_before(Command* cmd, GameState* g)
-{
-    std::cerr << "Playing music" << std::endl;
+bool jamal_bedroom_before(Command* cmd, GameState* g) {
     g->engine->audio->play_music("res/good_day.ogg");
-    std::cerr << "Played music" << std::endl;
     return true;
-};
+}
+
+bool thugs_before(Command* cmd, GameState* g) {
+    g->engine->terminal->disp("The thugs are too far away.");
+    return false;
+}
+
+bool jamal_bathroom_before(Command* cmd, GameState* g) {
+    bool execute = true;
+    if(cmd->type == Command::GO && static_cast<CmdGo*>(cmd)->new_room == "sewer")
+    {
+        if(((Player*)g->world->get_player())->clothing == "hazmat suit")
+        {
+            g->engine->terminal->disp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage.");
+            g->engine->terminal->pause();
+            execute = true;
+        }
+        else
+        {
+            g->engine->terminal->disp("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~");
+            execute = false;
+        }
+    }
+    return execute;
+}
+
+bool jamal_corridor_before(Command* cmd, GameState* g) {
+    if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "jamal_front" && g->world->get_flag("thug_fight_outcome") == 0)
+    {
+        g->engine->terminal->disp("You hear the intense rustling of thugs outside your door. You'd best not go out this way.");
+        return false;
+    }
+    return true;
+}
+
+bool tasted_pellets = false;
+bool pellets_before(Command* cmd, GameState* g) {
+    if(cmd->type == Command::EAT)
+    {
+        if(tasted_pellets)
+            g->engine->terminal->disp("You don't want to eat any more.");
+        else
+        {
+            g->engine->terminal->disp("You tentatively nibble at one of the mysterious pellets. It contains crack and weed. The combination makes your eyes bleed.");
+            tasted_pellets = true;
+        }
+        return false;
+    }
+    return true;
+}
+
+bool switch_flipped = false;
+bool secret_switch_before(Command* cmd, GameState* g) {
+    if(cmd->type == Command::HIT && switch_flipped)
+    {
+        g->engine->terminal->disp("Hitting the switch again has no effect.");
+        return false;
+    }
+    return true;
+}
+
+ComponentDescription* c_desc = nullptr;
+ComponentRoom* c_room = nullptr;
+void secret_switch_after(Command* cmd, GameState* g) {
+    if(cmd->type == Command::HIT)
+    {
+            g->engine->terminal->disp("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west.");
+            c_desc->initial_appearance = "A massive bookshelf is slid to one side of the west wall.";
+            c_room->directions[WEST] = "lab";
+            switch_flipped = true;
+    }
+}
+
+Object* secret_switch = nullptr;
+void book_after(Command* cmd, GameState* g) {
+    if(cmd->type == Command::TAKE)
+    {
+        g->engine->terminal->disp("Taking the book reveals a secret switch.");
+        c_desc->initial_appearance += " One book is missing, leaving an empty slot.";
+        c_desc->description += " One book is missing, leaving an empty slot.";
+        secret_switch->active = true;
+        secret_switch->discovered = true;
+    }
+}
+
+enum LilWayneStatus {
+    SEIZURE,
+    ANGRY,
+    DEAD
+} lil_wayne_status = SEIZURE;
+
+bool lil_wayne_front_before(Command* cmd, GameState* g) {
+    if(cmd->type == Command::GO)
+    {
+        if(static_cast<CmdGo*>(cmd)->new_room == "lil_wayne_inside" && lil_wayne_status == ANGRY)
+        {
+            if(g->world->player->has_direct_child("hedge clippers"))
+            {
+                g->engine->terminal->disp("Hedge clippers in hand, you creep stealthily into the domain of Birdman Jr.");
+            }
+            else
+            {
+                g->engine->terminal->disp("Lil Wayne is bretty mad :-DD best not go in here unarmed.");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void lil_wayne_front_after(Command* cmd, GameState* g) {
+    if(cmd->type == Command::LOOK_AROUND)
+    {
+        if(lil_wayne_status == SEIZURE)
+            g->engine->terminal->disp("You hear loud, convulsive fits from within the house. Mr. Crazy Flow could be in trouble!");
+        else if(lil_wayne_status == ANGRY)
+        {
+                int choice = rand() % 5;
+                std::string output = "Lil Wayne shouts at you from the window:\n(Lil Wayne) Get the fuck out, you ";
+                if(choice == 0)
+                    output += "varlot";
+                else if(choice == 1)
+                    output += "rank tickle-brained fustilarian";
+                else if(choice == 2)
+                    output += "bitch ass nigga";
+                else if(choice == 3)
+                    output += "lewdster";
+                else if(choice == 4)
+                    output += "baka gaijin";
+                g->engine->terminal->disp(output);
+        }
+    }
+}
+
+int lil_wayne_interaction_counter = 0;
+void lil_wayne_after(Command* cmd, GameState* g) {
+    if(lil_wayne_status == SEIZURE)
+    {
+        if(cmd->type == Command::GIVE && static_cast<CmdGive*>(cmd)->objects[1]->name == "pellets")
+        {
+            lil_wayne_status = ANGRY;
+            g->engine->terminal->disp("Lil Wayne recovers from his seizure!\nIt's A Christmas miracle.");
+            g->engine->terminal->pause();
+            g->engine->terminal->disp("Yet as he clambers up from the ground, he suddenly turns hostile:");
+            g->engine->terminal->disp("-ayy wat u doin in my house boi");
+            g->engine->terminal->pause();
+            g->engine->terminal->disp("I just saved your ass from a seizure");
+            g->engine->terminal->pause();
+            g->engine->terminal->disp("-nigga u better scram fore ah goes flop-bott on u");
+            //text->send_front(talk);
+            g->engine->terminal->disp("Lil Wayne lunges for you, and you barely escape out the door.");
+            g->engine->terminal->pause();
+            //text->send(std::make_shared<CmdGo>("lil_wayne_front"));
+        }
+        else
+        {
+            if(lil_wayne_interaction_counter % 2 == 0)
+                g->engine->terminal->disp("Lil Wayne writhes on the ground like a monsta.");
+            else
+                g->engine->terminal->disp("Perhaps if you feed medicine to Lil Wayne he'll get better.");
+            lil_wayne_interaction_counter++;
+        }
+    }
+}
+
+bool can_jump = false;
+bool fire_escape_before(Command* cmd, GameState* g) {
+    if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "kolob_street_east")
+    {
+        if(can_jump)
+        {
+            g->engine->terminal->disp("You take a flying leap from the fire escape and land directly atop the soft body pillow, which breaks your fall.");
+            return true;
+        }
+        g->engine->terminal->disp("Jumping from this high could be fatal. Maybe somethin' soft would break the fall.");
+        return false;
+    }
+    return true;
+}
+
+Object* body_pillow = nullptr;
+Object* kolob_street_east = nullptr;
+void fire_escape_after(Command* cmd, GameState* g) {
+    if(cmd->type == Command::THROW && ((CmdThrow*)cmd)->objects[1] == body_pillow)
+    {
+        g->engine->terminal->disp("The body pillow lands on the street below.");
+        body_pillow->parent->remove_child(body_pillow);
+        kolob_street_east->add_child(body_pillow);
+        can_jump = true;
+    }
+}
 
 World* generate_world(Engine* engine)
 {
@@ -61,10 +248,8 @@ World* generate_world(Engine* engine)
     Object* thugs = new Object("thugs");
     thugs->aliases = {"thug"};
     thugs->add_component(new ComponentDescription("You notice a gang of thugs gathered in front of your house."));
-    /*thugs->before = [&](Command* cmd) {
-        engine->terminal->disp("The thugs are too far away.");
-        return false;
-    };*/
+    thugs->before = &thugs_before;
+    
     window->add_child(thugs);
 
     Object* paper = new Object("paper");
@@ -87,25 +272,7 @@ World* generate_world(Engine* engine)
     Object* hole = new Object("hole");
     hole->add_component(new ComponentDescription("In the floor a hole is gaping, presumably where a toilet used to be.", "The hole looks big enough for a nigga."));
     hole->add_component(new ComponentPortal("sewer"));
-    /*jamal_bathroom->before = [=](Command* cmd)
-    {
-        bool execute = true;
-        if(cmd->type == Command::GO && static_cast<CmdGo*>(cmd)->new_room == "sewer")
-        {
-            if(((Player*)world->get_player())->clothing == "hazmat suit")
-            {
-                engine->terminal->disp("With the hazmat suit on, you tentatively step down into the hole and lower yourself into the murky water.\nIt rises gurgling to your neck.\nWith a desperate resignation, you plunge beneath the dark sewage.");
-                engine->terminal->pause();
-                execute = true;
-            }
-            else
-            {
-                engine->terminal->disp("The hole is full of disgusting sewage water. You want to touch it with your bare skin? Kimochi warui~");
-                execute = false;
-            }
-        }
-        return execute;
-    };*/
+    jamal_bathroom->before = &jamal_bathroom_before;
             
     jamal_bathroom->add_child(hole);
 
@@ -121,14 +288,7 @@ World* generate_world(Engine* engine)
                 {WEST, "jamal_bedroom"},
                 {SOUTH, "jamal_kitchen"},
                 }));
-    /*jamal_corridor->before = [&](Command* cmd) {
-        if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "jamal_front" && world->get_flag("thug_fight_outcome") == 0)
-        {
-            engine->terminal->disp("You hear the intense rustling of thugs outside your door. You'd best not go out this way.");
-            return false;
-        }
-        return true;
-    };*/
+    jamal_corridor->before = &jamal_corridor_before;
 
     world->add_child(jamal_corridor);
 
@@ -154,21 +314,7 @@ World* generate_world(Engine* engine)
     pellets->add_component(new ComponentDescription("Several brown pellets are in the jar. They do not contain pork."));
     pellets->add_component(new ComponentTakeable());
     pellets->add_component(new ComponentEdible());
-    bool tasted_pellets = false;
-    /*pellets->before = [&](Command* cmd) {
-        if(cmd->type == Command::EAT)
-        {
-            if(tasted_pellets)
-                engine->terminal->disp("You don't want to eat any more.");
-            else
-            {
-                engine->terminal->disp("You tentatively nibble at one of the mysterious pellets. It contains crack and weed. The combination makes your eyes bleed.");
-                tasted_pellets = true;
-            }
-            return false;
-        }
-        return true;
-    };*/
+    pellets->before = &pellets_before;
     pellets->discovered = true;
     jar->add_child(pellets);
 
@@ -195,44 +341,20 @@ World* generate_world(Engine* engine)
     shelf->add_component(c_desc);
     library->add_child(shelf);
 
-    Object* secret_switch = new Object("switch");
+    secret_switch = new Object("switch");
     secret_switch->active = false;
     secret_switch->add_component(new ComponentDescription("A secret switch is snug in the cuddly nook where a book used to be."));
     ComponentHittable* c_hit = new ComponentHittable();
     secret_switch->add_component(c_hit);
-    /*secret_switch->before = [=](Command* cmd) {
-        if(cmd->type == Command::HIT && c_hit->flipped)
-        {
-            engine->terminal->disp("Hitting the switch again has no effect.");
-            return false;
-        }
-        return true;
-    };
-    secret_switch->after = [=](Command* cmd) {
-        if(cmd->type == Command::HIT)
-        {
-                engine->terminal->disp("Hitting the switch causes the bookshelf to slide to the side, revealing a doorway leading to the west.");
-                c_desc->initial_appearance = "A massive bookshelf is slid to one side of the west wall.";
-                c_room->directions[WEST] = "lab";
-        }
-    };*/
+    secret_switch->before = &secret_switch_before;
+    secret_switch->after = &secret_switch_after;
     shelf->add_child(secret_switch);
 
     Object* book = new Object("book");
     book->add_component(new ComponentDescription("One book protrudes farther than the rest."));
     book->add_component(new ComponentTakeable());
     book->add_component(new ComponentText("This page intentionally left blank."));
-    /*book->after = [=](Command* cmd)
-    {
-        if(cmd->type == Command::TAKE)
-        {
-            engine->terminal->disp("Taking the book reveals a secret switch.");
-            c_desc->initial_appearance += " One book is missing, leaving an empty slot.";
-            c_desc->description += " One book is missing, leaving an empty slot.";
-            secret_switch->active = true;
-            secret_switch->discovered = true;
-        }
-    };*/
+    book->after = &book_after;
     shelf->add_child(book);
     
     world->add_child(library);
@@ -418,53 +540,8 @@ World* generate_world(Engine* engine)
     lil_wayne_front->add_component(new ComponentDescription("You face the edifice within which young Tunechi dwells."));
     lil_wayne_front->add_component(new ComponentRoom({{NORTH, "lil_wayne_inside"}, {SOUTH, "compton_street_north"}}));
     lil_wayne_front->add_component(new ComponentMusic("res/6foot.ogg"));
-    enum LilWayneStatus {
-        SEIZURE,
-        ANGRY,
-        DEAD
-    } lil_wayne_status = SEIZURE;
-    /*lil_wayne_front->before = [&](Command* cmd) {
-        if(cmd->type == Command::GO)
-        {
-            if(static_cast<CmdGo*>(cmd)->new_room == "lil_wayne_inside" && lil_wayne_status == ANGRY)
-            {
-                if(player->has_direct_child("hedge clippers"))
-                {
-                    engine->terminal->disp("Hedge clippers in hand, you creep stealthily into the domain of Birdman Jr.");
-                }
-                else
-                {
-                    engine->terminal->disp("Lil Wayne is bretty mad :-DD best not go in here unarmed.");
-                    return false;
-                }
-            }
-        }
-        return true;
-    };
-    lil_wayne_front->after = [&](Command* cmd) {
-        if(cmd->type == Command::LOOK_AROUND)
-        {
-            if(lil_wayne_status == SEIZURE)
-                engine->terminal->disp("You hear loud, convulsive fits from within the house. Mr. Crazy Flow could be in trouble!");
-            else if(lil_wayne_status == ANGRY)
-            {
-                    int choice = rand() % 5;
-                    std::string output = "Lil Wayne shouts at you from the window:\n(Lil Wayne) Get the fuck out, you ";
-                    if(choice == 0)
-                        output += "varlot";
-                    else if(choice == 1)
-                        output += "rank tickle-brained fustilarian";
-                    else if(choice == 2)
-                        output += "bitch ass nigga";
-                    else if(choice == 3)
-                        output += "lewdster";
-                    else if(choice == 4)
-                        output += "baka gaijin";
-                    engine->terminal->disp(output);
-            }
-        }
-    };
-    */
+    lil_wayne_front->before = &lil_wayne_front_before;
+    lil_wayne_front->after = &lil_wayne_front_after;
     world->add_child(lil_wayne_front);
 
 
@@ -479,36 +556,7 @@ World* generate_world(Engine* engine)
     lil_wayne->aliases = {"lil", "wayne", "him", "he" };
     lil_wayne->add_component(new ComponentDescription("Lil Wayne is having a seizure! His muscles are rigid, and he experiences brief losses of consciousness."));
     lil_wayne->add_component(new ComponentTalkable({"-hnnng..."}));
-    int lil_wayne_interaction_counter = 0;
-    /*lil_wayne->after = [&](Command* cmd) {
-        if(lil_wayne_status == SEIZURE)
-        {
-            if(cmd->type == Command::GIVE && static_cast<CmdGive*>(cmd)->objects[1]->name == "pellets")
-            {
-                lil_wayne_status = ANGRY;
-                engine->terminal->disp("Lil Wayne recovers from his seizure!\nIt's A Christmas miracle.");
-                engine->terminal->pause();
-                engine->terminal->disp("Yet as he clambers up from the ground, he suddenly turns hostile:");
-                engine->terminal->disp("-ayy wat u doin in my house boi");
-                engine->terminal->pause();
-                engine->terminal->disp("I just saved your ass from a seizure");
-                engine->terminal->pause();
-                engine->terminal->disp("-nigga u better scram fore ah goes flop-bott on u");
-                //text->send_front(talk);
-                engine->terminal->disp("Lil Wayne lunges for you, and you barely escape out the door.");
-                engine->terminal->pause();
-                //text->send(std::make_shared<CmdGo>("lil_wayne_front"));
-            }
-            else
-            {
-                if(lil_wayne_interaction_counter % 2 == 0)
-                    engine->terminal->disp("Lil Wayne writhes on the ground like a monsta.");
-                else
-                    engine->terminal->disp("Perhaps if you feed medicine to Lil Wayne he'll get better.");
-                lil_wayne_interaction_counter++;
-            }
-        }
-    };*/
+    lil_wayne->after = lil_wayne_after;
     lil_wayne_inside->add_child(lil_wayne);
     
 
@@ -585,7 +633,7 @@ World* generate_world(Engine* engine)
                 {SOUTH, "jamal_corridor"}}));
     world->add_child(jamal_front);
 
-    Object* kolob_street_east = new Object("kolob_street_east");
+    kolob_street_east = new Object("kolob_street_east");
     kolob_street_east->pretty_name = "East Kolob Street";
     kolob_street_east->add_component(new ComponentRoom({{WEST, "kolob_street"}}));
     world->add_child(kolob_street_east);
@@ -637,12 +685,6 @@ World* generate_world(Engine* engine)
     subway_station->add_component(new ComponentDescription("This deserted station reeks of stale urine and the ubiquitous cherry blossoms."));
     subway_station->add_component(new ComponentRoom({{NORTH, "sakura_park"}}));
     subway_station->add_component(new ComponentMusic("res/blackandyellow.ogg"));
-    /*subway_station->before = [=](Command* cmd)
-    {
-        //if(cmd->type == Command::LOOK_AROUND)
-            //text->send_front(std::make_shared<CmdPlayMusic>("res/blackandyellow.ogg"));
-        return true;
-    };*/
     world->add_child(subway_station);
 
     Object* sakura_park = new Object("sakura_park");
@@ -746,7 +788,7 @@ World* generate_world(Engine* engine)
     honami_aihara_figurine->add_component(new ComponentDescription("There is a Honami Aihara figurine here.", "She is wearing a super sexy idol uniform while squatting with legs spread and making a heart shaped symbol with her hands in front of her crotch just like the cover illustration of Ima Ria."));
     store_shelf->add_child(honami_aihara_figurine);
 
-    Object* body_pillow = new Object("Oreimo Kirino body pillow");
+    body_pillow = new Object("Oreimo Kirino body pillow");
     body_pillow->aliases = {"oreimo", "kirino", "body", "pillow"};
     body_pillow->add_component(new ComponentDescription("There is a Kirino body pillow here.", "New Oreimo Kirino Kousaka Soft Dakimakura Hugging Body Pillow"));
     body_pillow->add_component(new ComponentTakeable());
@@ -771,30 +813,8 @@ World* generate_world(Engine* engine)
     fire_escape->add_component(new ComponentRoom({{EAST, "hobby_lobby_floor_3"},
                                                   {DOWN, "kolob_street_east"}}));
     fire_escape->add_component(new ComponentDescription("You're running up in gates, and doing hits for high stakes,\nMaking [your] way on fire escapes\nYou can see the street about twenty feet below."));
-    bool can_jump = false;
-    /*fire_escape->before = [&](Command* cmd) {
-        if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "kolob_street_east")
-        {
-            if(can_jump)
-            {
-                engine->terminal->disp("You take a flying leap from the fire escape and land directly atop the soft body pillow, which breaks your fall.");
-                return true;
-            }
-            engine->terminal->disp("Jumping from this high could be fatal. Maybe somethin' soft would break the fall.");
-            return false;
-        }
-        return true;
-    };
-
-    fire_escape->after = [&](Command* cmd) {
-        if(cmd->type == Command::THROW && ((CmdThrow*)cmd)->objects[1] == body_pillow)
-        {
-            engine->terminal->disp("The body pillow lands on the street below.");
-            body_pillow->parent->remove_child(body_pillow);
-            kolob_street_east->add_child(body_pillow);
-            can_jump = true;
-        }
-    };*/
+    fire_escape->before = fire_escape_before;
+    fire_escape->after = fire_escape_after;
 
     world->add_child(fire_escape);
 
