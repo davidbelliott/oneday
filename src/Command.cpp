@@ -823,7 +823,7 @@ void CmdOpen::run(GameState* g)
         ComponentOpenClose* c_open = (ComponentOpenClose*)objects[0]->get_component(Component::OPEN_CLOSE);
         c_open->open = true;
         g->engine->terminal->disp("You open the " + objects[0]->pretty_name + ".");
-        recursive_show(g, objects[1], true, false, false);
+        recursive_show(g, objects[0], true, false, false);
     }
 }
 
