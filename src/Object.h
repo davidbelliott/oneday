@@ -1,6 +1,7 @@
 #pragma once
 #include "Word.h"
 #include "Component.h"
+#include "GameState.h"
 class Command;
 
 enum Constraint
@@ -35,10 +36,10 @@ public:
     std::vector<std::string> aliases;
 
     // Command callbacks
-    std::function<bool(Command*)> before;
+    bool (*before)(Command*, GameState*);
 
     // Called after parse.
-    std::function<void(Command*)> after;
+    void (*after)(Command*, GameState*);
 
 	Object(std::string name_in);
 	Object();

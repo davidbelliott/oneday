@@ -17,6 +17,14 @@ std::string get_descriptor(Constraint c, std::string parent_name)
     return descriptor;
 }
 
+bool before_default(Command* cmd, GameState* g) {
+    return true;
+};
+
+void after_default(Command* cmd, GameState* g) {
+
+};
+
 Object::Object(std::string name_in)
 	: name(name_in),
       pretty_name(name_in),
@@ -25,8 +33,8 @@ Object::Object(std::string name_in)
       components(),
       active(true),
       discovered(false),
-      before([](Command* cmd) { return true; } ),
-      after([](Command* cmd) { } )
+      before(before_default),
+      after(after_default)
 {
 }
 

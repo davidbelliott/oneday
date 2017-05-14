@@ -59,12 +59,12 @@ void Command::run_with_callbacks(GameState* g)
 {
     bool run = true;
     for(int i = 0; i < objects.size() && run; i++)
-        run = objects[i]->before(this);
+        run = objects[i]->before(this, g);
     if(run)
     {
         this->run(g);
         for(int i = 0; i < objects.size(); i++)
-            objects[i]->after(this);
+            objects[i]->after(this, g);
     }
 }
 
@@ -204,7 +204,7 @@ bool CmdGo::match(std::string str, std::vector<std::string>* errors, World* worl
 void CmdGo::run(GameState* g)
 {
     Object* rm = nullptr;
-    if((rm = g->world->get_indirect_child(new_room, 0)) && rm->before(this))
+    if((rm = g->world->get_indirect_child(new_room, 0)) && rm->before(this, g))
     {
         ComponentMusic* music_leaving = (ComponentMusic*)g->world->get_current_room()->get_component(Component::MUSIC);
         g->world->set_current_room(new_room);
@@ -216,7 +216,7 @@ void CmdGo::run(GameState* g)
 
         CmdLookAround look_around;
         look_around.run(g);
-        rm->after(this);
+        rm->after(this, g);
     }
     else
     {
@@ -320,6 +320,7 @@ void CmdLookAround::run(GameState* g)
         Object* room = player->parent;
         if(room)
         {
+            room->before(this, g);
             g->engine->terminal->disp("Your location: " + room->pretty_name + ".");
             recursive_show(g, room, true, true, false);
             ComponentRoom* c_room = (ComponentRoom*)room->get_component(Component::ROOM);

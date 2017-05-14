@@ -6,6 +6,7 @@
 #include "level_data.h"
 
 #include <thread>
+#include <stdio.h>
 //#include <common-image.h>
 //
 void update_audio(Engine* engine)
@@ -22,6 +23,8 @@ void update_audio(Engine* engine)
 
 int main(int argc, char *argv[])
 {
+    freopen("/dev/null", "w", stderr);
+    fclose(stderr);
     Engine* engine = new Engine();
     World* world = generate_world(engine);
     GameStateText* text = new GameStateText(engine);

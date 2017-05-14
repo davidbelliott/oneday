@@ -7,6 +7,15 @@
 #include "Player.h"
 #include "World.h"
 #include "Terminal.h"
+#include <iostream>
+
+bool jamal_bedroom_before(Command* cmd, GameState* g)
+{
+    std::cerr << "Playing music" << std::endl;
+    g->engine->audio->play_music("res/good_day.ogg");
+    std::cerr << "Played music" << std::endl;
+    return true;
+};
 
 World* generate_world(Engine* engine)
 {
@@ -19,7 +28,7 @@ World* generate_world(Engine* engine)
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "del_mar";
+	world->cur_room = "jamal_bedroom";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -38,6 +47,7 @@ World* generate_world(Engine* engine)
 
     ComponentMusic* c_music = new ComponentMusic("res/good_day.ogg");
     jamal_bedroom->add_component(c_music);
+    jamal_bedroom->before = &jamal_bedroom_before;
 
     Object* posters = new Object("posters");
     posters->aliases = { "poster", "wall", "walls" };
@@ -51,10 +61,10 @@ World* generate_world(Engine* engine)
     Object* thugs = new Object("thugs");
     thugs->aliases = {"thug"};
     thugs->add_component(new ComponentDescription("You notice a gang of thugs gathered in front of your house."));
-    thugs->before = [&](Command* cmd) {
+    /*thugs->before = [&](Command* cmd) {
         engine->terminal->disp("The thugs are too far away.");
         return false;
-    };
+    };*/
     window->add_child(thugs);
 
     Object* paper = new Object("paper");
@@ -77,7 +87,7 @@ World* generate_world(Engine* engine)
     Object* hole = new Object("hole");
     hole->add_component(new ComponentDescription("In the floor a hole is gaping, presumably where a toilet used to be.", "The hole looks big enough for a nigga."));
     hole->add_component(new ComponentPortal("sewer"));
-    jamal_bathroom->before = [=](Command* cmd)
+    /*jamal_bathroom->before = [=](Command* cmd)
     {
         bool execute = true;
         if(cmd->type == Command::GO && static_cast<CmdGo*>(cmd)->new_room == "sewer")
@@ -95,7 +105,7 @@ World* generate_world(Engine* engine)
             }
         }
         return execute;
-    };
+    };*/
             
     jamal_bathroom->add_child(hole);
 
@@ -111,14 +121,14 @@ World* generate_world(Engine* engine)
                 {WEST, "jamal_bedroom"},
                 {SOUTH, "jamal_kitchen"},
                 }));
-    jamal_corridor->before = [&](Command* cmd) {
+    /*jamal_corridor->before = [&](Command* cmd) {
         if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "jamal_front" && world->get_flag("thug_fight_outcome") == 0)
         {
             engine->terminal->disp("You hear the intense rustling of thugs outside your door. You'd best not go out this way.");
             return false;
         }
         return true;
-    };
+    };*/
 
     world->add_child(jamal_corridor);
 
@@ -145,7 +155,7 @@ World* generate_world(Engine* engine)
     pellets->add_component(new ComponentTakeable());
     pellets->add_component(new ComponentEdible());
     bool tasted_pellets = false;
-    pellets->before = [&](Command* cmd) {
+    /*pellets->before = [&](Command* cmd) {
         if(cmd->type == Command::EAT)
         {
             if(tasted_pellets)
@@ -158,7 +168,7 @@ World* generate_world(Engine* engine)
             return false;
         }
         return true;
-    };
+    };*/
     pellets->discovered = true;
     jar->add_child(pellets);
 
@@ -190,7 +200,7 @@ World* generate_world(Engine* engine)
     secret_switch->add_component(new ComponentDescription("A secret switch is snug in the cuddly nook where a book used to be."));
     ComponentHittable* c_hit = new ComponentHittable();
     secret_switch->add_component(c_hit);
-    secret_switch->before = [=](Command* cmd) {
+    /*secret_switch->before = [=](Command* cmd) {
         if(cmd->type == Command::HIT && c_hit->flipped)
         {
             engine->terminal->disp("Hitting the switch again has no effect.");
@@ -205,14 +215,14 @@ World* generate_world(Engine* engine)
                 c_desc->initial_appearance = "A massive bookshelf is slid to one side of the west wall.";
                 c_room->directions[WEST] = "lab";
         }
-    };
+    };*/
     shelf->add_child(secret_switch);
 
     Object* book = new Object("book");
     book->add_component(new ComponentDescription("One book protrudes farther than the rest."));
     book->add_component(new ComponentTakeable());
     book->add_component(new ComponentText("This page intentionally left blank."));
-    book->after = [=](Command* cmd)
+    /*book->after = [=](Command* cmd)
     {
         if(cmd->type == Command::TAKE)
         {
@@ -222,7 +232,7 @@ World* generate_world(Engine* engine)
             secret_switch->active = true;
             secret_switch->discovered = true;
         }
-    };
+    };*/
     shelf->add_child(book);
     
     world->add_child(library);
@@ -253,10 +263,10 @@ World* generate_world(Engine* engine)
     hazmat->add_component(new ComponentDescription("A hazmat suit is hanging inside one locker.", "The hazmat suit is rough and tough like leather."));
     hazmat->add_component(new ComponentTakeable());
     hazmat->add_component(new ComponentWearable());
-    hazmat->after = [&](Command* cmd) {
+    /*hazmat->after = [&](Command* cmd) {
         if(cmd->type == Command::WEAR)
             engine->terminal->disp("The suit is rough and tough like leather.");
-    };
+    };*/
     lockers->add_child(hazmat);
 
     Object* sewer = new Object("sewer");
@@ -294,14 +304,14 @@ World* generate_world(Engine* engine)
     manhole_cover->aliases = {"manhole", "cover", "lid"};
     manhole_cover->add_component(new ComponentMoveable());
     manhole_cover->add_component(new ComponentDescription("A heavy manhole cover blocks your exit above, but it looks like you could move it."));
-    manhole_cover->after = [=](Command* cmd) {
+    /*manhole_cover->after = [=](Command* cmd) {
         if(cmd->type == Command::MOVE)
         {
             sewer_upper_c_room->directions[UP] = "del_mar";
             sewer_upper->remove_child(manhole_cover);
             del_mar->add_child(manhole_cover);
         }
-    };
+    };*/
     sewer_upper->add_child(manhole_cover);
 
     Object* sewer_deadend = new Object("sewer_deadend");
@@ -317,7 +327,7 @@ World* generate_world(Engine* engine)
     del_mar->pretty_name = "Del Mar Boulevard";
     del_mar->add_component(new ComponentRoom({{NORTH, "compton_street"}}));
     del_mar->add_component(new ComponentDescription("A temporary lane."));
-    del_mar->after = [=](Command* cmd)
+    /*del_mar->after = [=](Command* cmd)
     {
         if(cmd->type == Command::GO && world->get_flag("thug_fight_outcome") == 0)
         {
@@ -330,7 +340,7 @@ World* generate_world(Engine* engine)
             world->set_flag("thug_fight_outcome", 1);
         }
         return true;
-    };
+    };*/
     world->add_child(del_mar);
 
     Object* manhole = new Object("manhole");
@@ -359,7 +369,7 @@ World* generate_world(Engine* engine)
                 "-Viper will host a rap contest in the Club. The winner goes to the White House.",
                 "-You must challenge him, and emerge the victor."});
     urban_youth->add_component(youth_c_talkable);
-    urban_youth->after = [&](Command* cmd) {
+    /*urban_youth->after = [&](Command* cmd) {
         std::string output = "The youth looks at you ";
         if(cmd->type == Command::TALK_TO)
         {
@@ -392,7 +402,7 @@ World* generate_world(Engine* engine)
             if(n_talks >= 0)
                 n_talks++;
         }
-    };
+    };*/
     compton_street->add_child(urban_youth);
 
     Object* compton_street_north = new Object("compton_street_north");
@@ -413,7 +423,7 @@ World* generate_world(Engine* engine)
         ANGRY,
         DEAD
     } lil_wayne_status = SEIZURE;
-    lil_wayne_front->before = [&](Command* cmd) {
+    /*lil_wayne_front->before = [&](Command* cmd) {
         if(cmd->type == Command::GO)
         {
             if(static_cast<CmdGo*>(cmd)->new_room == "lil_wayne_inside" && lil_wayne_status == ANGRY)
@@ -454,6 +464,7 @@ World* generate_world(Engine* engine)
             }
         }
     };
+    */
     world->add_child(lil_wayne_front);
 
 
@@ -469,7 +480,7 @@ World* generate_world(Engine* engine)
     lil_wayne->add_component(new ComponentDescription("Lil Wayne is having a seizure! His muscles are rigid, and he experiences brief losses of consciousness."));
     lil_wayne->add_component(new ComponentTalkable({"-hnnng..."}));
     int lil_wayne_interaction_counter = 0;
-    lil_wayne->after = [&](Command* cmd) {
+    /*lil_wayne->after = [&](Command* cmd) {
         if(lil_wayne_status == SEIZURE)
         {
             if(cmd->type == Command::GIVE && static_cast<CmdGive*>(cmd)->objects[1]->name == "pellets")
@@ -497,7 +508,7 @@ World* generate_world(Engine* engine)
                 lil_wayne_interaction_counter++;
             }
         }
-    };
+    };*/
     lil_wayne_inside->add_child(lil_wayne);
     
 
@@ -588,7 +599,7 @@ World* generate_world(Engine* engine)
     Object* grate = new Object("grate");
     grate->add_component(new ComponentDescription("A heavy grate is inset in the road.", "You could tie something around its bars..."));
     grate->add_component(new ComponentTieTo());
-    grate->after = [&](Command* cmd) {
+    /*grate->after = [&](Command* cmd) {
         if(cmd->type == Command::TIE_TO)
         {
             static_cast<ComponentRoom*>(shaft->get_component(Component::ROOM))->
@@ -597,7 +608,7 @@ World* generate_world(Engine* engine)
                 current_appearance += "\nA rope dangles down from the grate into the shaft.";
             engine->terminal->disp("The rope dangles down into the dark shaft.");
         }
-    };
+    };*/
     kolob_street_east->add_child(grate);
 
     Object* shaft_view = new Object("shaft");
@@ -605,7 +616,7 @@ World* generate_world(Engine* engine)
     grate->add_child(shaft_view);
 
     Object* subway_tunnel = new Object("subway_tunnel");
-    subway_tunnel->after = [&](Command* cmd) {
+    /*subway_tunnel->after = [&](Command* cmd) {
         if(cmd->type == Command::LOOK_AROUND && world->get_flag("subway_outcome") == 0)
         {
             engine->terminal->disp("You drop into the subway and land atop a moving train.");
@@ -617,7 +628,7 @@ World* generate_world(Engine* engine)
             world->set_current_room("subway_station");
         }
         return true;
-    };
+    };*/
     world->add_child(subway_tunnel);
 
     Object* subway_station = new Object("subway_station");
@@ -626,12 +637,12 @@ World* generate_world(Engine* engine)
     subway_station->add_component(new ComponentDescription("This deserted station reeks of stale urine and the ubiquitous cherry blossoms."));
     subway_station->add_component(new ComponentRoom({{NORTH, "sakura_park"}}));
     subway_station->add_component(new ComponentMusic("res/blackandyellow.ogg"));
-    subway_station->before = [=](Command* cmd)
+    /*subway_station->before = [=](Command* cmd)
     {
         //if(cmd->type == Command::LOOK_AROUND)
             //text->send_front(std::make_shared<CmdPlayMusic>("res/blackandyellow.ogg"));
         return true;
-    };
+    };*/
     world->add_child(subway_station);
 
     Object* sakura_park = new Object("sakura_park");
@@ -664,7 +675,7 @@ World* generate_world(Engine* engine)
     front_door->add_component(new ComponentOpenClose(false));
     front_door->add_component(new ComponentPortal("simple_ted_house_first_floor"));
     front_door->add_component(new ComponentDescription("A crude door leading into the house is bolted shut."));
-    front_door->before = [&](Command* cmd) {
+    /*front_door->before = [&](Command* cmd) {
         bool ret_val = false;
         if((cmd->type == Command::GO && static_cast<CmdGo*>(cmd)->new_room == "simple_ted_house_first_floor")
                 || (cmd->type == Command::OPEN))
@@ -675,7 +686,7 @@ World* generate_world(Engine* engine)
         else
             ret_val = true;
         return ret_val;
-    };
+    };*/
     simple_ted_house_front->add_child(front_door);
 
     Object* second_floor_window = new Object("second floor window");
@@ -718,9 +729,9 @@ World* generate_world(Engine* engine)
     Object* onahole = new Object("onahole");
     onahole->add_component(new ComponentTakeable());
     onahole->add_component(new ComponentDescription("There is an onahole here.", "NEKOMIMI MAONYAN SPECIAL CATGIRL ONAHOLE"));
-    onahole->after = [&](Command* cmd) {
+    /*onahole->after = [&](Command* cmd) {
         engine->terminal->disp(">lewd");
-    };
+    };*/
     store_shelf->add_child(onahole);
 
     Object* touhou_figurine = new Object("touhou figurine");
@@ -761,7 +772,7 @@ World* generate_world(Engine* engine)
                                                   {DOWN, "kolob_street_east"}}));
     fire_escape->add_component(new ComponentDescription("You're running up in gates, and doing hits for high stakes,\nMaking [your] way on fire escapes\nYou can see the street about twenty feet below."));
     bool can_jump = false;
-    fire_escape->before = [&](Command* cmd) {
+    /*fire_escape->before = [&](Command* cmd) {
         if(cmd->type == Command::GO && ((CmdGo*)cmd)->new_room == "kolob_street_east")
         {
             if(can_jump)
@@ -783,7 +794,7 @@ World* generate_world(Engine* engine)
             kolob_street_east->add_child(body_pillow);
             can_jump = true;
         }
-    };
+    };*/
 
     world->add_child(fire_escape);
 
@@ -798,15 +809,15 @@ World* generate_world(Engine* engine)
 
     elevator_buttons->add_component(new ComponentDescription("A panel of buttons is on the wall of the elevator.", "There are three buttons, labeled '3', '2', and '1', respectively."));
     elevator_buttons->add_component(new ComponentHittable());
-    elevator_buttons->after = [&](Command* cmd) {
-        /*if(cmd->type == Command::HIT)
+    /*elevator_buttons->after = [&](Command* cmd) {
+        if(cmd->type == Command::HIT)
         {
             engine->push_state(new GameStateMenu(engine, text, "There are three buttons: 3, 2, and 1. Which button do you hit?",
                         {{"1", {std::make_shared<CmdGo>("hobby_lobby_floor_1")}},
                          {"2", {std::make_shared<CmdGo>("hobby_lobby_floor_2")}},
                          {"3", {std::make_shared<CmdGo>("hobby_lobby_floor_3")}}}));
-        }*/
-    };
+        }
+    };*/
     hobby_elevator->add_child(elevator_buttons);
 
     Object* barber_shoppe = new Object("barber_shoppe");
@@ -833,7 +844,7 @@ World* generate_world(Engine* engine)
     clippers->aliases = {"hedge clippers", "hedge", "scissors"};
     clippers->add_component(new ComponentDescription("Frank is holding a pair of shiny hedge clippers."));
     clippers->add_component(new ComponentTakeable());
-    clippers->before = [&](Command* cmd) {
+    /*clippers->before = [&](Command* cmd) {
         if(cmd->type == Command::TAKE)
         {
             engine->terminal->disp("Frank is startled by your gall.");
@@ -851,6 +862,7 @@ World* generate_world(Engine* engine)
         return true;
     };
     frank->add_child(clippers);
+    */
 
 
     return world;
