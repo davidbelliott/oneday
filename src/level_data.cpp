@@ -279,6 +279,19 @@ void fire_escape_after(Command* cmd, GameState* g) {
     }
 }
 
+void del_mar_after(Command* cmd, GameState* g) {
+    if(cmd->type == Command::GO && g->world->get_flag("thug_fight_outcome") == 0)
+    {
+        g->engine->terminal->disp("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!");
+        g->engine->terminal->pause();
+        g->engine->terminal->disp("Each time a fist hits you, hit A, S, D, or F to tense the corresponding ab and deflect the blow.");
+        g->engine->terminal->disp("Undeflected blows will push your abs back until you perish.");
+        g->engine->terminal->pause();
+        g->engine->push_state(new GameStateThugFight(g->engine));
+        g->world->set_flag("thug_fight_outcome", 1);
+    }
+}
+
 World* generate_world(Engine* engine)
 {
     // Generate the world
@@ -290,7 +303,7 @@ World* generate_world(Engine* engine)
 		{ "health", 100 },
 		{ "woke_up", 0 }
 	};
-	world->cur_room = "jamal_bedroom";
+	world->cur_room = "sewer_upper";
 
     Player* player = new Player("player", "a sturdy creature fond of drink and industry");
     player->pretty_name = "Jamal";
@@ -514,20 +527,7 @@ World* generate_world(Engine* engine)
     del_mar->pretty_name = "Del Mar Boulevard";
     del_mar->add_component(new ComponentRoom({{NORTH, "compton_street"}}));
     del_mar->add_component(new ComponentDescription("A temporary lane."));
-    /*del_mar->after = [=](Command* cmd)
-    {
-        if(cmd->type == Command::GO && world->get_flag("thug_fight_outcome") == 0)
-        {
-            engine->terminal->disp("Suddenly, a group of thugs rounds the corner. They raise fists to attack you!");
-            engine->terminal->pause();
-            engine->terminal->disp("Each time a fist hits you, hit A, S, D, or F to tense the corresponding ab and deflect the blow.");
-            engine->terminal->disp("Undeflected blows will push your abs back until you perish.");
-            engine->terminal->pause();
-            engine->push_state(new GameStateThugFight(engine));
-            world->set_flag("thug_fight_outcome", 1);
-        }
-        return true;
-    };*/
+    del_mar->after = del_mar_after;
     world->add_child(del_mar);
 
     Object* manhole = new Object("manhole");

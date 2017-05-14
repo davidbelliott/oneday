@@ -211,6 +211,9 @@ void CmdGo::run(GameState* g)
         ComponentMusic* music_entering = (ComponentMusic*)rm->get_component(Component::MUSIC);
         //if(music_leaving)
             //g->engine->audio->pause_music(music_leaving->music);
+            //
+            //
+        g->engine->terminal->clr();
         if(music_entering)
             g->engine->audio->play_music(music_entering->music, music_entering->start_time);
 

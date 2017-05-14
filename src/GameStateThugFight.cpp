@@ -101,6 +101,10 @@ void GameStateThugFight::try_to_break(int index)
         {
             break_fist(index, cur_beat);
         }
+        else
+        {
+            abs.health--;
+        }
     }
 }
 
@@ -139,10 +143,6 @@ void GameStateThugFight::update(sf::Time dt)
             {
                 abs.health--;
                 beats[i][(int)cur_beat - 1] = MISSED;
-                if(abs.health == 0)
-                {
-                    lose();
-                }
             }
         }
         for(int i = 0; i < fragments.size(); )
@@ -163,13 +163,19 @@ void GameStateThugFight::update(sf::Time dt)
         {
             win();
         }
-        
+        if(abs.health == 0)
+        {
+            lose();
+        }
+
         for(int i = 0; i < 4; i++)
         {
             abs.tense[i] -= dt;
         }
         elapsed_time += dt;
         cur_beat = (elapsed_time.asSeconds() / beat.asSeconds());
+
+
     }
     else if(ch == KEY_ENTER)
     {
@@ -248,4 +254,5 @@ void GameStateThugFight::lose()
         engine->running = false;
     else
         engine->change_state(new GameStateThugFight(engine));
+    // TODO: garbage collect instead of immediately deleting this state in Engine: causes segfaults
 }
